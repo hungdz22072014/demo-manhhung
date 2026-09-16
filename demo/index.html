@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mô Phỏng Giao Tiếp Can-Tin - 3 Nhiệm Vụ Cốt Lõi</title>
+  <meta name="description" content="Ứng dụng mô phỏng tình huống mua đồ ăn ở can-tin với 3 nhiệm vụ: Gọi món, Hỏi giá và Cảm ơn.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Canvas Confetti -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- Header chung -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-badge">Trường THCS Ánh Dương</span>
+        <h1 class="brand-title">🏫 Can-Tin Thông Minh</h1>
+      </div>
+      <div class="header-status">
+        <span class="status-indicator"></span>
+        <span class="status-text" id="header-status-text">Đang mở cửa</span>
+      </div>
+    </header>
+
+    <!-- MÀN HÌNH 1: BẮT ĐẦU -->
+    <section id="screen-start" class="screen active">
+      <div class="hero-card">
+        <div class="hero-icon-wrapper">
+          <span class="hero-icon">🥪</span>
+        </div>
+        <div class="hero-tag">TÌNH HUỐNG THỰC TẾ</div>
+        <h2 class="hero-title">Mua Đồ Ăn Ở Can-Tin</h2>
+        <p class="hero-desc">
+          Rèn luyện kỹ năng giao tiếp lịch sự, tự tin và văn minh tại quầy can-tin trường học qua <strong>3 nhiệm vụ cốt lõi</strong>.
+        </p>
+
+        <!-- 4 Nhiệm vụ thẻ nổi bật -->
+        <div class="mission-cards-grid">
+          <div class="mission-card">
+            <div class="mission-num">1</div>
+            <div class="mission-icon">🍽️</div>
+            <div class="mission-info">
+              <h3>1. Gọi món</h3>
+              <p>Nêu rõ tên món ăn, số lượng với thái độ lễ phép</p>
+            </div>
+          </div>
+          <div class="mission-card">
+            <div class="mission-num">2</div>
+            <div class="mission-icon">❓</div>
+            <div class="mission-info">
+              <h3>2. Hỏi giá</h3>
+              <p>Hỏi rõ số tiền của các món ăn sau khi nhận đồ</p>
+            </div>
+          </div>
+          <div class="mission-card">
+            <div class="mission-num">3</div>
+            <div class="mission-icon">💵</div>
+            <div class="mission-info">
+              <h3>3. Trả tiền</h3>
+              <p>Thanh toán chuẩn xác và nhận lại tiền thừa</p>
+            </div>
+          </div>
+          <div class="mission-card">
+            <div class="mission-num">4</div>
+            <div class="mission-icon">🙏</div>
+            <div class="mission-info">
+              <h3>4. Cảm ơn</h3>
+              <p>Nói lời cảm ơn chân thành trước khi rời quầy</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Menu gợi ý hôm nay -->
+        <div class="menu-preview-box">
+          <div class="menu-preview-title">✨ Thực đơn hôm nay:</div>
+          <div class="menu-tags">
+            <span class="menu-tag">🥖 Bánh mì kẹp thịt (20k)</span>
+            <span class="menu-tag">🥛 Sữa tươi tiệt trùng (5k)</span>
+            <span class="menu-tag">🍙 Xôi xéo ruốc (15k)</span>
+            <span class="menu-tag">🌭 Xúc xích nướng (10k)</span>
+            <span class="menu-tag">💧 Nước suối đóng chai (5k)</span>
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <button id="btn-start-scenario" class="btn btn-primary btn-lg">
+            <span>Bắt Đầu Vào Vai</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+          <button id="btn-quick-demo" class="btn btn-secondary btn-lg">
+            <span>⚡ Chạy Tự Động Kịch Bản Mẫu</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MÀN HÌNH 2: HỘI THOẠI NHẬP CHỮ -->
+    <section id="screen-dialogue" class="screen">
+      <!-- Thanh tiến độ 4 nhiệm vụ -->
+      <div class="progress-bar-container">
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="steps-wrapper">
+          <div class="step-item current" id="step-indicator-1">
+            <div class="step-circle">1</div>
+            <span class="step-label">Gọi món</span>
+          </div>
+          <div class="step-item" id="step-indicator-2">
+            <div class="step-circle">2</div>
+            <span class="step-label">Hỏi giá</span>
+          </div>
+          <div class="step-item" id="step-indicator-3">
+            <div class="step-circle">3</div>
+            <span class="step-label">Trả tiền</span>
+          </div>
+          <div class="step-item" id="step-indicator-4">
+            <div class="step-circle">4</div>
+            <span class="step-label">Cảm ơn</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Khung chat quầy Can-tin -->
+      <div class="chat-viewport-card">
+        <!-- Người bán đại diện -->
+        <div class="seller-profile-bar">
+          <div class="seller-avatar">👩‍🍳</div>
+          <div class="seller-meta">
+            <div class="seller-name">Cô Hoa Can-tin</div>
+            <div class="seller-status">Sẵn sàng phục vụ bạn</div>
+          </div>
+          <div class="mission-badge" id="current-mission-badge">
+            Nhiệm vụ 1: Hãy gọi món bạn muốn mua
+          </div>
+        </div>
+
+        <!-- Vùng tin nhắn -->
+        <div class="messages-container" id="chat-messages" role="log" aria-live="polite">
+          <!-- Tin nhắn sẽ được chèn qua JS -->
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typing-indicator" style="display: none;">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="typing-text">Cô Hoa đang trả lời...</span>
+        </div>
+
+        <!-- Gợi ý câu thoại thông minh -->
+        <div class="quick-prompts-section">
+          <div class="prompts-label">Gợi ý câu nói nhanh:</div>
+          <div class="prompts-list" id="quick-prompts-list">
+            <!-- Nút gợi ý thay đổi theo bước -->
+          </div>
+        </div>
+
+        <!-- Khung nhập chữ -->
+        <form class="chat-input-bar" id="chat-form" onsubmit="return false;">
+          <input 
+            type="text" 
+            id="user-input" 
+            class="chat-input" 
+            placeholder="Nhập câu đối thoại của bạn vào đây..." 
+            autocomplete="off"
+            required
+          >
+          <button type="submit" id="btn-send-message" class="btn btn-primary btn-send">
+            <span>Gửi</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- MÀN HÌNH 3: TỔNG KẾT & ĐÁNH GIÁ -->
+    <section id="screen-summary" class="screen">
+      <div class="summary-card">
+        <div class="trophy-badge">🏆</div>
+        <div class="summary-tag">HOÀN THÀNH TÌNH HUỐNG</div>
+        <h2 class="summary-title">Chúc Mừng Bạn Đã Hoàn Thành!</h2>
+        <p class="summary-subtitle">Bạn đã thực hiện xuất sắc quy trình mua đồ ăn văn minh tại Can-tin.</p>
+
+        <!-- Điểm số & Danh hiệu -->
+        <div class="score-showcase">
+          <div class="score-circle">
+            <div class="score-number">100</div>
+            <div class="score-unit">/ 100 Điểm</div>
+          </div>
+          <div class="badge-box">
+            <span class="badge-title">Danh hiệu đạt được</span>
+            <div class="badge-name">🌟 Khách Hàng Văn Minh Can-Tin</div>
+            <p class="badge-desc">Giao tiếp lễ phép, trả tiền chính xác và luôn nói lời cảm ơn.</p>
+          </div>
+        </div>
+
+        <!-- Đánh giá 4 tiêu chí -->
+        <div class="criteria-results-grid">
+          <div class="criteria-item success">
+            <div class="criteria-icon">✅</div>
+            <div class="criteria-text">
+              <h4>Nhiệm vụ 1: Gọi món</h4>
+              <p>Nêu rõ tên món, số lượng cụ thể và dùng kính ngữ "dạ/ạ".</p>
+            </div>
+            <span class="criteria-score">+25đ</span>
+          </div>
+          <div class="criteria-item success">
+            <div class="criteria-icon">✅</div>
+            <div class="criteria-text">
+              <h4>Nhiệm vụ 2: Hỏi giá</h4>
+              <p>Hỏi rõ tổng số tiền sau khi nhận đủ đồ ăn yêu cầu.</p>
+            </div>
+            <span class="criteria-score">+25đ</span>
+          </div>
+          <div class="criteria-item success">
+            <div class="criteria-icon">✅</div>
+            <div class="criteria-text">
+              <h4>Nhiệm vụ 3: Trả tiền & Nhận tiền thừa</h4>
+              <p>Đưa tiền thanh toán chuẩn xác, kiểm tra tiền thừa cẩn thận.</p>
+            </div>
+            <span class="criteria-score">+25đ</span>
+          </div>
+          <div class="criteria-item success">
+            <div class="criteria-icon">✅</div>
+            <div class="criteria-text">
+              <h4>Nhiệm vụ 4: Cảm ơn</h4>
+              <p>Biết ơn người phục vụ, kết thúc giao dịch văn minh, lịch sự.</p>
+            </div>
+            <span class="criteria-score">+25đ</span>
+          </div>
+        </div>
+
+        <!-- Xem lại đoạn hội thoại -->
+        <div class="transcript-box">
+          <details id="transcript-details">
+            <summary class="transcript-toggle">
+              <span>📜 Xem lại toàn bộ đoạn hội thoại đã thực hiện</span>
+              <span class="arrow">▼</span>
+            </summary>
+            <div class="transcript-content" id="transcript-body">
+              <!-- Điền bởi JS -->
+            </div>
+          </details>
+        </div>
+
+        <!-- Nút hành động -->
+        <div class="summary-actions">
+          <button id="btn-restart-scenario" class="btn btn-primary btn-lg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+            <span>Thực Hành Lại</span>
+          </button>
+          <button id="btn-back-to-home" class="btn btn-secondary btn-lg">
+            <span>🏠 Về Màn Hình Đầu</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Ứng dụng Mô Phỏng Tình Huống Can-Tin • Hỗ trợ học sinh rèn luyện kỹ năng sống</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
