@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vui Học Toán – Trợ Lý AI Ôn Thi & Ghi Nhớ Định Lý Toán 6–7</title>
+  <meta name="description" content="Web App MathMind AI - Trợ lý ôn thi và ghi nhớ định lý Toán THCS lớp 6 - 7 theo bộ sách Kết nối tri thức với cuộc sống. Tích hợp thuật toán hộp Leitner và gia sư Socratic AI.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans & Quicksand -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- KaTeX for rendering mathematical formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header / Navigation Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-logo">
+          <span class="logo-icon">📐</span>
+        </div>
+        <div class="brand-text">
+          <div class="brand-badge">SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG</div>
+          <h1 class="brand-title">Vui Học Toán <span class="ai-pill">AI 3.6</span></h1>
+        </div>
+      </div>
+
+      <!-- Quick Controls: Grade Selector & Gamification Stats -->
+      <div class="header-controls">
+        <div class="grade-toggle-group">
+          <button id="btn-grade-6" class="grade-btn" data-grade="6">Lớp 6</button>
+          <button id="btn-grade-7" class="grade-btn active" data-grade="7">Lớp 7</button>
+        </div>
+
+        <div class="streak-widget" title="Chuỗi ngày ôn tập liên tiếp">
+          <span class="streak-flame">🔥</span>
+          <span class="streak-count" id="header-streak-count">3 ngày</span>
+        </div>
+
+        <div class="backend-status-badge" id="backend-status" title="Kết nối Backend bảo mật Gemini API Key">
+          <span class="status-dot"></span>
+          <span class="status-label">AI Sẵn Sàng</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="main-nav">
+      <div class="nav-container">
+        <button class="nav-tab active" data-tab="tab-theorems">
+          <span class="tab-icon">🧠</span>
+          <span class="tab-title">Trạm Định Lý & Flashcard</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-exams">
+          <span class="tab-icon">📝</span>
+          <span class="tab-title">Phòng Luyện Thi GK - CK</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-socratic">
+          <span class="tab-icon">🦉</span>
+          <span class="tab-title">Gia Sư AI Socratic</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-dashboard">
+          <span class="tab-icon">📊</span>
+          <span class="tab-title">Bản Đồ & Tiến Độ</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="app-main">
+
+    <!-- ========================================================= -->
+    <!-- PHÂN HỆ 1: TRẠM THỬ THÁCH & GHI NHỚ ĐỊNH LÝ -->
+    <!-- ========================================================= -->
+    <section id="tab-theorems" class="tab-section active">
+      <!-- Theorem Filters & Search Bar -->
+      <div class="section-toolbar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="theorem-search-input" placeholder="Tìm định lý (ví dụ: song song, tam giác đều, chia hết, đối đỉnh)...">
+        </div>
+        
+        <div class="filter-pills">
+          <button class="filter-pill active" data-filter="all">Tất cả</button>
+          <button class="filter-pill" data-filter="geometry">📐 Hình học</button>
+          <button class="filter-pill" data-filter="arithmetic">🔢 Số học & Đại số</button>
+          <button class="filter-pill" data-filter="sem1">Học kì 1</button>
+          <button class="filter-pill" data-filter="sem2">Học kì 2</button>
+        </div>
+      </div>
+
+      <!-- Mode Selector within Theorem Station -->
+      <div class="sub-mode-bar">
+        <button class="sub-mode-btn active" data-submode="flashcard">
+          <span>🎴 Flashcard 3D & Hộp Leitner</span>
+        </button>
+        <button class="sub-mode-btn" data-submode="fillblank">
+          <span>✍️ Thử Thách Điền Chỗ Trống</span>
+        </button>
+        <button class="sub-mode-btn" data-submode="ai-oral">
+          <span>🎙️ Vấn Đáp Cùng AI (Giọng nói/Text)</span>
+        </button>
+        <button class="sub-mode-btn" data-submode="library">
+          <span>📚 Thư Viện Bỏ Túi Tra Cứu</span>
+        </button>
+      </div>
+
+      <!-- Leitner Box Tracker Status -->
+      <div class="leitner-status-bar">
+        <div class="leitner-chip chip-red" data-box="red">
+          <span class="chip-dot red"></span>
+          <span class="chip-label">Hộp 1 (Cần ôn gấp):</span>
+          <span class="chip-count" id="count-box-red">0</span>
+        </div>
+        <div class="leitner-chip chip-yellow" data-box="yellow">
+          <span class="chip-dot yellow"></span>
+          <span class="chip-label">Hộp 2 (Còn lúng túng):</span>
+          <span class="chip-count" id="count-box-yellow">0</span>
+        </div>
+        <div class="leitner-chip chip-green" data-box="green">
+          <span class="chip-dot green"></span>
+          <span class="chip-label">Hộp 3 (Đã thuộc làu):</span>
+          <span class="chip-count" id="count-box-green">0</span>
+        </div>
+      </div>
+
+      <!-- SUB-VIEW 1: FLASHCARD 3D & LEITNER -->
+      <div id="subview-flashcard" class="subview active">
+        <div class="flashcard-deck-container">
+          <div class="deck-progress">
+            <span id="card-index-indicator">Thẻ 1 / 12</span>
+            <div class="deck-progress-bar">
+              <div class="deck-progress-fill" id="card-progress-fill" style="width: 8%;"></div>
+            </div>
+          </div>
+
+          <!-- 3D Flipping Card -->
+          <div class="flashcard-scene">
+            <div class="flashcard-3d" id="flashcard-element">
+              <!-- FRONT FACE -->
+              <div class="card-face card-front">
+                <div class="card-header">
+                  <span class="card-tag" id="card-front-tag">Hình học Toán 7 • HK1</span>
+                  <span class="card-box-indicator" id="card-front-box">Hộp 1 (Đỏ)</span>
+                </div>
+                <div class="card-body">
+                  <div class="card-icon-preview" id="card-front-svg"></div>
+                  <h3 class="card-title" id="card-front-title">Định lý Hai góc đối đỉnh</h3>
+                  <p class="card-summary" id="card-front-summary">Hai góc đối đỉnh thì bằng nhau.</p>
+                  <div class="card-formula-preview" id="card-front-formula"></div>
+                </div>
+                <div class="card-footer">
+                  <button class="btn-flip" id="btn-flip-card">
+                    <span>🔄 Bấm để lật xem chứng minh & kết luận</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- BACK FACE -->
+              <div class="card-face card-back">
+                <div class="card-header">
+                  <span class="card-tag">CHI TIẾT SGK KẾT NỐI TRI THỨC</span>
+                  <button class="btn-flip-back" id="btn-flip-back">Lật lại ↩</button>
+                </div>
+                <div class="card-body">
+                  <div class="theorem-block">
+                    <h4 class="block-title">📖 Phát biểu định lý:</h4>
+                    <p class="block-content" id="card-back-content"></p>
+                  </div>
+                  <div class="hypothesis-grid">
+                    <div class="hypo-box">
+                      <span class="hypo-label">Giả thiết (GT):</span>
+                      <p id="card-back-hypothesis"></p>
+                    </div>
+                    <div class="concl-box">
+                      <span class="concl-label">Kết luận (KL):</span>
+                      <p id="card-back-conclusion"></p>
+                    </div>
+                  </div>
+                  <div class="formula-full-box">
+                    <span class="formula-label">📐 Công thức liên quan:</span>
+                    <div id="card-back-formula"></div>
+                  </div>
+                </div>
+                <div class="card-footer card-feedback-footer">
+                  <span class="feedback-prompt">Em đã ghi nhớ định lý này chưa?</span>
+                  <div class="feedback-buttons">
+                    <button class="btn-feedback red" id="btn-rate-red" title="Đẩy về Hộp 1 để ôn lại sớm">
+                      <span>❌ Chưa nhớ</span>
+                    </button>
+                    <button class="btn-feedback yellow" id="btn-rate-yellow" title="Đẩy về Hộp 2">
+                      <span>🤔 Còn lúng túng</span>
+                    </button>
+                    <button class="btn-feedback green" id="btn-rate-green" title="Đẩy lên Hộp 3 (Đã thuộc)">
+                      <span>✨ Đã thuộc làu!</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation Prev/Next -->
+          <div class="deck-navigation">
+            <button class="btn btn-secondary" id="btn-prev-card">← Thẻ trước</button>
+            <button class="btn btn-primary" id="btn-next-card">Thẻ tiếp theo →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-VIEW 2: THỬ THÁCH ĐIỀN VÀO CHỖ TRỐNG -->
+      <div id="subview-fillblank" class="subview">
+        <div class="challenge-card">
+          <div class="challenge-header">
+            <span class="challenge-badge">🎯 Thử Thách Trí Nhớ</span>
+            <h3 class="challenge-title" id="fillblank-title">Điền từ còn thiếu vào định lý</h3>
+            <p class="challenge-instruction">Hãy nhập từ khóa hoặc số liệu chính xác vào các ô trống bên dưới:</p>
+          </div>
+          
+          <div class="challenge-body" id="fillblank-body">
+            <!-- Dynamic interactive sentence with inputs -->
+          </div>
+
+          <div class="challenge-actions">
+            <button class="btn btn-secondary" id="btn-fillblank-hint">💡 Gợi ý</button>
+            <button class="btn btn-primary" id="btn-fillblank-check">Kiểm Tra Đáp Án</button>
+            <button class="btn btn-outline" id="btn-fillblank-next">Bài tiếp theo ➔</button>
+          </div>
+
+          <div class="challenge-result" id="fillblank-result"></div>
+        </div>
+      </div>
+
+      <!-- SUB-VIEW 3: VẤN ĐÁP CÙNG AI (SPEECH & TEXT) -->
+      <div id="subview-ai-oral" class="subview">
+        <div class="oral-exam-card">
+          <div class="oral-header">
+            <div class="ai-avatar">🤖</div>
+            <div class="oral-header-info">
+              <span class="oral-tag">THỬ THÁCH VẤN ĐÁP CÙNG AI</span>
+              <h3 class="oral-title">Gia sư AI kiểm tra phát biểu Định lý</h3>
+              <p class="oral-desc">AI sẽ đối chiếu câu trả lời của em với SGK Kết nối tri thức và chấm điểm ngữ nghĩa!</p>
+            </div>
+          </div>
+
+          <div class="oral-question-box">
+            <div class="question-label">Câu hỏi vấn đáp:</div>
+            <div class="question-content" id="oral-ai-question">Đang tải câu hỏi định lý...</div>
+          </div>
+
+          <div class="oral-answer-area">
+            <label for="oral-user-input" class="input-label">Câu trả lời của em (Gõ văn bản hoặc bấm Mic để nói):</label>
+            <div class="input-with-mic">
+              <textarea id="oral-user-input" rows="3" placeholder="Nhập câu phát biểu định lý của em ở đây, hoặc nhấn nút Micro bên dưới để nói trực tiếp..."></textarea>
+              <button class="btn-mic" id="btn-voice-input" title="Bấm để nói bằng Micro">
+                <span class="mic-icon">🎙️</span>
+                <span class="mic-text">Nói bằng Mic</span>
+              </button>
+            </div>
+            <div class="speech-status" id="speech-status-indicator"></div>
+          </div>
+
+          <div class="oral-actions">
+            <button class="btn btn-primary btn-lg" id="btn-submit-oral">
+              <span>🚀 Gửi Câu Trả Lời Cho AI Chấm Điểm</span>
+            </button>
+            <button class="btn btn-secondary" id="btn-new-oral-question">
+              <span>Đổi Câu Hỏi Khác 🔄</span>
+            </button>
+          </div>
+
+          <!-- AI Evaluation Feedback -->
+          <div class="oral-feedback-box" id="oral-feedback-box" style="display: none;">
+            <div class="feedback-header">
+              <span class="feedback-title">⭐ Đánh giá chi tiết từ AI</span>
+              <span class="feedback-model">Gemini 3.6 Flash</span>
+            </div>
+            <div class="feedback-content" id="oral-feedback-content"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUB-VIEW 4: THƯ VIỆN BỎ TÚI -->
+      <div id="subview-library" class="subview">
+        <div class="library-grid" id="theorems-library-grid">
+          <!-- Dynamic cards rendered by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- PHÂN HỆ 2: PHÒNG LUYỆN THI GIỮA KÌ & CUỐI KÌ (HK1 - HK2) -->
+    <!-- ========================================================= -->
+    <section id="tab-exams" class="tab-section">
+      <!-- Exam Selector Hub -->
+      <div class="exam-hub-container" id="exam-select-screen">
+        <div class="hub-header">
+          <span class="hub-badge">CHUẨN MA TRẬN BỘ GD&ĐT</span>
+          <h2 class="hub-title">Phòng Luyện Thi & Khảo Sát Năng Lực</h2>
+          <p class="hub-subtitle">Lựa chọn kì thi và chế độ ôn luyện. Hệ thống sẽ phát hiện lỗ hổng định lý để ôn bù điểm yếu!</p>
+        </div>
+
+        <div class="exam-cards-grid">
+          <!-- Exam 1: Lớp 7 GK1 -->
+          <div class="exam-card" data-exam-id="exam-toan7-gk1">
+            <div class="exam-card-top">
+              <span class="exam-grade-badge">Lớp 7</span>
+              <span class="exam-type-badge midterm">Giữa Kì 1</span>
+            </div>
+            <h3 class="exam-card-title">Đề thi Giữa Kì 1 - Toán 7</h3>
+            <p class="exam-card-desc">Trọng tâm: Góc đối đỉnh, Hai đường thẳng song song, Tiên đề Euclid, Tổng 3 góc tam giác.</p>
+            <div class="exam-meta">
+              <span>⏱️ 45 phút</span>
+              <span>📋 10 câu hỏi</span>
+              <span>⭐ 10 điểm</span>
+            </div>
+            <div class="exam-card-actions">
+              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan7-gk1">Luyện tập (Có giải thích ngay)</button>
+              <button class="btn btn-primary btn-start-real" data-exam="exam-toan7-gk1">Thi thử bấm giờ ⏱️</button>
+            </div>
+          </div>
+
+          <!-- Exam 2: Lớp 7 CK2 -->
+          <div class="exam-card" data-exam-id="exam-toan7-ck2">
+            <div class="exam-card-top">
+              <span class="exam-grade-badge">Lớp 7</span>
+              <span class="exam-type-badge final">Cuối Kì 2</span>
+            </div>
+            <h3 class="exam-card-title">Đề thi Cuối Kì 2 - Toán 7</h3>
+            <p class="exam-card-desc">Trọng tâm: Dãy tỉ số bằng nhau, Quan hệ góc và cạnh đối diện, Bất đẳng thức tam giác, Trọng tâm.</p>
+            <div class="exam-meta">
+              <span>⏱️ 60 phút</span>
+              <span>📋 8 câu hỏi</span>
+              <span>⭐ 10 điểm</span>
+            </div>
+            <div class="exam-card-actions">
+              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan7-ck2">Luyện tập (Có giải thích ngay)</button>
+              <button class="btn btn-primary btn-start-real" data-exam="exam-toan7-ck2">Thi thử bấm giờ ⏱️</button>
+            </div>
+          </div>
+
+          <!-- Exam 3: Lớp 6 GK1 -->
+          <div class="exam-card" data-exam-id="exam-toan6-gk1">
+            <div class="exam-card-top">
+              <span class="exam-grade-badge grade-6">Lớp 6</span>
+              <span class="exam-type-badge midterm">Giữa Kì 1</span>
+            </div>
+            <h3 class="exam-card-title">Đề thi Giữa Kì 1 - Toán 6</h3>
+            <p class="exam-card-desc">Trọng tâm: Dấu hiệu chia hết 2, 3, 5, 9, Quy tắc dấu ngoặc, Hình vuông, Tam giác đều, Hình thoi.</p>
+            <div class="exam-meta">
+              <span>⏱️ 45 phút</span>
+              <span>📋 6 câu hỏi</span>
+              <span>⭐ 10 điểm</span>
+            </div>
+            <div class="exam-card-actions">
+              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan6-gk1">Luyện tập (Có giải thích ngay)</button>
+              <button class="btn btn-primary btn-start-real" data-exam="exam-toan6-gk1">Thi thử bấm giờ ⏱️</button>
+            </div>
+          </div>
+
+          <!-- Exam 4: Lớp 6 CK2 -->
+          <div class="exam-card" data-exam-id="exam-toan6-ck2">
+            <div class="exam-card-top">
+              <span class="exam-grade-badge grade-6">Lớp 6</span>
+              <span class="exam-type-badge final">Cuối Kì 2</span>
+            </div>
+            <h3 class="exam-card-title">Đề thi Cuối Kì 2 - Toán 6</h3>
+            <p class="exam-card-desc">Trọng tâm: Tính chất phân số, rút gọn tối giản, điểm nằm giữa và trung điểm đoạn thẳng.</p>
+            <div class="exam-meta">
+              <span>⏱️ 45 phút</span>
+              <span>📋 4 câu hỏi</span>
+              <span>⭐ 10 điểm</span>
+            </div>
+            <div class="exam-card-actions">
+              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan6-ck2">Luyện tập (Có giải thích ngay)</button>
+              <button class="btn btn-primary btn-start-real" data-exam="exam-toan6-ck2">Thi thử bấm giờ ⏱️</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Weakness Drill Card -->
+        <div class="weakness-banner" id="weakness-drill-banner">
+          <div class="banner-icon">🎯</div>
+          <div class="banner-content">
+            <h3 class="banner-title">Tạo đề thi tùy biến bù đúng điểm yếu bằng AI</h3>
+            <p class="banner-desc">Hệ thống sẽ tự động quét các định lý trong "Hộp Đỏ (hay quên)" và các câu em làm sai ở lần thi trước để tạo 1 đề ôn luyện tập trung!</p>
+          </div>
+          <button class="btn btn-accent btn-lg" id="btn-create-weakness-exam">
+            <span>⚡ Tạo Đề Bù Điểm Yếu Ngay</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Taking Exam Arena (Hidden initially) -->
+      <div class="exam-arena-container" id="exam-arena-screen" style="display: none;">
+        <div class="arena-header">
+          <div class="arena-title-info">
+            <button class="btn-back-hub" id="btn-quit-exam">← Thoát đề thi</button>
+            <h3 class="arena-title" id="arena-exam-title">Đang làm bài thi</h3>
+            <span class="arena-mode-badge" id="arena-mode-badge">Chế độ Thi Thử</span>
+          </div>
+
+          <div class="arena-timer-box" id="arena-timer-box">
+            <span class="timer-icon">⏳</span>
+            <span class="timer-digits" id="exam-timer">45:00</span>
+          </div>
+        </div>
+
+        <!-- Arena Main Grid -->
+        <div class="arena-grid">
+          <!-- Question Main Display -->
+          <div class="question-main-card">
+            <div class="question-card-top">
+              <span class="question-number" id="current-question-num">Câu 1 / 10</span>
+              <span class="question-points">1.0 điểm</span>
+            </div>
+
+            <div class="question-text" id="current-question-text">
+              Nội dung câu hỏi đang được tải...
+            </div>
+
+            <!-- Options Grid -->
+            <div class="options-container" id="options-container">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Practice Mode Instant Explanation -->
+            <div class="instant-explanation-box" id="instant-explanation" style="display: none;">
+              <div class="exp-title">💡 Giải thích chi tiết & Định lý liên quan:</div>
+              <div class="exp-content" id="instant-exp-content"></div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="question-footer-nav">
+              <button class="btn btn-secondary" id="btn-prev-q">← Câu trước</button>
+              <button class="btn btn-primary" id="btn-next-q">Câu kế tiếp →</button>
+              <button class="btn btn-success" id="btn-finish-exam">Nộp Bài Thi 🎯</button>
+            </div>
+          </div>
+
+          <!-- Question Palette / Navigator Sidebar -->
+          <div class="question-palette-card">
+            <h4 class="palette-title">Danh sách câu hỏi</h4>
+            <div class="palette-grid" id="question-palette-grid">
+              <!-- Rendered dynamically (buttons 1, 2, 3...) -->
+            </div>
+            <div class="palette-legend">
+              <div class="legend-item"><span class="legend-dot answered"></span> Đã chọn</div>
+              <div class="legend-item"><span class="legend-dot current"></span> Đang làm</div>
+              <div class="legend-item"><span class="legend-dot unread"></span> Chưa làm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Exam Result Screen (Hidden initially) -->
+      <div class="exam-result-container" id="exam-result-screen" style="display: none;">
+        <div class="result-card">
+          <div class="result-hero">
+            <div class="result-score-circle" id="result-score-circle">
+              <span class="score-val" id="result-score-num">8.5</span>
+              <span class="score-max">/ 10</span>
+            </div>
+            <h2 class="result-title" id="result-title-text">Chúc mừng em đã hoàn thành!</h2>
+            <p class="result-subtitle" id="result-subtitle-text">Em đã trả lời đúng 8/10 câu hỏi.</p>
+          </div>
+
+          <!-- Knowledge Gap Diagnostic (Báo cáo phân tích định lý yếu) -->
+          <div class="gap-diagnostic-section">
+            <h3 class="diag-title">🔍 Bản Đồ Phân Tích Lỗ Hổng Kiến Thức:</h3>
+            <p class="diag-desc">Dưới đây là các định lý em còn làm sai hoặc nhầm lẫn trong bài kiểm tra này:</p>
+            
+            <div class="failed-theorems-list" id="failed-theorems-list">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div class="result-actions">
+            <button class="btn btn-primary btn-lg" id="btn-drill-failed-theorems">
+              <span>🧠 Ôn Luyện Ngay Các Định Lý Sai (Vào Flashcard)</span>
+            </button>
+            <button class="btn btn-secondary btn-lg" id="btn-return-exam-hub">
+              <span>Về Danh Sách Đề Thi</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- PHÂN HỆ 3: GIA SƯ AI ĐỒNG HÀNH (SOCRATIC TUTOR) -->
+    <!-- ========================================================= -->
+    <section id="tab-socratic" class="tab-section">
+      <div class="socratic-container">
+        <!-- Tutor Introduction Card -->
+        <div class="socratic-intro-card">
+          <div class="socratic-avatar-wrapper">
+            <div class="socratic-avatar">🦉</div>
+            <div class="online-indicator"></div>
+          </div>
+          <div class="socratic-intro-text">
+            <h2>Gia Sư AI Socratic – Người Thầy Dẫn Lối</h2>
+            <p>
+              Thầy áp dụng <strong>phương pháp gợi mở Socratic</strong>: Thầy <em>không giải hộ bài</em> hay đọc đáp án ngay, mà sẽ đặt câu hỏi gợi mở, giúp em tự phát hiện giả thiết, chọn đúng định lý SGK Kết nối tri thức và tự mình tìm ra lời giải!
+            </p>
+          </div>
+        </div>
+
+        <!-- Quick Prompts / Scenarios -->
+        <div class="socratic-chips-container">
+          <span class="chips-label">Gợi ý câu hỏi nhanh:</span>
+          <button class="socratic-chip" data-prompt="Thầy ơi, gợi ý giúp em cách chứng minh hai đường thẳng song song trong hình học lớp 7 với ạ?">
+            📐 Chứng minh hai đường thẳng song song
+          </button>
+          <button class="socratic-chip" data-prompt="Em đang gặp bài toán tính số đo góc trong tam giác vuông, thầy hướng dẫn các bước tư duy giúp em nhé?">
+            📐 Tính số đo góc trong tam giác vuông
+          </button>
+          <button class="socratic-chip" data-prompt="Khi nào thì được áp dụng trường hợp bằng nhau Cạnh - Góc - Cạnh (c-g-c) vậy thầy?">
+            📐 Góc xen giữa trong trường hợp c-g-c
+          </button>
+          <button class="socratic-chip" data-prompt="Thầy hướng dẫn em cách áp dụng tính chất dãy tỉ số bằng nhau để tìm hai số x và y nhé?">
+            🔢 Áp dụng dãy tỉ số bằng nhau
+          </button>
+          <button class="socratic-chip" data-prompt="Quy tắc bỏ dấu ngoặc khi đằng trước có dấu trừ làm thế nào để không bị nhầm dấu ạ?">
+            🔢 Quy tắc đổi dấu trong dấu ngoặc
+          </button>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <div class="chat-messages-card" id="chat-messages-container">
+          <div class="message msg-ai">
+            <div class="msg-avatar">🦉</div>
+            <div class="msg-bubble">
+              <div class="msg-sender">Thầy AI Socratic</div>
+              <div class="msg-text">
+                Chào em! Thầy là Gia sư AI Vui Học Toán. Em đang vướng mắc bài toán hay định lý nào trong chương trình Toán 6–7 Kết nối tri thức? Hãy gõ đề bài hoặc bấm nút thu âm để thầy cùng em phân tích từng bước nhé! ✨
+              </div>
+              <div class="msg-time">Vừa xong</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="chat-input-bar">
+          <div class="input-controls">
+            <textarea id="socratic-input" rows="2" placeholder="Nhập bài toán hoặc câu hỏi của em (ví dụ: 'Cho tam giác ABC có góc A = 90 độ, góc B = 30 độ. Thầy gợi ý em cách tính góc C với ạ')..."></textarea>
+            
+            <div class="input-btn-group">
+              <button class="btn-voice-chat" id="btn-socratic-mic" title="Nói qua Micro">
+                <span>🎙️ Thu âm</span>
+              </button>
+              <button class="btn-send-chat" id="btn-socratic-send">
+                <span>Gửi Thầy 🚀</span>
+              </button>
+            </div>
+          </div>
+          <div class="input-tip">
+            🔒 Yêu cầu được chuyển qua Backend bảo mật Gemini API • Không giải hộ • Kích thích tư duy độc lập
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- PHÂN HỆ 4: BẢNG ĐIỀU KHIỂN & NHẬT KÝ TIẾN BỘ (DASHBOARD) -->
+    <!-- ========================================================= -->
+    <section id="tab-dashboard" class="tab-section">
+      <div class="dashboard-container">
+        <!-- Overview Stat Cards -->
+        <div class="stats-overview-grid">
+          <div class="stat-card stat-mastered">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-info">
+              <span class="stat-number" id="dash-mastered-count">0</span>
+              <span class="stat-title">Định Lý Đã Thuộc Lào</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-learning">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-info">
+              <span class="stat-number" id="dash-learning-count">0</span>
+              <span class="stat-title">Định Lý Đang Luyện Tập</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-exams">
+            <div class="stat-icon">📝</div>
+            <div class="stat-info">
+              <span class="stat-number" id="dash-exams-count">0</span>
+              <span class="stat-title">Đề Thi Đã Hoàn Thành</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-streak">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-info">
+              <span class="stat-number" id="dash-streak-count">3</span>
+              <span class="stat-title">Chuỗi Ngày Học Tập</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BẢN ĐỒ MẠNG LƯỚI ĐỊNH LÝ (KNOWLEDGE NETWORK GRAPH) -->
+        <div class="knowledge-map-card">
+          <div class="map-card-header">
+            <div>
+              <span class="map-badge">MẠNG LƯỚI TRI THỨC</span>
+              <h3 class="map-title">Bản Đồ Năng Lực Định Lý Toán 6–7</h3>
+              <p class="map-desc">Các định lý được hiển thị theo màu hộp Leitner: <span class="badge-red">Đỏ: Hay quên</span>, <span class="badge-yellow">Vàng: Lúng túng</span>, <span class="badge-green">Xanh: Đã nắm vững</span>. Bấm vào thẻ để ôn tập tức thì!</p>
+            </div>
+            <button class="btn btn-outline" id="btn-refresh-map">Làm mới bản đồ 🔄</button>
+          </div>
+
+          <div class="knowledge-tiles-grid" id="knowledge-tiles-grid">
+            <!-- Tiles populated by JS -->
+          </div>
+        </div>
+
+        <!-- HUY HIỆU VINH DANH (GAMIFICATION BADGES) -->
+        <div class="badges-card">
+          <div class="badges-header">
+            <h3 class="badges-title">🎖️ Bảng Huy Hiệu Vinh Danh</h3>
+            <p class="badges-subtitle">Chinh phục các mốc thành tích toán học để mở khóa huy hiệu danh giá!</p>
+          </div>
+
+          <div class="badges-grid">
+            <div class="badge-item unlocked" id="badge-starter">
+              <div class="badge-icon">🌱</div>
+              <div class="badge-name">Khởi Đầu Tự Tin</div>
+              <div class="badge-req">Hoàn thành buổi học đầu tiên</div>
+            </div>
+
+            <div class="badge-item" id="badge-triangles">
+              <div class="badge-icon">🔺</div>
+              <div class="badge-name">Bậc Thầy Tam Giác</div>
+              <div class="badge-req">Thuộc làu 3 trường hợp bằng nhau</div>
+            </div>
+
+            <div class="badge-item" id="badge-parallel">
+              <div class="badge-icon">🛤️</div>
+              <div class="badge-name">Chiến Binh Song Song</div>
+              <div class="badge-req">Nắm vững Tiên đề Euclid & Góc</div>
+            </div>
+
+            <div class="badge-item" id="badge-arithmetic">
+              <div class="badge-icon">⚡</div>
+              <div class="badge-name">Siêu Sao Số Học</div>
+              <div class="badge-req">Làm chủ tính chất chia hết & số nguyên</div>
+            </div>
+
+            <div class="badge-item" id="badge-exam-master">
+              <div class="badge-icon">🏅</div>
+              <div class="badge-name">Thần Tốc Thi Cử</div>
+              <div class="badge-req">Đạt điểm 9-10 trong một bài thi thử</div>
+            </div>
+
+            <div class="badge-item" id="badge-socratic-friend">
+              <div class="badge-icon">🦉</div>
+              <div class="badge-name">Tư Duy Socratic</div>
+              <div class="badge-req">Thảo luận gợi mở 5 lượt cùng Thầy AI</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reset Data button -->
+        <div class="dashboard-footer">
+          <button class="btn-text-danger" id="btn-reset-data">Xóa lịch sử & bắt đầu lại từ đầu</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal: Quick Theorem Detail View -->
+  <div class="modal-backdrop" id="theorem-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-thm-title">Chi Tiết Định Lý</h3>
+        <button class="modal-close" id="btn-close-modal">✕</button>
+      </div>
+      <div class="modal-body" id="modal-thm-body">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio elements & Scripts -->
+  <script src="theorems_data.js"></script>
+  <script src="exams_data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

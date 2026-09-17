@@ -1,0 +1,14 @@
+{
+  "name": "vui-hoc-toan",
+  "version": "1.0.0",
+  "description": "Trợ lý AI Ôn thi & Rèn luyện Định lý Toán 6–7 (Bộ sách Kết nối tri thức với cuộc sống)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}
