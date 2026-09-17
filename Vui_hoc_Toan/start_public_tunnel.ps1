@@ -18,4 +18,4 @@ Write-Host "  * DANG TAO DUONG DAN OPEN DOMAIN HTTPS CONG KHAI...      " -Foregr
 Write-Host "  * Ban be co the truy cap truc tiep tren Dien thoai/PC    " -ForegroundColor Cyan
 Write-Host "==========================================================" -ForegroundColor Cyan
 
-& $cloudflaredPath tunnel --url http://localhost:3000
+& $cloudflaredPath tunnel --url http://localhost:3000 --http-host-header "localhost:3000"
