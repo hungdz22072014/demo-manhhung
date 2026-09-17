@@ -5,66 +5,107 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   // ---------------------------------------------------------------
-  // 1. KHỞI TẠO DỮ LIỆU & LOCAL STORAGE
+  // 1. HỆ THỐNG TÀI KHOẢN HỌC SINH & LƯU TRỮ ĐỘC LẬP
   // ---------------------------------------------------------------
-  const STORAGE_KEY = "vui_hoc_toan_data_v1";
+  const USERS_STORAGE_KEY = "vui_hoc_toan_users_v2";
+  const CURRENT_USER_KEY = "vui_hoc_toan_current_user_v2";
+  const LEGACY_STORAGE_KEY = "vui_hoc_toan_data_v1";
 
-  let appState = {
-    selectedGrade: 7, // 6 hoặc 7
-    activeTab: "tab-home", // Mặc định vào Màn hình chính Gamification
-    subMode: "flashcard",
-    currentFilter: "all", // all | geometry | arithmetic | sem1 | sem2
-    searchTerm: "",
-    streak: 3,
-    playerLevel: 3,
-    playerExp: 390,
-    playerMaxExp: 600,
-    playerCoins: 180,
-    playerTitle: "Hiệp Sĩ Hình Học 🛡️",
-    openedChestToday: false,
-    clearedStages: [1, 2],
-    activeStage: 3,
-    leitner: {
-      red: [],
-      yellow: [],
-      green: []
-    },
-    examHistory: [],
-    badges: {
-      "badge-starter": true,
-      "badge-triangles": false,
-      "badge-parallel": false,
-      "badge-arithmetic": false,
-      "badge-exam-master": false,
-      "badge-socratic-friend": false
-    },
-    socraticChatCount: 0
-  };
+  // Hàm tạo tiến độ học tập ban đầu cho 1 học sinh mới
+  function createDefaultState(grade = 7) {
+    const defaultLeitner = { red: [], yellow: [], green: [] };
+    // Phân bổ mẫu các định lý vào các hộp để học sinh có thể trải nghiệm ngay
+    if (typeof THEOREMS_DATA !== "undefined" && Array.isArray(THEOREMS_DATA)) {
+      THEOREMS_DATA.forEach((thm, idx) => {
+        if (idx % 3 === 0) defaultLeitner.red.push(thm.id);
+        else if (idx % 3 === 1) defaultLeitner.yellow.push(thm.id);
+        else defaultLeitner.green.push(thm.id);
+      });
+    }
 
-  // Nạp trạng thái từ LocalStorage
-  function loadState() {
+    return {
+      selectedGrade: grade,
+      activeTab: "tab-home",
+      subMode: "flashcard",
+      currentFilter: "all",
+      searchTerm: "",
+      streak: 3,
+      playerLevel: 3,
+      playerExp: 390,
+      playerMaxExp: 600,
+      playerCoins: 180,
+      playerTitle: "Hiệp Sĩ Hình Học 🛡️",
+      openedChestToday: false,
+      clearedStages: [1, 2],
+      activeStage: 3,
+      leitner: defaultLeitner,
+      examHistory: [],
+      badges: {
+        "badge-starter": true,
+        "badge-triangles": false,
+        "badge-parallel": false,
+        "badge-arithmetic": false,
+        "badge-exam-master": false,
+        "badge-socratic-friend": false
+      },
+      socraticChatCount: 0
+    };
+  }
+
+  // Danh sách tài khoản đã đăng ký trên thiết bị
+  let appUsers = {};
+  try {
+    const savedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+    if (savedUsers) {
+      appUsers = JSON.parse(savedUsers);
+    }
+  } catch (e) {
+    console.warn("Could not load users", e);
+    appUsers = {};
+  }
+
+  // Tài khoản hiện đang đăng nhập
+  let currentUsername = localStorage.getItem(CURRENT_USER_KEY) || null;
+  let currentUser = null;
+  let appState = null;
+
+  // Nạp trạng thái tài khoản
+  function loadUserAndState() {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        appState = { ...appState, ...parsed };
+      if (currentUsername && appUsers[currentUsername]) {
+        currentUser = appUsers[currentUsername];
+        appState = currentUser.state ? { ...createDefaultState(currentUser.grade || 7), ...currentUser.state } : createDefaultState(currentUser.grade || 7);
       } else {
-        // Phân bổ mặc định ban đầu: một số vào Hộp Đỏ, Vàng, Xanh để demo
-        THEOREMS_DATA.forEach((thm, idx) => {
-          if (idx % 3 === 0) appState.leitner.red.push(thm.id);
-          else if (idx % 3 === 1) appState.leitner.yellow.push(thm.id);
-          else appState.leitner.green.push(thm.id);
-        });
-        saveState();
+        currentUser = null;
+        const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (legacy) {
+          appState = { ...createDefaultState(7), ...JSON.parse(legacy) };
+        } else {
+          appState = createDefaultState(7);
+        }
       }
     } catch (e) {
-      console.warn("Could not load state, using defaults", e);
+      console.warn("Could not load user or state, using fallback", e);
+      appState = createDefaultState(7);
+    }
+  }
+
+  function saveUsers() {
+    try {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(appUsers));
+    } catch (e) {
+      console.warn("Could not save users", e);
     }
   }
 
   function saveState() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      if (currentUser && appUsers[currentUser.username]) {
+        appUsers[currentUser.username].state = appState;
+        saveUsers();
+      } else {
+        localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(appState));
+      }
     } catch (e) {
       console.warn("Could not save state", e);
     }
@@ -72,8 +113,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateDashboardStats();
   }
 
-  // Khởi chạy
-  loadState();
+  // Khởi chạy nạp dữ liệu
+  loadUserAndState();
 
   // ---------------------------------------------------------------
   // 2. ÂM THANH HIỆU ỨNG (WEB AUDIO API - ZERO DEPENDENCY)
@@ -1173,6 +1214,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const expText = document.getElementById("hud-exp-text");
     const coinsNum = document.getElementById("hud-coins-num");
     const streakNum = document.getElementById("hud-streak-num");
+    const headerStreak = document.getElementById("header-streak-count");
+    const hudAvatar = document.getElementById("hud-player-avatar");
+    const hudName = document.getElementById("hud-player-name");
+    const headerAvatar = document.getElementById("header-user-avatar");
+    const headerName = document.getElementById("header-user-name");
+    const headerLogout = document.getElementById("btn-header-logout");
+
+    // Thông tin người chơi từ currentUser hoặc mặc định
+    const currentAvatar = currentUser ? (currentUser.avatar || "🧙‍♂️") : "🧙‍♂️";
+    const currentName = currentUser ? currentUser.fullname : "Học Sinh THCS Kết Nối Tri Thức";
+    
+    let headerDisplay = "Đăng Nhập";
+    if (currentUser) {
+      const parts = currentUser.fullname.split(" ");
+      headerDisplay = parts[parts.length - 1] || currentUser.username;
+    }
+
+    if (hudAvatar) hudAvatar.textContent = currentAvatar;
+    if (hudName) hudName.textContent = currentName;
+    if (headerAvatar) headerAvatar.textContent = currentAvatar;
+    if (headerName) headerName.textContent = headerDisplay;
+    if (headerLogout) {
+      headerLogout.style.display = currentUser ? "inline-flex" : "none";
+    }
 
     if (levelBadge) levelBadge.textContent = `Lv. ${appState.playerLevel}`;
     if (playerTitle) playerTitle.textContent = appState.playerTitle;
@@ -1183,6 +1248,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (coinsNum) coinsNum.textContent = appState.playerCoins;
     if (streakNum) streakNum.textContent = `${appState.streak} ngày`;
+    if (headerStreak) headerStreak.textContent = `${appState.streak} ngày`;
   }
 
   function addExpAndCoins(exp, coins) {
@@ -1270,8 +1336,268 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Khởi chạy giao diện ban đầu
+  // ---------------------------------------------------------------
+  // 11. HỆ THỐNG XÁC THỰC: ĐĂNG NHẬP, ĐĂNG KÝ, QUẢN LÝ TÀI KHOẢN
+  // ---------------------------------------------------------------
+  function setupAuthSystem() {
+    const authModal = document.getElementById("auth-modal");
+    const btnOpenAuth = document.getElementById("btn-header-auth");
+    const btnCloseAuth = document.getElementById("btn-close-auth-modal");
+    const btnLogout = document.getElementById("btn-header-logout");
+    const tabLogin = document.getElementById("tab-btn-login");
+    const tabRegister = document.getElementById("tab-btn-register");
+    const formLogin = document.getElementById("form-login");
+    const formRegister = document.getElementById("form-register");
+    const linkSwitchRegister = document.getElementById("link-switch-to-register");
+    const linkSwitchLogin = document.getElementById("link-switch-to-login");
+    const msgBox = document.getElementById("auth-msg-box");
+    const btnGuest = document.getElementById("btn-guest-login");
+    const avatarOpts = document.querySelectorAll(".avatar-opt");
+
+    let selectedAvatar = "🧙‍♂️";
+
+    function showMsg(text, type = "error") {
+      if (!msgBox) return;
+      msgBox.className = `auth-msg-box ${type}`;
+      msgBox.innerHTML = `<span>${type === "error" ? "⚠️" : "✅"}</span> <span>${text}</span>`;
+      msgBox.style.display = "flex";
+    }
+
+    function hideMsg() {
+      if (msgBox) {
+        msgBox.style.display = "none";
+        msgBox.textContent = "";
+      }
+    }
+
+    function openAuthModal(defaultTab = "login") {
+      hideMsg();
+      if (defaultTab === "register") {
+        setAuthTab("register");
+      } else {
+        setAuthTab("login");
+      }
+      if (authModal) authModal.style.display = "flex";
+    }
+
+    function closeAuthModal() {
+      if (authModal) authModal.style.display = "none";
+      hideMsg();
+    }
+
+    function setAuthTab(tab) {
+      hideMsg();
+      if (tab === "register") {
+        tabLogin?.classList.remove("active");
+        tabRegister?.classList.add("active");
+        formLogin?.classList.remove("active");
+        formRegister?.classList.add("active");
+      } else {
+        tabRegister?.classList.remove("active");
+        tabLogin?.classList.add("active");
+        formRegister?.classList.remove("active");
+        formLogin?.classList.add("active");
+      }
+    }
+
+    // Chọn Avatar linh vật
+    avatarOpts.forEach(btn => {
+      btn.addEventListener("click", () => {
+        avatarOpts.forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        selectedAvatar = btn.dataset.avatar || "🧙‍♂️";
+      });
+    });
+
+    // Nút Header: Mở modal hoặc thông báo tài khoản
+    btnOpenAuth?.addEventListener("click", () => {
+      if (currentUser) {
+        const conf = confirm(`👤 Tài khoản đang hoạt động: ${currentUser.fullname} (@${currentUser.username})\nCấp độ: Lv.${appState.playerLevel} – Điểm Xu: ${appState.playerCoins}🪙\n\nEm có muốn đăng xuất để chuyển sang tài khoản khác không?`);
+        if (conf) {
+          doLogout();
+        }
+      } else {
+        openAuthModal("login");
+      }
+    });
+
+    btnCloseAuth?.addEventListener("click", closeAuthModal);
+    authModal?.addEventListener("click", (e) => {
+      if (e.target === authModal) closeAuthModal();
+    });
+
+    tabLogin?.addEventListener("click", () => setAuthTab("login"));
+    tabRegister?.addEventListener("click", () => setAuthTab("register"));
+    linkSwitchRegister?.addEventListener("click", (e) => {
+      e.preventDefault();
+      setAuthTab("register");
+    });
+    linkSwitchLogin?.addEventListener("click", (e) => {
+      e.preventDefault();
+      setAuthTab("login");
+    });
+
+    // Chế độ Khách (Guest)
+    btnGuest?.addEventListener("click", () => {
+      currentUser = {
+        username: "khach_" + Math.floor(100 + Math.random() * 900),
+        fullname: "Khách Học Thử",
+        grade: appState.selectedGrade || 7,
+        avatar: "🎒",
+        isGuest: true
+      };
+      playCelebration();
+      showMsg("🎒 Chào mừng em đến với chế độ Khách Học Thử!", "success");
+      setTimeout(() => {
+        closeAuthModal();
+        renderPlayerHUD();
+        refreshCurrentView();
+      }, 700);
+    });
+
+    // Xử lý Form Đăng Ký
+    formRegister?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fullname = document.getElementById("reg-fullname")?.value.trim();
+      const rawUser = document.getElementById("reg-username")?.value.trim().toLowerCase();
+      const pass = document.getElementById("reg-password")?.value;
+      const repass = document.getElementById("reg-repassword")?.value;
+      const gradeRadio = document.querySelector('input[name="reg-grade"]:checked');
+      const grade = gradeRadio ? parseInt(gradeRadio.value) : 7;
+
+      if (!fullname || !rawUser || !pass) {
+        showMsg("Vui lòng điền đầy đủ các thông tin!");
+        return;
+      }
+
+      const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+      if (!usernameRegex.test(rawUser)) {
+        showMsg("Tên đăng nhập từ 3-20 ký tự, viết liền không dấu, không có khoảng trắng!");
+        return;
+      }
+
+      if (pass.length < 4) {
+        showMsg("Mật khẩu cần tối thiểu 4 ký tự!");
+        return;
+      }
+
+      if (pass !== repass) {
+        showMsg("Mật khẩu nhập lại không khớp!");
+        return;
+      }
+
+      if (appUsers[rawUser]) {
+        showMsg("Tên đăng nhập này đã có bạn dùng rồi! Em hãy chọn tên khác nhé.");
+        return;
+      }
+
+      // Tạo tài khoản học sinh mới
+      const newUser = {
+        username: rawUser,
+        fullname: fullname,
+        password: pass,
+        grade: grade,
+        avatar: selectedAvatar,
+        createdAt: new Date().toISOString(),
+        state: createDefaultState(grade)
+      };
+
+      appUsers[rawUser] = newUser;
+      currentUser = newUser;
+      currentUsername = rawUser;
+      localStorage.setItem(CURRENT_USER_KEY, rawUser);
+      saveUsers();
+
+      appState = newUser.state;
+      appState.selectedGrade = grade;
+
+      // Cập nhật nút chọn khối lớp trên Header
+      gradeBtns.forEach(b => {
+        if (parseInt(b.dataset.grade) === grade) b.classList.add("active");
+        else b.classList.remove("active");
+      });
+
+      playCelebration();
+      showMsg(`🎉 Chúc mừng ${fullname}! Tài khoản đã tạo thành công!`, "success");
+
+      setTimeout(() => {
+        closeAuthModal();
+        renderPlayerHUD();
+        refreshCurrentView();
+        updateLeitnerCounts();
+        updateDashboardStats();
+        switchTab("tab-home");
+      }, 900);
+    });
+
+    // Xử lý Form Đăng Nhập
+    formLogin?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const rawUser = document.getElementById("login-username")?.value.trim().toLowerCase();
+      const pass = document.getElementById("login-password")?.value;
+
+      if (!rawUser || !pass) {
+        showMsg("Vui lòng nhập tên đăng nhập và mật khẩu!");
+        return;
+      }
+
+      const foundUser = appUsers[rawUser];
+      if (!foundUser || foundUser.password !== pass) {
+        showMsg("Tên đăng nhập hoặc mật khẩu chưa chính xác! Em hãy thử lại nhé.");
+        return;
+      }
+
+      // Đăng nhập thành công
+      currentUser = foundUser;
+      currentUsername = rawUser;
+      localStorage.setItem(CURRENT_USER_KEY, rawUser);
+
+      appState = foundUser.state ? { ...createDefaultState(foundUser.grade || 7), ...foundUser.state } : createDefaultState(foundUser.grade || 7);
+
+      // Đồng bộ nút chọn khối lớp
+      gradeBtns.forEach(b => {
+        if (parseInt(b.dataset.grade) === appState.selectedGrade) b.classList.add("active");
+        else b.classList.remove("active");
+      });
+
+      playCelebration();
+      showMsg(`🚀 Chào mừng ${foundUser.fullname} quay trở lại!`, "success");
+
+      setTimeout(() => {
+        closeAuthModal();
+        renderPlayerHUD();
+        refreshCurrentView();
+        updateLeitnerCounts();
+        updateDashboardStats();
+      }, 800);
+    });
+
+    // Hàm Đăng Xuất
+    function doLogout() {
+      localStorage.removeItem(CURRENT_USER_KEY);
+      currentUser = null;
+      currentUsername = null;
+      renderPlayerHUD();
+      alert("👋 Em đã đăng xuất an toàn! Dữ liệu học tập đã được lưu.");
+      openAuthModal("login");
+    }
+
+    btnLogout?.addEventListener("click", () => {
+      const conf = confirm("Em có muốn đăng xuất khỏi tài khoản không?");
+      if (conf) doLogout();
+    });
+
+    // Tự động gợi ý tạo tài khoản cho bạn mới khi truy cập qua link lần đầu
+    if (!currentUser && Object.keys(appUsers).length === 0) {
+      setTimeout(() => {
+        openAuthModal("register");
+      }, 1000);
+    }
+  }
+
+  // Khởi chạy toàn bộ hệ thống
   setupGamification();
+  setupAuthSystem();
   refreshCurrentView();
   updateLeitnerCounts();
   updateDashboardStats();

@@ -52,6 +52,15 @@
           <span class="status-dot"></span>
           <span class="status-label">AI Sẵn Sàng</span>
         </div>
+
+        <!-- User Profile & Auth Button -->
+        <div class="user-auth-widget" id="header-user-widget">
+          <button class="btn-open-auth" id="btn-header-auth" title="Quản lý tài khoản">
+            <span class="auth-icon" id="header-user-avatar">👤</span>
+            <span class="auth-name" id="header-user-name">Đăng Nhập</span>
+          </button>
+          <button class="btn-logout" id="btn-header-logout" title="Đăng xuất khỏi tài khoản" style="display: none;">🚪</button>
+        </div>
       </div>
     </div>
 
@@ -94,12 +103,12 @@
       <div class="player-hud-card">
         <div class="player-profile-left">
           <div class="player-avatar-box">
-            <span class="player-avatar-emoji">🧙‍♂️</span>
+            <span class="player-avatar-emoji" id="hud-player-avatar">🧙‍♂️</span>
             <span class="player-level-badge" id="hud-level-badge">Lv. 3</span>
           </div>
           <div class="player-identity">
             <div class="player-title" id="hud-player-title">Hiệp Sĩ Hình Học 🛡️</div>
-            <div class="player-name">Học Sinh THCS Kết Nối Tri Thức</div>
+            <div class="player-name" id="hud-player-name">Học Sinh THCS Kết Nối Tri Thức</div>
             <div class="hud-exp-container">
               <div class="hud-exp-bar">
                 <div class="hud-exp-fill" id="hud-exp-fill" style="width: 65%;"></div>
@@ -1003,6 +1012,133 @@
       <div class="modal-body" id="modal-thm-body">
         <!-- Rendered dynamically -->
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: Đăng Nhập & Tạo Tài Khoản Học Sinh (Authentication) -->
+  <div class="modal-backdrop" id="auth-modal" style="display: none;">
+    <div class="modal-card auth-modal-card">
+      <div class="auth-modal-header">
+        <div class="auth-brand-logo">🎒</div>
+        <h3 class="auth-modal-title">Tài Khoản Học Sinh Vui Học Toán</h3>
+        <p class="auth-modal-subtitle">Tạo tài khoản để lưu lại điểm số, huy hiệu và tiến độ học tập của riêng em!</p>
+        <button class="modal-close" id="btn-close-auth-modal">✕</button>
+      </div>
+
+      <!-- Auth Tabs Toggle -->
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tab-btn-login">Đăng Nhập</button>
+        <button class="auth-tab-btn" id="tab-btn-register">Tạo Tài Khoản Mới</button>
+      </div>
+
+      <div class="auth-msg-box" id="auth-msg-box" style="display: none;"></div>
+
+      <!-- FORM 1: ĐĂNG NHẬP -->
+      <form id="form-login" class="auth-form active">
+        <div class="form-group">
+          <label for="login-username">Tên đăng nhập:</label>
+          <div class="input-icon-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="login-username" placeholder="Nhập tên đăng nhập của em..." required autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">Mật khẩu:</label>
+          <div class="input-icon-wrapper">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="login-password" placeholder="Nhập mật khẩu..." required autocomplete="current-password">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg btn-auth-submit">
+            <span>Đăng Nhập Vào Học Ngay 🚀</span>
+          </button>
+          <button type="button" class="btn btn-outline btn-guest-login" id="btn-guest-login">
+            <span>🎒 Dùng thử nhanh (Chế độ Khách)</span>
+          </button>
+        </div>
+
+        <div class="auth-switch-prompt">
+          Chưa có tài khoản? <a href="#" id="link-switch-to-register">Bấm vào đây để tạo tài khoản miễn phí!</a>
+        </div>
+      </form>
+
+      <!-- FORM 2: TẠO TÀI KHOẢN MỚI -->
+      <form id="form-register" class="auth-form">
+        <div class="form-group">
+          <label for="reg-fullname">Họ và tên của em:</label>
+          <div class="input-icon-wrapper">
+            <span class="input-icon">📝</span>
+            <input type="text" id="reg-fullname" placeholder="Ví dụ: Nguyễn Mạnh Hùng" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="reg-username">Tên đăng nhập (viết liền không dấu):</label>
+          <div class="input-icon-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="reg-username" placeholder="Ví dụ: manhhung2014" required autocomplete="username">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="reg-password">Mật khẩu:</label>
+            <div class="input-icon-wrapper">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="reg-password" placeholder="Tối thiểu 4 ký tự..." required autocomplete="new-password">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="reg-repassword">Nhập lại mật khẩu:</label>
+            <div class="input-icon-wrapper">
+              <span class="input-icon">🔐</span>
+              <input type="password" id="reg-repassword" placeholder="Nhập lại mật khẩu..." required autocomplete="new-password">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Em đang học khối lớp nào?</label>
+          <div class="grade-radio-group">
+            <label class="grade-radio-label">
+              <input type="radio" name="reg-grade" value="6">
+              <span>Toán Lớp 6</span>
+            </label>
+            <label class="grade-radio-label">
+              <input type="radio" name="reg-grade" value="7" checked>
+              <span>Toán Lớp 7</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Chọn linh vật Avatar đại diện cho em:</label>
+          <div class="avatar-selection-grid" id="avatar-selection-grid">
+            <button type="button" class="avatar-opt selected" data-avatar="🧙‍♂️">🧙‍♂️</button>
+            <button type="button" class="avatar-opt" data-avatar="🛡️">🛡️</button>
+            <button type="button" class="avatar-opt" data-avatar="🚀">🚀</button>
+            <button type="button" class="avatar-opt" data-avatar="🦉">🦉</button>
+            <button type="button" class="avatar-opt" data-avatar="⚡">⚡</button>
+            <button type="button" class="avatar-opt" data-avatar="🐱">🐱</button>
+            <button type="button" class="avatar-opt" data-avatar="👑">👑</button>
+            <button type="button" class="avatar-opt" data-avatar="🧝‍♀️">🧝‍♀️</button>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-lg btn-auth-submit">
+            <span>Tạo Tài Khoản & Bắt Đầu Học ✨</span>
+          </button>
+        </div>
+
+        <div class="auth-switch-prompt">
+          Đã có tài khoản? <a href="#" id="link-switch-to-login">Đăng nhập tại đây</a>
+        </div>
+      </form>
+
     </div>
   </div>
 
