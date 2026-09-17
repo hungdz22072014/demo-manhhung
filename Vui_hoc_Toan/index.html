@@ -58,7 +58,11 @@
     <!-- Main Navigation Tabs -->
     <nav class="main-nav">
       <div class="nav-container">
-        <button class="nav-tab active" data-tab="tab-theorems">
+        <button class="nav-tab active" data-tab="tab-home">
+          <span class="tab-icon">🏰</span>
+          <span class="tab-title">Đại Sảnh & Bản Đồ Ải</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-theorems">
           <span class="tab-icon">🧠</span>
           <span class="tab-title">Trạm Định Lý & Flashcard</span>
         </button>
@@ -82,9 +86,314 @@
   <main class="app-main">
 
     <!-- ========================================================= -->
+    <!-- MÀN HÌNH CHÍNH: ĐẠI SẢNH GAMIFICATION & BẢN ĐỒ HÀNH TRÌNH -->
+    <!-- ========================================================= -->
+    <section id="tab-home" class="tab-section active">
+      
+      <!-- 1. THANH THÔNG TIN NGƯỜI CHƠI (PLAYER RPG HUD) -->
+      <div class="player-hud-card">
+        <div class="player-profile-left">
+          <div class="player-avatar-box">
+            <span class="player-avatar-emoji">🧙‍♂️</span>
+            <span class="player-level-badge" id="hud-level-badge">Lv. 3</span>
+          </div>
+          <div class="player-identity">
+            <div class="player-title" id="hud-player-title">Hiệp Sĩ Hình Học 🛡️</div>
+            <div class="player-name">Học Sinh THCS Kết Nối Tri Thức</div>
+            <div class="hud-exp-container">
+              <div class="hud-exp-bar">
+                <div class="hud-exp-fill" id="hud-exp-fill" style="width: 65%;"></div>
+              </div>
+              <span class="hud-exp-text" id="hud-exp-text">390 / 600 EXP</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="player-stats-right">
+          <div class="hud-stat-box coins-box">
+            <span class="hud-stat-icon">🪙</span>
+            <div>
+              <span class="hud-stat-num" id="hud-coins-num">180</span>
+              <span class="hud-stat-label">Xu Toán Học</span>
+            </div>
+          </div>
+
+          <div class="hud-stat-box streak-box">
+            <span class="hud-stat-icon">🔥</span>
+            <div>
+              <span class="hud-stat-num" id="hud-streak-num">3 ngày</span>
+              <span class="hud-stat-label">Chuỗi Học</span>
+            </div>
+          </div>
+
+          <button class="btn-mystery-chest" id="btn-open-chest" title="Bấm để nhận quà bí ẩn hôm nay!">
+            <span class="chest-icon">🎁</span>
+            <span class="chest-text">Rương Mỗi Ngày</span>
+            <span class="chest-badge-dot"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. BẢNG NHIỆM VỤ HẰNG NGÀY & ĐẤU TRƯỜNG PHIÊU LƯU (GRID 2 CỘT) -->
+      <div class="home-gamify-grid">
+        
+        <!-- CỘT TRÁI: BẢN ĐỒ HÀNH TRÌNH CHINH PHỤC ẢI TOÁN HỌC -->
+        <div class="quest-map-card">
+          <div class="quest-map-header">
+            <div>
+              <span class="quest-badge">BẢN ĐỒ PHIÊU LƯU TOÁN 6 - 7</span>
+              <h2 class="quest-map-title">Hành Trình Chinh Phục Các Ải Toán Học</h2>
+              <p class="quest-map-desc">Vượt qua từng ải để tích lũy EXP, mở khóa danh hiệu và thách đấu Trùm Cuối!</p>
+            </div>
+            <div class="quest-progress-tag" id="map-cleared-tag">Đã qua: 3/7 Ải</div>
+          </div>
+
+          <!-- DÒNG SÔNG HÀNH TRÌNH CÁC ẢI TOÁN HỌC -->
+          <div class="quest-stages-river" id="quest-stages-river">
+            <!-- Stage 1 -->
+            <div class="stage-node completed" data-stage="1" data-thm-target="toan6-hk1-chia-het-2-5">
+              <div class="stage-milestone">1</div>
+              <div class="stage-content">
+                <div class="stage-header-row">
+                  <span class="stage-realm">ẢI 1 • SỐ HỌC</span>
+                  <span class="stage-stars">⭐⭐⭐</span>
+                </div>
+                <h4 class="stage-name">Thung Lũng Chia Hết & Số Nguyên</h4>
+                <p class="stage-summary">Dấu hiệu chia hết cho 2, 5, 3, 9 & Quy tắc bỏ dấu ngoặc</p>
+                <div class="stage-footer-row">
+                  <span class="stage-status-text">Đã Hoàn Thành ✅</span>
+                  <button class="btn-stage-action" data-stage="1">Ôn lại ↺</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 2 -->
+            <div class="stage-node completed" data-stage="2" data-thm-target="toan6-hk1-hinh-vuong-tam-giac-deu">
+              <div class="stage-milestone">2</div>
+              <div class="stage-content">
+                <div class="stage-header-row">
+                  <span class="stage-realm">ẢI 2 • HÌNH HỌC TRỰC QUAN</span>
+                  <span class="stage-stars">⭐⭐⭐</span>
+                </div>
+                <h4 class="stage-name">Khu Rừng Đa Giác Đều & Hình Thoi</h4>
+                <p class="stage-summary">Tính chất cạnh, góc, đường chéo hình vuông, tam giác đều, hình thoi</p>
+                <div class="stage-footer-row">
+                  <span class="stage-status-text">Đã Hoàn Thành ✅</span>
+                  <button class="btn-stage-action" data-stage="2">Ôn lại ↺</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 3 -->
+            <div class="stage-node active-stage" data-stage="3" data-thm-target="toan7-hk1-goc-doi-dinh">
+              <div class="stage-milestone">3</div>
+              <div class="stage-content">
+                <div class="stage-header-row">
+                  <span class="stage-realm">ẢI 3 • GÓC & ĐƯỜNG THẲNG</span>
+                  <span class="stage-stars">⭐⭐☆</span>
+                </div>
+                <h4 class="stage-name">Vực Sâu Đường Thẳng Song Song</h4>
+                <p class="stage-summary">Định lý hai góc đối đỉnh, so le trong, đồng vị và Tiên đề Euclid</p>
+                <div class="stage-footer-row">
+                  <span class="stage-status-text active">Đang Khiêu Chiến ⚔️</span>
+                  <button class="btn-stage-action active" data-stage="3">Chinh phục ➔</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 4 -->
+            <div class="stage-node next-unlock" data-stage="4" data-thm-target="toan7-hk1-tong-ba-goc-tam-giac">
+              <div class="stage-milestone">4</div>
+              <div class="stage-content">
+                <div class="stage-header-row">
+                  <span class="stage-realm">ẢI 4 • ĐỊNH LÝ HÌNH HỌC</span>
+                  <span class="stage-stars">☆☆☆</span>
+                </div>
+                <h4 class="stage-name">Đỉnh Núi Tam Giác Huyền Bí</h4>
+                <p class="stage-summary">Tổng 3 góc tam giác & 3 trường hợp bằng nhau (c-c-c, c-g-c, g-c-g)</p>
+                <div class="stage-footer-row">
+                  <span class="stage-status-text">Sẵn sàng mở 🔓</span>
+                  <button class="btn-stage-action" data-stage="4">Vào ải ⚔️</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 5 -->
+            <div class="stage-node locked" data-stage="5" data-thm-target="toan7-hk2-ti-le-thuc-day-ti-so">
+              <div class="stage-milestone">5</div>
+              <div class="stage-content">
+                <div class="stage-header-row">
+                  <span class="stage-realm">ẢI 5 • ĐẠI SỐ 7</span>
+                  <span class="stage-stars">☆☆☆</span>
+                </div>
+                <h4 class="stage-name">Vương Quốc Tỉ Lệ Thức & Đại Lượng</h4>
+                <p class="stage-summary">Tích ngoại tỉ, tính chất dãy tỉ số bằng nhau, tỉ lệ thuận nghịch</p>
+                <div class="stage-footer-row">
+                  <span class="stage-status-text locked">Khóa (Cần vượt Ải 4) 🔒</span>
+                  <button class="btn-stage-action" data-stage="5" disabled>Chưa mở</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 6 -->
+            <div class="stage-node locked" data-stage="6" data-thm-target="toan7-hk2-su-dong-quy-cac-duong">
+              <div class="stage-milestone">6</div>
+              <div class="stage-content">
+                <div class="stage-header-row">
+                  <span class="stage-realm">ẢI 6 • QUAN HỆ HÌNH HỌC</span>
+                  <span class="stage-stars">☆☆☆</span>
+                </div>
+                <h4 class="stage-name">Đền Thờ Các Đường Đồng Quy</h4>
+                <p class="stage-summary">Trọng tâm 2/3, Trực tâm, Tâm nội tiếp, Bất đẳng thức tam giác</p>
+                <div class="stage-footer-row">
+                  <span class="stage-status-text locked">Khóa 🔒</span>
+                  <button class="btn-stage-action" data-stage="6" disabled>Chưa mở</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- BOSS STAGE: ĐẤU TRƯỜNG THI CỬ -->
+            <div class="stage-node boss-stage" data-stage="boss">
+              <div class="stage-milestone boss">👑</div>
+              <div class="stage-content">
+                <div class="stage-header-row">
+                  <span class="stage-realm boss">ẢI TRÙM CUỐI • ĐẤU TRƯỜNG</span>
+                  <span class="stage-stars">🏆🏆🏆</span>
+                </div>
+                <h4 class="stage-name">Đại Thử Thách: Phòng Luyện Thi GK - CK</h4>
+                <p class="stage-summary">Chinh phục bài thi bấm giờ tổng hợp Toán 6 - 7 để đạt Danh hiệu Kiện Tướng!</p>
+                <div class="stage-footer-row">
+                  <span class="stage-status-text boss">Đấu trường mở 24/7 ⚔️</span>
+                  <button class="btn-stage-action boss" id="btn-home-go-exam">Khiêu chiến Trùm ➔</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CỘT PHẢI: NHIỆM VỤ HÀNG NGÀY & CỔNG DỊCH CHUYỂN -->
+        <div class="home-side-col">
+          
+          <!-- BẢNG NHIỆM VỤ HÀNG NGÀY -->
+          <div class="daily-quests-card">
+            <div class="quests-card-header">
+              <div class="quests-title-box">
+                <span class="quests-icon">📜</span>
+                <div>
+                  <h3 class="quests-title">Nhiệm Vụ Hôm Nay</h3>
+                  <span class="quests-sub">Làm mới sau mỗi 24h</span>
+                </div>
+              </div>
+              <span class="quests-reward-pill">+125 EXP</span>
+            </div>
+
+            <div class="quests-list">
+              <!-- Quest 1 -->
+              <div class="quest-item" id="quest-1">
+                <div class="quest-status-check">✅</div>
+                <div class="quest-info">
+                  <div class="quest-name">Lật ôn 5 Flashcard Định lý</div>
+                  <div class="quest-meter">
+                    <div class="quest-meter-fill" style="width: 100%;"></div>
+                  </div>
+                  <div class="quest-meta">
+                    <span>5 / 5 thẻ</span>
+                    <span class="quest-reward">+20 EXP • 10 🪙</span>
+                  </div>
+                </div>
+                <button class="btn-claim-quest claimed" disabled>Đã nhận</button>
+              </div>
+
+              <!-- Quest 2 -->
+              <div class="quest-item" id="quest-2">
+                <div class="quest-status-check pending">⏳</div>
+                <div class="quest-info">
+                  <div class="quest-name">Vượt qua 1 Thử thách Điền khuyết</div>
+                  <div class="quest-meter">
+                    <div class="quest-meter-fill" style="width: 0%;"></div>
+                  </div>
+                  <div class="quest-meta">
+                    <span>0 / 1 bài</span>
+                    <span class="quest-reward">+30 EXP • 15 🪙</span>
+                  </div>
+                </div>
+                <button class="btn-claim-quest active" id="btn-quest-go-fillblank">Làm ngay</button>
+              </div>
+
+              <!-- Quest 3 -->
+              <div class="quest-item" id="quest-3">
+                <div class="quest-status-check pending">⏳</div>
+                <div class="quest-info">
+                  <div class="quest-name">Đặt 1 câu hỏi cùng Thầy AI Socratic</div>
+                  <div class="quest-meter">
+                    <div class="quest-meter-fill" style="width: 50%;"></div>
+                  </div>
+                  <div class="quest-meta">
+                    <span>0 / 1 câu</span>
+                    <span class="quest-reward">+25 EXP • 10 🪙</span>
+                  </div>
+                </div>
+                <button class="btn-claim-quest active" id="btn-quest-go-socratic">Hỏi AI</button>
+              </div>
+
+              <!-- Quest 4 -->
+              <div class="quest-item" id="quest-4">
+                <div class="quest-status-check pending">⏳</div>
+                <div class="quest-info">
+                  <div class="quest-name">Luyện 1 Đề thi thử đạt từ 8 điểm</div>
+                  <div class="quest-meter">
+                    <div class="quest-meter-fill" style="width: 0%;"></div>
+                  </div>
+                  <div class="quest-meta">
+                    <span>0 / 1 đề</span>
+                    <span class="quest-reward">+50 EXP • 30 🪙</span>
+                  </div>
+                </div>
+                <button class="btn-claim-quest active" id="btn-quest-go-exam">Thi thử</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CỔNG DỊCH CHUYỂN NHANH (FAST TRAVEL PORTALS) -->
+          <div class="fast-travel-card">
+            <h3 class="fast-travel-title">🌀 Cổng Dịch Chuyển Nhanh</h3>
+            <p class="fast-travel-desc">Đi thẳng tới các phòng học chuyên sâu:</p>
+
+            <div class="portals-grid">
+              <div class="portal-box portal-theorems" id="portal-theorems">
+                <div class="portal-icon">🧠</div>
+                <div class="portal-name">Trạm Định Lý</div>
+                <div class="portal-tag">Flashcard & Leitner</div>
+              </div>
+
+              <div class="portal-box portal-exams" id="portal-exams">
+                <div class="portal-icon">📝</div>
+                <div class="portal-name">Phòng Luyện Thi</div>
+                <div class="portal-tag">Bấm giờ & Đề AI</div>
+              </div>
+
+              <div class="portal-box portal-socratic" id="portal-socratic">
+                <div class="portal-icon">🦉</div>
+                <div class="portal-name">Gia Sư Socratic</div>
+                <div class="portal-tag">Hỏi bài không giải hộ</div>
+              </div>
+
+              <div class="portal-box portal-dashboard" id="portal-dashboard">
+                <div class="portal-icon">📊</div>
+                <div class="portal-name">Đền Thờ Tiến Độ</div>
+                <div class="portal-tag">Bản đồ tri thức & Huy hiệu</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
     <!-- PHÂN HỆ 1: TRẠM THỬ THÁCH & GHI NHỚ ĐỊNH LÝ -->
     <!-- ========================================================= -->
-    <section id="tab-theorems" class="tab-section active">
+    <section id="tab-theorems" class="tab-section">
       <!-- Theorem Filters & Search Bar -->
       <div class="section-toolbar">
         <div class="search-box">

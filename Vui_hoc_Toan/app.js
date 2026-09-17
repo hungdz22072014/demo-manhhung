@@ -11,11 +11,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let appState = {
     selectedGrade: 7, // 6 hoặc 7
-    activeTab: "tab-theorems",
+    activeTab: "tab-home", // Mặc định vào Màn hình chính Gamification
     subMode: "flashcard",
     currentFilter: "all", // all | geometry | arithmetic | sem1 | sem2
     searchTerm: "",
     streak: 3,
+    playerLevel: 3,
+    playerExp: 390,
+    playerMaxExp: 600,
+    playerCoins: 180,
+    playerTitle: "Hiệp Sĩ Hình Học 🛡️",
+    openedChestToday: false,
+    clearedStages: [1, 2],
+    activeStage: 3,
     leitner: {
       red: [],
       yellow: [],
@@ -1137,7 +1145,133 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // ---------------------------------------------------------------
+  // 10. PHÂN HỆ GAMIFICATION: ĐẠI SẢNH & BẢN ĐỒ HÀNH TRÌNH
+  // ---------------------------------------------------------------
+  function switchTab(tabId) {
+    navTabs.forEach(t => {
+      if (t.dataset.tab === tabId) t.classList.add("active");
+      else t.classList.remove("active");
+    });
+    document.querySelectorAll(".tab-section").forEach(sec => sec.classList.remove("active"));
+    const target = document.getElementById(tabId);
+    if (target) target.classList.add("active");
+    appState.activeTab = tabId;
+
+    if (tabId === "tab-dashboard") {
+      renderKnowledgeMap();
+      updateDashboardStats();
+    }
+    renderAllMath();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function renderPlayerHUD() {
+    const levelBadge = document.getElementById("hud-level-badge");
+    const playerTitle = document.getElementById("hud-player-title");
+    const expFill = document.getElementById("hud-exp-fill");
+    const expText = document.getElementById("hud-exp-text");
+    const coinsNum = document.getElementById("hud-coins-num");
+    const streakNum = document.getElementById("hud-streak-num");
+
+    if (levelBadge) levelBadge.textContent = `Lv. ${appState.playerLevel}`;
+    if (playerTitle) playerTitle.textContent = appState.playerTitle;
+    if (expFill && expText) {
+      const pct = Math.min(100, Math.round((appState.playerExp / appState.playerMaxExp) * 100));
+      expFill.style.width = `${pct}%`;
+      expText.textContent = `${appState.playerExp} / ${appState.playerMaxExp} EXP`;
+    }
+    if (coinsNum) coinsNum.textContent = appState.playerCoins;
+    if (streakNum) streakNum.textContent = `${appState.streak} ngày`;
+  }
+
+  function addExpAndCoins(exp, coins) {
+    appState.playerExp += exp;
+    appState.playerCoins += coins;
+
+    if (appState.playerExp >= appState.playerMaxExp) {
+      appState.playerLevel++;
+      appState.playerExp -= appState.playerMaxExp;
+      appState.playerMaxExp = Math.round(appState.playerMaxExp * 1.3);
+
+      const titles = [
+        "Tập Sự Toán Học 🌱",
+        "Chiến Binh Số Học ⚔️",
+        "Hiệp Sĩ Hình Học 🛡️",
+        "Bậc Thầy Góc & Cạnh 📐",
+        "Đại Sư Tam Giác 🔺",
+        "Huyền Thoại Kết Nối Tri Thức 👑"
+      ];
+      appState.playerTitle = titles[Math.min(titles.length - 1, appState.playerLevel - 1)];
+
+      alert(`🎉 CHÚC MỪNG BẠN ĐÃ LÊN CẤP ${appState.playerLevel}!\nDanh hiệu mới: ${appState.playerTitle}`);
+      playCelebration();
+    }
+    saveState();
+    renderPlayerHUD();
+  }
+
+  function setupGamification() {
+    renderPlayerHUD();
+
+    // Rương bí ẩn hàng ngày
+    const btnChest = document.getElementById("btn-open-chest");
+    if (btnChest) {
+      btnChest.addEventListener("click", () => {
+        if (appState.openedChestToday) {
+          alert("🎁 Em đã mở rương nhận thưởng của ngày hôm nay rồi! Hãy quay lại vào ngày mai nhé!");
+          return;
+        }
+        appState.openedChestToday = true;
+        addExpAndCoins(50, 30);
+        playCelebration();
+        alert("🎉 Chúc mừng em đã mở Rương Bí Ẩn nhận được: +50 EXP và +30 Xu Toán Học! 🪙");
+        const dot = btnChest.querySelector(".chest-badge-dot");
+        if (dot) dot.style.display = "none";
+      });
+    }
+
+    // Cổng dịch chuyển nhanh
+    document.getElementById("portal-theorems")?.addEventListener("click", () => switchTab("tab-theorems"));
+    document.getElementById("portal-exams")?.addEventListener("click", () => switchTab("tab-exams"));
+    document.getElementById("portal-socratic")?.addEventListener("click", () => switchTab("tab-socratic"));
+    document.getElementById("portal-dashboard")?.addEventListener("click", () => switchTab("tab-dashboard"));
+
+    // Nút điều hướng từ bảng nhiệm vụ
+    document.getElementById("btn-quest-go-fillblank")?.addEventListener("click", () => {
+      switchTab("tab-theorems");
+      document.querySelector('[data-submode="fillblank"]')?.click();
+    });
+    document.getElementById("btn-quest-go-socratic")?.addEventListener("click", () => switchTab("tab-socratic"));
+    document.getElementById("btn-quest-go-exam")?.addEventListener("click", () => switchTab("tab-exams"));
+
+    // Nút trùm cuối trên bản đồ
+    document.getElementById("btn-home-go-exam")?.addEventListener("click", () => switchTab("tab-exams"));
+
+    // Nút hành động trên từng ải
+    document.querySelectorAll(".btn-stage-action").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const stage = btn.dataset.stage;
+        if (stage === "boss") {
+          switchTab("tab-exams");
+          return;
+        }
+        const stageNode = btn.closest(".stage-node");
+        const thmTarget = stageNode?.dataset.thmTarget;
+        if (thmTarget) {
+          const thm = THEOREMS_DATA.find(t => t.id === thmTarget);
+          if (thm) {
+            openTheoremModal(thm);
+            return;
+          }
+        }
+        switchTab("tab-theorems");
+      });
+    });
+  }
+
   // Khởi chạy giao diện ban đầu
+  setupGamification();
   refreshCurrentView();
   updateLeitnerCounts();
   updateDashboardStats();
