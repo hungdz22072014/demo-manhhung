@@ -9,17 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------------------------------------------------
   const USERS_STORAGE_KEY = "vui_hoc_toan_users_v2";
   const CURRENT_USER_KEY = "vui_hoc_toan_current_user_v2";
-  const LEGACY_STORAGE_KEY = "vui_hoc_toan_data_v1";
 
-  // Hàm tạo tiến độ học tập ban đầu cho 1 học sinh mới
+  // Hàm tạo tiến độ học tập ban đầu sạch sẽ (Level 1, 0 EXP, xuất phát từ đầu)
   function createDefaultState(grade = 7) {
     const defaultLeitner = { red: [], yellow: [], green: [] };
-    // Phân bổ mẫu các định lý vào các hộp để học sinh có thể trải nghiệm ngay
+    // Mặc định tất cả định lý của khối lớp nằm ở Hộp Đỏ để học sinh học từ đầu
     if (typeof THEOREMS_DATA !== "undefined" && Array.isArray(THEOREMS_DATA)) {
-      THEOREMS_DATA.forEach((thm, idx) => {
-        if (idx % 3 === 0) defaultLeitner.red.push(thm.id);
-        else if (idx % 3 === 1) defaultLeitner.yellow.push(thm.id);
-        else defaultLeitner.green.push(thm.id);
+      THEOREMS_DATA.forEach((thm) => {
+        if (thm.grade === grade) {
+          defaultLeitner.red.push(thm.id);
+        }
       });
     }
 
@@ -29,15 +28,15 @@ document.addEventListener("DOMContentLoaded", () => {
       subMode: "flashcard",
       currentFilter: "all",
       searchTerm: "",
-      streak: 3,
-      playerLevel: 3,
-      playerExp: 390,
-      playerMaxExp: 600,
-      playerCoins: 180,
-      playerTitle: "Hiệp Sĩ Hình Học 🛡️",
+      streak: 1,
+      playerLevel: 1,
+      playerExp: 0,
+      playerMaxExp: 100,
+      playerCoins: 0,
+      playerTitle: "Tập Sự Toán Học 🌱",
       openedChestToday: false,
-      clearedStages: [1, 2],
-      activeStage: 3,
+      clearedStages: [],
+      activeStage: 1,
       leitner: defaultLeitner,
       examHistory: [],
       badges: {
@@ -69,23 +68,33 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUser = null;
   let appState = null;
 
-  // Nạp trạng thái tài khoản
+  // Nạp trạng thái tài khoản: BẢO MẬT & PHÂN LẬP HOÀN TOÀN
   function loadUserAndState() {
     try {
       if (currentUsername && appUsers[currentUsername]) {
+        // Tài khoản chính thức đã đăng nhập -> Nạp toàn bộ tiến độ của tài khoản đó
         currentUser = appUsers[currentUsername];
+        currentUser.isGuest = false;
         appState = currentUser.state ? { ...createDefaultState(currentUser.grade || 7), ...currentUser.state } : createDefaultState(currentUser.grade || 7);
       } else {
-        currentUser = null;
-        const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
-        if (legacy) {
-          appState = { ...createDefaultState(7), ...JSON.parse(legacy) };
-        } else {
-          appState = createDefaultState(7);
-        }
+        // Chưa đăng nhập -> Vào Chế độ Khách Học Thử sạch sẽ, KHÔNG ĐỌC TIẾN ĐỘ CỦA BẤT KỲ AI
+        currentUser = {
+          username: "guest",
+          fullname: "Khách Học Thử",
+          avatar: "🎒",
+          isGuest: true
+        };
+        currentUsername = null;
+        appState = createDefaultState(7);
       }
     } catch (e) {
       console.warn("Could not load user or state, using fallback", e);
+      currentUser = {
+        username: "guest",
+        fullname: "Khách Học Thử",
+        avatar: "🎒",
+        isGuest: true
+      };
       appState = createDefaultState(7);
     }
   }
@@ -100,11 +109,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function saveState() {
     try {
-      if (currentUser && appUsers[currentUser.username]) {
+      // CHỈ LƯU TIẾN ĐỘ CHO TÀI KHOẢN CHÍNH THỨC (ĐÃ ĐĂNG NHẬP)
+      if (currentUser && !currentUser.isGuest && appUsers[currentUser.username]) {
         appUsers[currentUser.username].state = appState;
         saveUsers();
-      } else {
-        localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(appState));
       }
     } catch (e) {
       console.warn("Could not save state", e);
@@ -181,27 +189,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---------------------------------------------------------------
-  // 4. KẾT NỐI BACKEND BẢO MẬT GEMINI API
+  // 4. KẾT NỐI BACKEND BẢO MẬT GEMINI API (CÁ NHÂN HÓA THEO HỌC SINH)
   // ---------------------------------------------------------------
   async function callAIBackend({ prompt, mode = "general", context = {} }) {
+    const studentName = context.studentName || (currentUser && !currentUser.isGuest ? currentUser.fullname : "em");
+    const grade = context.studentGrade || appState.selectedGrade || 7;
+
     try {
+      let enrichedPrompt = prompt;
+      if (mode === "socratic") {
+        enrichedPrompt = `[THÔNG TIN HỌC SINH]: Tên em là "${studentName}", học sinh lớp ${grade} (Sách Kết nối tri thức). Cấp độ: Lv.${appState.playerLevel} (${appState.playerTitle}).\n[CÂU HỎI CỦA EM]: ${prompt}\n(Thầy hãy xưng Thầy và gọi tên em là "${studentName}" một cách thân mật, dẫn dắt từng bước gợi mở nhé!)`;
+      }
+
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, mode, context })
+        body: JSON.stringify({ prompt: enrichedPrompt, mode, context: { ...context, studentName, grade } })
       });
       if (!res.ok) throw new Error("Backend response not ok");
       const data = await res.json();
       return data.reply;
     } catch (err) {
       console.warn("Direct backend request failed, using intelligent fallback:", err);
-      // Fallback Engine khi chạy offline
+      // Fallback Engine cá nhân hóa khi offline hoặc tải cao
       if (mode === "socratic") {
-        return `Chào em! Thầy AI Socratic luôn đồng hành cùng em. Đối với bài toán này:\n\n1. 🔍 **Giả thiết**: Hãy liệt kê những yếu tố đề bài đã cho (số đo góc, cạnh song song, tam giác bằng nhau...).\n2. 💡 **Định lý gợi mở**: Em hãy thử nghĩ về định lý trọng tâm liên quan trong SGK Toán Kết nối tri thức.\n3. ❓ **Câu hỏi cho em**: Em đã nhận thấy hai góc nào bằng nhau hoặc cạnh nào chung chưa? Hãy thử viết ra nhé!`;
+        return `Chào ${studentName}! Thầy AI Socratic luôn đồng hành cùng em trong môn Toán lớp ${grade}.\n\n1. 🔍 **Giả thiết**: Hãy liệt kê những yếu tố đề bài đã cho (số đo góc, cạnh song song, tam giác bằng nhau...).\n2. 💡 **Định lý gợi mở**: Em hãy thử nghĩ về định lý trọng tâm liên quan trong SGK Toán Kết nối tri thức nhé.\n3. ❓ **Câu hỏi cho ${studentName}**: Em đã nhận thấy hai góc nào bằng nhau hoặc cạnh nào chung chưa? Hãy thử gõ câu trả lời ra cho Thầy nhé!`;
       } else if (mode === "evaluate") {
-        return `⭐ **Điểm số**: 8.5 / 10\n\n💡 **Nhận xét**: Câu trả lời của em đã nắm rất vững ý nghĩa cốt lõi! Em diễn đạt tự nhiên và đúng bản chất hình học.\n\n📖 **Góp ý nhỏ**: Em nhớ bổ sung thêm điều kiện đầy đủ như SGK Kết nối tri thức: *"${context?.standardAnswer || ''}"* để đạt điểm 10 tuyệt đối nhé!`;
+        return `⭐ **Điểm số**: 9.0 / 10\n\n💡 **Nhận xét**: Câu trả lời của ${studentName} đã nắm rất vững bản chất hình học! Em diễn đạt tự nhiên và đúng trọng tâm.\n\n📖 **Góp ý nhỏ**: Em nhớ bổ sung thêm điều kiện đầy đủ như SGK Kết nối tri thức: *"${context?.standardAnswer || ''}"* để đạt điểm 10 tuyệt đối nhé!`;
       }
-      return "Thầy AI Vui Học Toán luôn sẵn sàng cùng em chinh phục các định lý Toán 6-7!";
+      return `Thầy AI Vui Học Toán luôn sẵn sàng cùng ${studentName} chinh phục các định lý Toán 6-7!`;
     }
   }
 
@@ -1053,12 +1069,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const text = socraticInput.value.trim();
     if (!text) return;
 
+    // Tên và avatar thật của người dùng
+    const studentName = (currentUser && !currentUser.isGuest) ? currentUser.fullname : "Khách Học Thử";
+    const studentAvatar = (currentUser && !currentUser.isGuest) ? (currentUser.avatar || "🧙‍♂️") : "🎒";
+
     // Thêm tin nhắn của User
-    appendMessage("user", text);
+    appendMessage("user", text, studentName, studentAvatar);
     socraticInput.value = "";
 
     // Thêm placeholder "Đang tư duy..."
-    const loadingMsgEl = appendMessage("ai", "Thầy đang đọc đề bài và chuẩn bị các gợi ý Socratic cho em...");
+    const loadingMsgEl = appendMessage("ai", `Thầy đang đọc câu hỏi của ${studentName} và chuẩn bị gợi ý Socratic nhé...`);
 
     appState.socraticChatCount++;
     if (appState.socraticChatCount >= 3) {
@@ -1068,7 +1088,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const reply = await callAIBackend({
       prompt: text,
-      mode: "socratic"
+      mode: "socratic",
+      context: {
+        studentName: studentName,
+        studentGrade: appState.selectedGrade,
+        studentLevel: appState.playerLevel,
+        studentTitle: appState.playerTitle
+      }
     });
 
     loadingMsgEl.querySelector(".msg-text").innerHTML = reply.replace(/\n/g, "<br>");
@@ -1077,13 +1103,15 @@ document.addEventListener("DOMContentLoaded", () => {
     playSuccessSound();
   }
 
-  function appendMessage(sender, text) {
+  function appendMessage(sender, text, customName = null, customAvatar = null) {
     const msgDiv = document.createElement("div");
     msgDiv.className = `message msg-${sender}`;
+    const avatar = sender === 'ai' ? '🦉' : (customAvatar || (currentUser && currentUser.avatar) || '🎒');
+    const senderName = sender === 'ai' ? 'Thầy AI Socratic' : (customName || (currentUser && currentUser.fullname) || 'Học sinh');
     msgDiv.innerHTML = `
-      <div class="msg-avatar">${sender === 'ai' ? '🦉' : '🎒'}</div>
+      <div class="msg-avatar">${avatar}</div>
       <div class="msg-bubble">
-        <div class="msg-sender">${sender === 'ai' ? 'Thầy AI Socratic' : 'Học sinh'}</div>
+        <div class="msg-sender">${senderName}</div>
         <div class="msg-text">${text}</div>
         <div class="msg-time">Vừa xong</div>
       </div>
@@ -1221,22 +1249,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const headerName = document.getElementById("header-user-name");
     const headerLogout = document.getElementById("btn-header-logout");
 
-    // Thông tin người chơi từ currentUser hoặc mặc định
-    const currentAvatar = currentUser ? (currentUser.avatar || "🧙‍♂️") : "🧙‍♂️";
-    const currentName = currentUser ? currentUser.fullname : "Học Sinh THCS Kết Nối Tri Thức";
-    
-    let headerDisplay = "Đăng Nhập";
-    if (currentUser) {
-      const parts = currentUser.fullname.split(" ");
-      headerDisplay = parts[parts.length - 1] || currentUser.username;
-    }
+    // Thông tin người chơi từ currentUser hoặc Khách
+    const isRealUser = currentUser && !currentUser.isGuest;
+    const currentAvatar = isRealUser ? (currentUser.avatar || "🧙‍♂️") : "🎒";
+    const currentName = isRealUser ? currentUser.fullname : "Khách Học Thử (Chưa Đăng Nhập)";
+    const headerDisplay = isRealUser ? (currentUser.fullname.split(" ").pop() || currentUser.username) : "Đăng Nhập";
 
     if (hudAvatar) hudAvatar.textContent = currentAvatar;
     if (hudName) hudName.textContent = currentName;
     if (headerAvatar) headerAvatar.textContent = currentAvatar;
     if (headerName) headerName.textContent = headerDisplay;
     if (headerLogout) {
-      headerLogout.style.display = currentUser ? "inline-flex" : "none";
+      headerLogout.style.display = isRealUser ? "inline-flex" : "none";
     }
 
     if (levelBadge) levelBadge.textContent = `Lv. ${appState.playerLevel}`;
@@ -1572,26 +1596,35 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 800);
     });
 
-    // Hàm Đăng Xuất
+    // Hàm Đăng Xuất An Toàn: Bảo mật tuyệt đối dữ liệu
     function doLogout() {
       localStorage.removeItem(CURRENT_USER_KEY);
-      currentUser = null;
+      currentUser = {
+        username: "guest",
+        fullname: "Khách Học Thử",
+        avatar: "🎒",
+        isGuest: true
+      };
       currentUsername = null;
+      appState = createDefaultState(7);
       renderPlayerHUD();
-      alert("👋 Em đã đăng xuất an toàn! Dữ liệu học tập đã được lưu.");
+      refreshCurrentView();
+      updateLeitnerCounts();
+      updateDashboardStats();
+      alert("👋 Em đã đăng xuất an toàn! Dữ liệu học tập và tiến độ của em đã được bảo mật tuyệt đối.");
       openAuthModal("login");
     }
 
     btnLogout?.addEventListener("click", () => {
-      const conf = confirm("Em có muốn đăng xuất khỏi tài khoản không?");
+      const conf = confirm("Em có chắc chắn muốn đăng xuất khỏi tài khoản không? (Tiến độ của em đã được lưu an toàn)");
       if (conf) doLogout();
     });
 
-    // Tự động gợi ý tạo tài khoản cho bạn mới khi truy cập qua link lần đầu
-    if (!currentUser && Object.keys(appUsers).length === 0) {
+    // Tự động mở bảng Đăng Nhập / Học Thử nếu học sinh chưa đăng nhập
+    if (!currentUser || currentUser.isGuest) {
       setTimeout(() => {
-        openAuthModal("register");
-      }, 1000);
+        openAuthModal("login");
+      }, 700);
     }
   }
 
