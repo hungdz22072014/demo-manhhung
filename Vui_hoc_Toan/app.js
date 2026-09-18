@@ -37,6 +37,12 @@ document.addEventListener("DOMContentLoaded", () => {
       openedChestToday: false,
       clearedStages: [],
       activeStage: 1,
+      quests: {
+        flashcards: { current: 0, target: 5, rewardExp: 20, rewardCoins: 10, claimed: false },
+        fillblank: { current: 0, target: 1, rewardExp: 30, rewardCoins: 15, claimed: false },
+        socratic: { current: 0, target: 1, rewardExp: 25, rewardCoins: 10, claimed: false },
+        exam: { current: 0, target: 1, rewardExp: 50, rewardCoins: 30, claimed: false }
+      },
       leitner: defaultLeitner,
       examHistory: [],
       badges: {
@@ -75,7 +81,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // Tài khoản chính thức đã đăng nhập -> Nạp toàn bộ tiến độ của tài khoản đó
         currentUser = appUsers[currentUsername];
         currentUser.isGuest = false;
-        appState = currentUser.state ? { ...createDefaultState(currentUser.grade || 7), ...currentUser.state } : createDefaultState(currentUser.grade || 7);
+        const defaultState = createDefaultState(currentUser.grade || 7);
+        appState = currentUser.state ? { ...defaultState, ...currentUser.state } : defaultState;
+        if (!Array.isArray(appState.clearedStages)) appState.clearedStages = [];
+        if (typeof appState.activeStage !== "number") appState.activeStage = 1;
+        if (!appState.quests) appState.quests = defaultState.quests;
       } else {
         // Chưa đăng nhập -> Vào Chế độ Khách Học Thử sạch sẽ, KHÔNG ĐỌC TIẾN ĐỘ CỦA BẤT KỲ AI
         currentUser = {
@@ -342,18 +352,43 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("count-box-green").textContent = appState.leitner.green.length;
   }
 
+  // --- HỆ THỐNG THEO DÕI TIẾN ĐỘ NHIỆM VỤ HÀNG NGÀY ---
+  function trackQuestProgress(questKey, amount = 1) {
+    if (!appState || !appState.quests || !appState.quests[questKey]) return;
+    const q = appState.quests[questKey];
+    if (q.current < q.target) {
+      q.current = Math.min(q.target, q.current + amount);
+      saveState();
+      if (typeof renderDailyQuests === "function") {
+        renderDailyQuests();
+      }
+    }
+  }
+
   // --- Flashcard 3D Logic ---
   let currentCardIndex = 0;
   const flashcardEl = document.getElementById("flashcard-element");
   const btnFlipCard = document.getElementById("btn-flip-card");
   const btnFlipBack = document.getElementById("btn-flip-back");
 
-  btnFlipCard.addEventListener("click", () => {
+  if (flashcardEl) {
+    flashcardEl.addEventListener("click", (e) => {
+      if (e.target.closest("button") || e.target.closest(".btn-leitner-action")) return;
+      flashcardEl.classList.toggle("flipped");
+      playFlipSound();
+      if (flashcardEl.classList.contains("flipped")) {
+        trackQuestProgress("flashcards");
+      }
+    });
+  }
+
+  btnFlipCard?.addEventListener("click", () => {
     flashcardEl.classList.add("flipped");
     playFlipSound();
+    trackQuestProgress("flashcards");
   });
 
-  btnFlipBack.addEventListener("click", () => {
+  btnFlipBack?.addEventListener("click", () => {
     flashcardEl.classList.remove("flipped");
     playFlipSound();
   });
@@ -484,9 +519,11 @@ document.addEventListener("DOMContentLoaded", () => {
     resultBox.style.display = "block";
     if (allCorrect) {
       resultBox.className = "challenge-result show success";
-      resultBox.textContent = "🎉 Xuất sắc! Em đã điền hoàn toàn chính xác các từ khóa của định lý này!";
+      resultBox.textContent = "🎉 Xuất sắc! Em đã điền hoàn toàn chính xác các từ khóa của định lý này! (+15 EXP, +10 Xu)";
       playCelebration();
       setLeitnerBox(thm.id, "green");
+      addExpAndCoins(15, 10);
+      trackQuestProgress("fillblank");
     } else {
       resultBox.className = "challenge-result show error";
       resultBox.textContent = `❌ Chưa chính xác hoàn toàn! Các đáp án đúng là: ${thm.fillBlank.answers.join(", ")}.`;
@@ -990,9 +1027,12 @@ document.addEventListener("DOMContentLoaded", () => {
       failedCount: failedTheorems.length
     });
 
-    // Mở khóa huy hiệu nếu đạt điểm cao
+    // Mở khóa huy hiệu nếu đạt điểm cao & cập nhật nhiệm vụ
     if (parseFloat(score) >= 9.0) {
       appState.badges["badge-exam-master"] = true;
+    }
+    if (parseFloat(score) >= 8.0) {
+      trackQuestProgress("exam");
     }
     saveState();
 
@@ -1081,6 +1121,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const loadingMsgEl = appendMessage("ai", `Thầy đang đọc câu hỏi của ${studentName} và chuẩn bị gợi ý Socratic nhé...`);
 
     appState.socraticChatCount++;
+    trackQuestProgress("socratic");
     if (appState.socraticChatCount >= 3) {
       appState.badges["badge-socratic-friend"] = true;
       saveState();
@@ -1227,6 +1268,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (target) target.classList.add("active");
     appState.activeTab = tabId;
 
+    if (tabId === "tab-home") {
+      renderJourneyMap();
+      renderDailyQuests();
+    }
     if (tabId === "tab-dashboard") {
       renderKnowledgeMap();
       updateDashboardStats();
@@ -1301,8 +1346,500 @@ document.addEventListener("DOMContentLoaded", () => {
     renderPlayerHUD();
   }
 
+  // ---------------------------------------------------------------
+  // 10. HỆ THỐNG CÁ NHÂN HÓA 7 ẢI TOÁN HỌC & NHIỆM VỤ HÀNG NGÀY
+  // ---------------------------------------------------------------
+  const STAGES_DATA = [
+    {
+      id: 1,
+      realm: "ẢI 1 • SỐ HỌC (LỚP 6)",
+      name: "Thung Lũng Chia Hết & Số Nguyên",
+      summary: "Dấu hiệu chia hết cho 2, 5, 3, 9 & Quy tắc bỏ dấu ngoặc",
+      thmTarget: "toan6-hk1-chia-het-2-5",
+      challenge: {
+        question: "Số tự nhiên nào sau đây vừa chia hết cho 2, vừa chia hết cho 5?",
+        options: [
+          "A. 135",
+          "B. 240",
+          "C. 318",
+          "D. 402"
+        ],
+        correctIndex: 1,
+        explanation: "Một số tự nhiên vừa chia hết cho 2 vừa chia hết cho 5 khi và chỉ khi có chữ số tận cùng là 0. Do đó 240 là đáp án chính xác!"
+      }
+    },
+    {
+      id: 2,
+      realm: "ẢI 2 • HÌNH HỌC TRỰC QUAN (LỚP 6)",
+      name: "Khu Rừng Đa Giác Đều & Hình Thoi",
+      summary: "Tính chất cạnh, góc, đường chéo hình vuông, tam giác đều, hình thoi",
+      thmTarget: "toan6-hk1-hinh-vuong-tam-giac-deu",
+      challenge: {
+        question: "Tam giác đều $ABC$ có độ dài cạnh $AB = 6\\text{ cm}$. Chu vi của tam giác đều $ABC$ là:",
+        options: [
+          "A. 12 cm",
+          "B. 16 cm",
+          "C. 18 cm",
+          "D. 36 cm"
+        ],
+        correctIndex: 2,
+        explanation: "Tam giác đều có 3 cạnh bằng nhau. Chu vi = 3 × 6 = 18 cm."
+      }
+    },
+    {
+      id: 3,
+      realm: "ẢI 3 • GÓC & ĐƯỜNG THẲNG (LỚP 7)",
+      name: "Vực Sâu Đường Thẳng Song Song",
+      summary: "Định lý hai góc đối đỉnh, so le trong, đồng vị và Tiên đề Euclid",
+      thmTarget: "toan7-hk1-goc-doi-dinh",
+      challenge: {
+        question: "Cho hai đường thẳng cắt nhau tạo thành góc $\\widehat{O}_1 = 60^\\circ$. Số đo của góc đối đỉnh với góc $\\widehat{O}_1$ là:",
+        options: [
+          "A. 30°",
+          "B. 60°",
+          "C. 120°",
+          "D. 180°"
+        ],
+        correctIndex: 1,
+        explanation: "Định lý: Hai góc đối đỉnh thì bằng nhau. Do đó góc đối đỉnh với $\\widehat{O}_1$ cũng có số đo bằng 60°."
+      }
+    },
+    {
+      id: 4,
+      realm: "ẢI 4 • ĐỊNH LÝ HÌNH HỌC (LỚP 7)",
+      name: "Đỉnh Núi Tam Giác Huyền Bí",
+      summary: "Tổng 3 góc tam giác (180°) & Các trường hợp bằng nhau (c-c-c, c-g-c, g-c-g)",
+      thmTarget: "toan7-hk1-tong-ba-goc-tam-giac",
+      challenge: {
+        question: "Tam giác $ABC$ có $\\widehat{A} = 70^\\circ$ và $\\widehat{B} = 60^\\circ$. Số đo của góc $\\widehat{C}$ là:",
+        options: [
+          "A. 50°",
+          "B. 60°",
+          "C. 70°",
+          "D. 80°"
+        ],
+        correctIndex: 0,
+        explanation: "Tổng ba góc của tam giác luôn bằng 180°. Ta có: $\\widehat{C} = 180^\\circ - (70^\\circ + 60^\\circ) = 50^\\circ$."
+      }
+    },
+    {
+      id: 5,
+      realm: "ẢI 5 • ĐẠI SỐ 7 (LỚP 7)",
+      name: "Vương Quốc Tỉ Lệ Thức & Đại Lượng",
+      summary: "Tích ngoại tỉ bằng tích trung tỉ, tính chất dãy tỉ số bằng nhau",
+      thmTarget: "toan7-hk2-ti-le-thuc-day-ti-so",
+      challenge: {
+        question: "Tìm giá trị của $x$ trong tỉ lệ thức: $\\frac{x}{6} = \\frac{10}{3}$",
+        options: [
+          "A. x = 5",
+          "B. x = 15",
+          "C. x = 20",
+          "D. x = 30"
+        ],
+        correctIndex: 2,
+        explanation: "Theo tính chất tỉ lệ thức: $x \\cdot 3 = 6 \\cdot 10 \\Rightarrow 3x = 60 \\Rightarrow x = 20$."
+      }
+    },
+    {
+      id: 6,
+      realm: "ẢI 6 • QUAN HỆ HÌNH HỌC (LỚP 7)",
+      name: "Đền Thờ Các Đường Đồng Quy",
+      summary: "Trọng tâm 2/3, Trực tâm, Tâm đường tròn nội tiếp & Bất đẳng thức tam giác",
+      thmTarget: "toan7-hk2-su-dong-quy-cac-duong",
+      challenge: {
+        question: "Gọi $G$ là trọng tâm của tam giác $ABC$ với đường trung tuyến $AM$. Khẳng định nào sau đây là đúng?",
+        options: [
+          "A. AG = 1/2 AM",
+          "B. AG = 2/3 AM",
+          "C. AG = 3/4 AM",
+          "D. GM = 2/3 AM"
+        ],
+        correctIndex: 1,
+        explanation: "Trọng tâm của tam giác cách mỗi đỉnh một khoảng bằng 2/3 độ dài đường trung tuyến đi qua đỉnh đó ($AG = \\frac{2}{3}AM$)."
+      }
+    },
+    {
+      id: 7,
+      realm: "ẢI 7 • THỐNG KÊ & XÁC SUẤT (LỚP 7)",
+      name: "Ốc Đảo Dữ Liệu & Xác Suất",
+      summary: "Thu thập dữ liệu, phân loại bảng thống kê và Xác suất thực nghiệm",
+      thmTarget: "toan7-hk2-ti-le-thuc-day-ti-so",
+      challenge: {
+        question: "Gieo một con xúc xắc 20 lần, thấy xuất hiện mặt 6 chấm 4 lần. Xác suất thực nghiệm của biến cố 'Mặt xuất hiện là 6 chấm' là:",
+        options: [
+          "A. 1/6",
+          "B. 1/5",
+          "C. 1/4",
+          "D. 6/20 = 3/10"
+        ],
+        correctIndex: 1,
+        explanation: "Xác suất thực nghiệm = (Số lần xuất hiện mặt 6 chấm) / (Tổng số lần gieo) = 4 / 20 = 1/5 = 0,2."
+      }
+    }
+  ];
+
+  // Render Bản Đồ Hành Trình Cá Nhân Hóa (100% Theo Tiến Độ Người Dùng)
+  function renderJourneyMap() {
+    const river = document.getElementById("quest-stages-river");
+    const clearedTag = document.getElementById("map-cleared-tag");
+    if (!river) return;
+
+    const cleared = Array.isArray(appState.clearedStages) ? appState.clearedStages : [];
+    const active = typeof appState.activeStage === "number" ? appState.activeStage : 1;
+
+    if (clearedTag) {
+      clearedTag.textContent = `Đã qua: ${cleared.length}/7 Ải`;
+    }
+
+    let html = "";
+    STAGES_DATA.forEach(stage => {
+      const isCleared = cleared.includes(stage.id);
+      const isActive = !isCleared && stage.id === active;
+      const isLocked = !isCleared && !isActive;
+
+      let nodeClass = "stage-node";
+      let stars = "☆☆☆";
+      let statusHtml = "";
+      let btnHtml = "";
+
+      if (isCleared) {
+        nodeClass += " completed";
+        stars = "⭐⭐⭐";
+        statusHtml = `<span class="stage-status-text">Đã Hoàn Thành ✅</span>`;
+        btnHtml = `<button class="btn-stage-action" data-stage="${stage.id}" data-action="review">Ôn lại ↺</button>`;
+      } else if (isActive) {
+        nodeClass += " active-stage";
+        stars = "⭐☆☆";
+        statusHtml = `<span class="stage-status-text active">Đang Khiêu Chiến ⚔️</span>`;
+        btnHtml = `<button class="btn-stage-action active" data-stage="${stage.id}" data-action="challenge">Chinh phục ➔</button>`;
+      } else {
+        nodeClass += " locked";
+        stars = "☆☆☆";
+        statusHtml = `<span class="stage-status-text locked">Khóa (Cần vượt Ải ${stage.id - 1}) 🔒</span>`;
+        btnHtml = `<button class="btn-stage-action" data-stage="${stage.id}" disabled>Chưa mở</button>`;
+      }
+
+      html += `
+        <div class="${nodeClass}" data-stage="${stage.id}">
+          <div class="stage-milestone">${isCleared ? "✓" : stage.id}</div>
+          <div class="stage-content">
+            <div class="stage-header-row">
+              <span class="stage-realm">${stage.realm}</span>
+              <span class="stage-stars">${stars}</span>
+            </div>
+            <h4 class="stage-name">${stage.name}</h4>
+            <p class="stage-summary">${stage.summary}</p>
+            <div class="stage-footer-row">
+              ${statusHtml}
+              ${btnHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    // BOSS STAGE: ĐẤU TRƯỜNG THI CỬ
+    const bossUnlocked = cleared.length >= 3;
+    html += `
+      <div class="stage-node boss-stage ${bossUnlocked ? 'unlocked' : 'locked'}" data-stage="boss">
+        <div class="stage-milestone boss">👑</div>
+        <div class="stage-content">
+          <div class="stage-header-row">
+            <span class="stage-realm boss">ẢI TRÙM CUỐI • ĐẤU TRƯỜNG</span>
+            <span class="stage-stars">${bossUnlocked ? '🏆🏆🏆' : '🔒🔒🔒'}</span>
+          </div>
+          <h4 class="stage-name">Đại Thử Thách: Phòng Luyện Thi GK - CK</h4>
+          <p class="stage-summary">Chinh phục bài thi bấm giờ tổng hợp Toán 6 - 7 để đạt Danh hiệu Kiện Tướng!</p>
+          <div class="stage-footer-row">
+            <span class="stage-status-text boss">${bossUnlocked ? 'Đấu trường mở 24/7 ⚔️' : 'Khóa (Cần vượt ít nhất 3 Ải) 🔒'}</span>
+            <button class="btn-stage-action boss" id="btn-home-go-exam" ${bossUnlocked ? '' : 'disabled'}>${bossUnlocked ? 'Khiêu chiến Trùm ➔' : 'Cần qua 3 Ải'}</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    river.innerHTML = html;
+
+    // Gắn sự kiện cho các nút hành động của ải
+    river.querySelectorAll(".btn-stage-action").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const stageId = btn.dataset.stage;
+        const action = btn.dataset.action;
+
+        if (stageId === "boss" || btn.id === "btn-home-go-exam") {
+          switchTab("tab-exams");
+          return;
+        }
+
+        const idNum = parseInt(stageId);
+        if (action === "challenge") {
+          openStageChallenge(idNum);
+        } else if (action === "review") {
+          const st = STAGES_DATA.find(s => s.id === idNum);
+          if (st) {
+            const conf = confirm(`📖 Em muốn:\n- Bấm OK để thử thách lại câu hỏi Ải ${idNum} rèn luyện phản xạ\n- Bấm Cancel để xem lý thuyết chi tiết của ải`);
+            if (conf) {
+              openStageChallenge(idNum);
+            } else if (st.thmTarget) {
+              const thm = THEOREMS_DATA.find(t => t.id === st.thmTarget);
+              if (thm) openTheoremModal(thm);
+              else switchTab("tab-theorems");
+            }
+          }
+        }
+      });
+    });
+
+    renderAllMath(river);
+  }
+
+  // Modal Thử Thách Khiêu Chiến Vượt Ải Toán Học
+  function openStageChallenge(stageId) {
+    const stage = STAGES_DATA.find(s => s.id === stageId);
+    if (!stage) return;
+
+    const modal = document.getElementById("stage-challenge-modal");
+    const titleEl = document.getElementById("modal-stage-title");
+    const realmEl = document.getElementById("modal-stage-realm");
+    const summaryEl = document.getElementById("modal-stage-summary");
+    const qEl = document.getElementById("stage-challenge-question");
+    const optionsGrid = document.getElementById("stage-challenge-options");
+    const feedbackBox = document.getElementById("stage-feedback-box");
+    const btnHint = document.getElementById("btn-stage-hint");
+    const btnCancel = document.getElementById("btn-stage-cancel");
+    const btnClose = document.getElementById("btn-close-stage-modal");
+
+    if (!modal) return;
+
+    if (titleEl) titleEl.textContent = stage.name;
+    if (realmEl) realmEl.textContent = stage.realm;
+    if (summaryEl) summaryEl.textContent = stage.summary;
+    if (qEl) qEl.innerHTML = stage.challenge.question;
+    if (feedbackBox) {
+      feedbackBox.style.display = "none";
+      feedbackBox.textContent = "";
+      feedbackBox.className = "stage-feedback-box";
+    }
+
+    // Render danh sách lựa chọn
+    optionsGrid.innerHTML = "";
+    stage.challenge.options.forEach((optText, idx) => {
+      const optBtn = document.createElement("button");
+      optBtn.className = "stage-option-btn";
+      optBtn.innerHTML = optText;
+      optBtn.addEventListener("click", () => {
+        if (idx === stage.challenge.correctIndex) {
+          // Trả lời đúng
+          optBtn.classList.add("selected-correct");
+          feedbackBox.className = "stage-feedback-box success";
+          feedbackBox.innerHTML = `🎉 <strong>CHÍNH XÁC! XUẤT SẮC!</strong><br>${stage.challenge.explanation}<br>✨ <em>Nhận ngay +50 EXP và +25 Xu Toán Học! 🪙</em>`;
+          feedbackBox.style.display = "block";
+          playCelebration();
+
+          // Vô hiệu hóa các nút khác
+          optionsGrid.querySelectorAll(".stage-option-btn").forEach(b => b.disabled = true);
+
+          // Cập nhật tiến độ ải
+          if (!Array.isArray(appState.clearedStages)) appState.clearedStages = [];
+          if (!appState.clearedStages.includes(stageId)) {
+            appState.clearedStages.push(stageId);
+            if (appState.activeStage === stageId) {
+              appState.activeStage = stageId + 1;
+            }
+          }
+
+          // Khen thưởng & lưu
+          addExpAndCoins(50, 25);
+
+          // Mở khóa huy hiệu tương ứng
+          if (stageId === 1) appState.badges["badge-arithmetic"] = true;
+          if (stageId === 2 || stageId === 4) appState.badges["badge-triangles"] = true;
+          if (stageId === 3) appState.badges["badge-parallel"] = true;
+
+          saveState();
+          renderJourneyMap();
+          renderDailyQuests();
+
+          // Đổi nút đóng
+          btnCancel.textContent = "Tiếp Tục Hành Trình 🚀";
+          btnCancel.className = "btn btn-primary";
+          btnCancel.onclick = () => {
+            modal.style.display = "none";
+          };
+        } else {
+          // Trả lời sai
+          optBtn.classList.add("selected-incorrect");
+          playTone(200, "sawtooth", 0.2);
+          feedbackBox.className = "stage-feedback-box error";
+          feedbackBox.innerHTML = `❌ <strong>Chưa chính xác rồi em ơi!</strong><br>Hãy đọc lại câu hỏi hoặc nhấn nút <strong>"Xem Bí Kíp Định Lý"</strong> bên dưới để ôn lại rồi chọn lại nhé! 💪`;
+          feedbackBox.style.display = "block";
+          setTimeout(() => {
+            optBtn.classList.remove("selected-incorrect");
+          }, 1000);
+        }
+        renderAllMath(feedbackBox);
+      });
+      optionsGrid.appendChild(optBtn);
+    });
+
+    btnCancel.textContent = "Tạm Dừng";
+    btnCancel.className = "btn btn-secondary";
+    btnCancel.onclick = () => {
+      modal.style.display = "none";
+    };
+
+    if (btnClose) {
+      btnClose.onclick = () => {
+        modal.style.display = "none";
+      };
+    }
+
+    if (btnHint) {
+      btnHint.onclick = () => {
+        if (stage.thmTarget) {
+          const thm = THEOREMS_DATA.find(t => t.id === stage.thmTarget);
+          if (thm) {
+            openTheoremModal(thm);
+            return;
+          }
+        }
+        alert(`💡 Gợi ý cho Ải ${stage.id}: ${stage.summary}`);
+      };
+    }
+
+    modal.style.display = "flex";
+    renderAllMath(modal);
+  }
+
+  // Nhận thưởng nhiệm vụ hàng ngày
+  function claimQuestReward(questKey) {
+    if (!appState || !appState.quests || !appState.quests[questKey]) return;
+    const q = appState.quests[questKey];
+    if (q.current >= q.target && !q.claimed) {
+      q.claimed = true;
+      addExpAndCoins(q.rewardExp, q.rewardCoins);
+      playCelebration();
+      alert(`🎁 Chúc mừng em đã hoàn thành nhiệm vụ và nhận được: +${q.rewardExp} EXP & +${q.rewardCoins} Xu Toán Học! 🪙`);
+      saveState();
+      renderDailyQuests();
+      renderPlayerHUD();
+    }
+  }
+
+  // Render Bảng Nhiệm Vụ Hàng Ngày (Cá Nhân Hóa Động Theo Từng Người Dùng)
+  function renderDailyQuests() {
+    const listEl = document.getElementById("quests-list");
+    if (!listEl) return;
+
+    if (!appState.quests) {
+      appState.quests = {
+        flashcards: { current: 0, target: 5, rewardExp: 20, rewardCoins: 10, claimed: false },
+        fillblank: { current: 0, target: 1, rewardExp: 30, rewardCoins: 15, claimed: false },
+        socratic: { current: 0, target: 1, rewardExp: 25, rewardCoins: 10, claimed: false },
+        exam: { current: 0, target: 1, rewardExp: 50, rewardCoins: 30, claimed: false }
+      };
+    }
+
+    const questDefs = [
+      {
+        key: "flashcards",
+        name: "Lật ôn 5 Flashcard Định lý",
+        unit: "thẻ",
+        actionBtn: "Học thẻ",
+        tabTarget: "tab-theorems",
+        submode: "flashcard"
+      },
+      {
+        key: "fillblank",
+        name: "Vượt qua 1 Thử thách Điền khuyết",
+        unit: "bài",
+        actionBtn: "Làm ngay",
+        tabTarget: "tab-theorems",
+        submode: "fillblank"
+      },
+      {
+        key: "socratic",
+        name: "Đặt 1 câu hỏi cùng Thầy AI Socratic",
+        unit: "câu",
+        actionBtn: "Hỏi AI",
+        tabTarget: "tab-socratic"
+      },
+      {
+        key: "exam",
+        name: "Luyện 1 Đề thi thử đạt từ 8 điểm",
+        unit: "đề",
+        actionBtn: "Thi thử",
+        tabTarget: "tab-exams"
+      }
+    ];
+
+    let html = "";
+    questDefs.forEach((def, index) => {
+      const q = appState.quests[def.key] || { current: 0, target: 1, rewardExp: 20, rewardCoins: 10, claimed: false };
+      const pct = Math.min(100, Math.round((q.current / q.target) * 100));
+      const isComplete = q.current >= q.target;
+      const isClaimed = q.claimed;
+
+      let iconHtml = '<div class="quest-status-check pending">⏳</div>';
+      if (isClaimed) {
+        iconHtml = '<div class="quest-status-check">✅</div>';
+      } else if (isComplete) {
+        iconHtml = '<div class="quest-status-check" style="animation: reward-pulse 1.2s infinite alternate;">🎁</div>';
+      }
+
+      let btnHtml = "";
+      if (isClaimed) {
+        btnHtml = `<button class="btn-claim-quest claimed" disabled>Đã nhận</button>`;
+      } else if (isComplete) {
+        btnHtml = `<button class="btn-claim-quest reward-ready" data-quest-key="${def.key}">Nhận Thưởng 🎁</button>`;
+      } else {
+        btnHtml = `<button class="btn-claim-quest active" data-action-key="${def.key}" data-tab="${def.tabTarget}" ${def.submode ? `data-submode="${def.submode}"` : ""}>${def.actionBtn}</button>`;
+      }
+
+      html += `
+        <div class="quest-item" id="quest-${index + 1}">
+          ${iconHtml}
+          <div class="quest-info">
+            <div class="quest-name">${def.name}</div>
+            <div class="quest-meter">
+              <div class="quest-meter-fill" style="width: ${pct}%;"></div>
+            </div>
+            <div class="quest-meta">
+              <span>${q.current} / ${q.target} ${def.unit}</span>
+              <span class="quest-reward">+${q.rewardExp} EXP • ${q.rewardCoins} 🪙</span>
+            </div>
+          </div>
+          ${btnHtml}
+        </div>
+      `;
+    });
+
+    listEl.innerHTML = html;
+
+    // Gắn sự kiện cho các nút trong bảng nhiệm vụ
+    listEl.querySelectorAll(".btn-claim-quest.reward-ready").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.questKey;
+        if (key) claimQuestReward(key);
+      });
+    });
+
+    listEl.querySelectorAll(".btn-claim-quest.active").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tab = btn.dataset.tab;
+        const submode = btn.dataset.submode;
+        if (tab) switchTab(tab);
+        if (submode) {
+          document.querySelector(`[data-submode="${submode}"]`)?.click();
+        }
+      });
+    });
+  }
+
   function setupGamification() {
     renderPlayerHUD();
+    renderJourneyMap();
+    renderDailyQuests();
 
     // Rương bí ẩn hàng ngày
     const btnChest = document.getElementById("btn-open-chest");
@@ -1326,38 +1863,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("portal-exams")?.addEventListener("click", () => switchTab("tab-exams"));
     document.getElementById("portal-socratic")?.addEventListener("click", () => switchTab("tab-socratic"));
     document.getElementById("portal-dashboard")?.addEventListener("click", () => switchTab("tab-dashboard"));
-
-    // Nút điều hướng từ bảng nhiệm vụ
-    document.getElementById("btn-quest-go-fillblank")?.addEventListener("click", () => {
-      switchTab("tab-theorems");
-      document.querySelector('[data-submode="fillblank"]')?.click();
-    });
-    document.getElementById("btn-quest-go-socratic")?.addEventListener("click", () => switchTab("tab-socratic"));
-    document.getElementById("btn-quest-go-exam")?.addEventListener("click", () => switchTab("tab-exams"));
-
-    // Nút trùm cuối trên bản đồ
-    document.getElementById("btn-home-go-exam")?.addEventListener("click", () => switchTab("tab-exams"));
-
-    // Nút hành động trên từng ải
-    document.querySelectorAll(".btn-stage-action").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const stage = btn.dataset.stage;
-        if (stage === "boss") {
-          switchTab("tab-exams");
-          return;
-        }
-        const stageNode = btn.closest(".stage-node");
-        const thmTarget = stageNode?.dataset.thmTarget;
-        if (thmTarget) {
-          const thm = THEOREMS_DATA.find(t => t.id === thmTarget);
-          if (thm) {
-            openTheoremModal(thm);
-            return;
-          }
-        }
-        switchTab("tab-theorems");
-      });
-    });
   }
 
   // ---------------------------------------------------------------
@@ -1475,6 +1980,8 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         closeAuthModal();
         renderPlayerHUD();
+        renderJourneyMap();
+        renderDailyQuests();
         refreshCurrentView();
       }, 700);
     });
@@ -1547,6 +2054,8 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         closeAuthModal();
         renderPlayerHUD();
+        renderJourneyMap();
+        renderDailyQuests();
         refreshCurrentView();
         updateLeitnerCounts();
         updateDashboardStats();
@@ -1590,6 +2099,8 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => {
         closeAuthModal();
         renderPlayerHUD();
+        renderJourneyMap();
+        renderDailyQuests();
         refreshCurrentView();
         updateLeitnerCounts();
         updateDashboardStats();
@@ -1608,6 +2119,8 @@ document.addEventListener("DOMContentLoaded", () => {
       currentUsername = null;
       appState = createDefaultState(7);
       renderPlayerHUD();
+      renderJourneyMap();
+      renderDailyQuests();
       refreshCurrentView();
       updateLeitnerCounts();
       updateDashboardStats();
