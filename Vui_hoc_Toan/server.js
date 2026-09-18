@@ -53,18 +53,21 @@ const server = http.createServer(async (req, res) => {
         const payload = JSON.parse(body || "{}");
         const { prompt, mode, context } = payload;
 
-        let systemInstruction = `Bạn là trợ lý AI 'Vui Học Toán' (Toán THCS lớp 6-7 theo sách Kết nối tri thức).
-Luôn dùng tiếng Việt thân thiện, công thức KaTeX ($...$), bám sát SGK Kết nối tri thức.`;
+        let geminiSystemInstruction = `Bạn là trợ lý AI 'Vui Học Toán' (Toán THCS lớp 6-7 theo bộ sách Kết nối tri thức với cuộc sống). Luôn dùng tiếng Việt thân thiện, công thức KaTeX ($...$), bám sát chuẩn kiến thức SGK Kết nối tri thức.`;
 
         if (mode === "socratic") {
-          systemInstruction += `\n[SOCRATIC]: Không giải bài hộ. Hãy hỏi gợi mở: 1) Xác định giả thiết & kết luận; 2) Gợi ý định lý SGK; 3) Hỏi 1 câu hỏi nhỏ tiếp theo.`;
+          geminiSystemInstruction += ` [PHƯƠNG PHÁP SOCRATIC]: Không giải bài hộ. Hãy hỏi gợi mở: 1) Xác định giả thiết & kết luận; 2) Gợi ý định lý SGK; 3) Đặt 1 câu hỏi nhỏ tiếp theo để học sinh tự suy luận.`;
         } else if (mode === "evaluate") {
-          systemInstruction += `\n[ĐÁNH GIÁ ĐỊNH LÝ]: So sánh với đáp án chuẩn: ${context?.standardAnswer || ""}. Đánh giá ý nghĩa ngữ nghĩa, cho điểm 1-10, khen ngợi và chỉ ra điều kiện thiếu.`;
+          geminiSystemInstruction += ` [ĐÁNH GIÁ ĐỊNH LÝ]: So sánh với đáp án chuẩn: ${context?.standardAnswer || ""}. Đánh giá ý nghĩa ngữ nghĩa, cho điểm 1-10, khen ngợi và chỉ ra điều kiện thiếu.`;
         }
 
         const geminiBody = {
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          contents: [{ role: "user", parts: [{ text: prompt || "Xin chào!" }] }],
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: `${geminiSystemInstruction}\n\n[YÊU CẦU CỦA HỌC SINH]:\n${prompt || "Xin chào!"}` }]
+            }
+          ],
           generationConfig: { temperature: 0.4, maxOutputTokens: 1200 }
         };
 
@@ -75,12 +78,27 @@ Luôn dùng tiếng Việt thân thiện, công thức KaTeX ($...$), bám sát 
         });
 
         const data = await geminiRes.json();
-        const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "Thầy đã ghi nhận câu trả lời!";
+        if (data.error) {
+          console.error("Gemini API Error:", data.error);
+          throw new Error(data.error.message || "Gemini API Error");
+        }
+
+        let replyText = "";
+        const parts = data?.candidates?.[0]?.content?.parts;
+        if (Array.isArray(parts)) {
+          for (const p of parts) {
+            if (p.text) replyText += p.text;
+          }
+        }
+
+        if (!replyText) {
+          replyText = "Thầy đã ghi nhận câu trả lời của em!";
+        }
 
         res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
         return res.end(JSON.stringify({ success: true, reply: replyText, model: MODEL }));
       } catch (err) {
-        console.error(err);
+        console.error("Server AI Handler Error:", err.message || err);
         res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
         return res.end(JSON.stringify({
           success: true,
@@ -111,6 +129,15 @@ Luôn dùng tiếng Việt thân thiện, công thức KaTeX ($...$), bám sát 
   });
 });
 
+// Handle uncaught exceptions gracefully to prevent crash
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err.message || err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+});
+
 server.listen(PORT, () => {
   console.log(`[OK] Server running at http://localhost:${PORT}`);
 });
+
