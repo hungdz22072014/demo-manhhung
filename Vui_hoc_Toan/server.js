@@ -13,6 +13,7 @@ if (!API_KEY && fs.existsSync(keyFilePath)) {
     API_KEY = fs.readFileSync(keyFilePath, "utf8").trim();
   } catch (e) {}
 }
+const PORT = process.env.PORT || 3000;
 const MODEL = "gemini-3.6-flash";
 
 const MIME_TYPES = {
