@@ -3,15 +3,11 @@
   "rewrites": [
     {
       "source": "/api/ai/chat",
-      "destination": "/Vui_hoc_Toan/api/chat.js"
+      "destination": "/api/chat.js"
     },
     {
       "source": "/api/health",
-      "destination": "/Vui_hoc_Toan/api/health.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/Vui_hoc_Toan/$1"
+      "destination": "/api/health.js"
     }
   ]
 }
