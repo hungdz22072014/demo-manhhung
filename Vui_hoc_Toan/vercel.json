@@ -6,6 +6,10 @@
       "destination": "/api/chat.js"
     },
     {
+      "source": "/api/health",
+      "destination": "/api/health.js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/$1"
     }
