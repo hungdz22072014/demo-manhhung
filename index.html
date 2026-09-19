@@ -1066,10 +1066,70 @@ body {
 }
 
 .feedback-content {
+  font-size: 14.5px;
+  line-height: 1.75;
+  color: var(--text-main);
+}
+
+.feedback-content strong {
+  color: #1e1b4b;
+  font-weight: 750;
+}
+
+.feedback-content em {
+  color: #4338ca;
+  font-style: italic;
+}
+
+.feedback-content .score-badge-high {
+  display: inline-block;
+  padding: 4px 14px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1.5px solid #6ee7b7;
+  border-radius: 20px;
+  font-weight: 800;
   font-size: 15px;
-  line-height: 1.7;
-  color: #3b0764;
-  white-space: pre-line;
+  margin-bottom: 10px;
+}
+
+.feedback-content .score-badge-med {
+  display: inline-block;
+  padding: 4px 14px;
+  background: #fffbeb;
+  color: #b45309;
+  border: 1.5px solid #fcd34d;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.feedback-content .score-badge-low {
+  display: inline-block;
+  padding: 4px 14px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1.5px solid #fca5a5;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.feedback-content li {
+  margin: 4px 0 4px 18px;
+  line-height: 1.6;
+}
+
+.feedback-content blockquote {
+  border-left: 3px solid #8b5cf6;
+  background: #f5f3ff;
+  padding: 8px 12px;
+  border-radius: 0 8px 8px 0;
+  margin: 8px 0;
+  color: #5b21b6;
+  font-style: italic;
 }
 
 /* ========================================================= */
@@ -6512,22 +6572,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 2. Định dạng Headings
     cleanText = cleanText
-      .replace(/^### (.*$)/gim, '<h4 class="ai-hd" style="margin: 10px 0 4px; color: var(--primary); font-weight:750;">$1</h4>')
-      .replace(/^## (.*$)/gim, '<h3 class="ai-hd" style="margin: 12px 0 6px; color: var(--primary); font-weight:800;">$1</h3>')
-      .replace(/^# (.*$)/gim, '<h2 class="ai-hd" style="margin: 14px 0 8px; color: var(--primary); font-weight:800;">$1</h2>');
+      .replace(/^#### (.*$)/gim, '<h5 class="ai-hd" style="margin: 8px 0 3px; color: var(--primary); font-weight:700; font-size:14px;">$1</h5>')
+      .replace(/^### (.*$)/gim, '<h4 class="ai-hd" style="margin: 10px 0 4px; color: var(--primary); font-weight:750; font-size:15px;">$1</h4>')
+      .replace(/^## (.*$)/gim, '<h3 class="ai-hd" style="margin: 12px 0 6px; color: var(--primary); font-weight:800; font-size:16px;">$1</h3>')
+      .replace(/^# (.*$)/gim, '<h2 class="ai-hd" style="margin: 14px 0 8px; color: var(--primary); font-weight:800; font-size:18px;">$1</h2>');
 
-    // 3. Định dạng Bold, Italic, Strikethrough, Inline Code
-    cleanText = cleanText
-      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*([^\*\n]+)\*/g, '<em>$1</em>')
-      .replace(/~~(.*?)~~/g, '<del>$1</del>')
-      .replace(/`([^`\n]+)`/g, '<code class="ai-inline-code">$1</code>');
+    // 3. Blockquotes (> text)
+    cleanText = cleanText.replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>');
 
-    // 4. Ngắt dòng
+    // 4. Định dạng Bold, Italic, Strikethrough, Inline Code
+    // Bold + Italic: ***text*** hoặc ___text___
+    cleanText = cleanText.replace(/(\*\*\*|___)([\s\S]*?)\1/g, '<strong><em>$2</em></strong>');
+    // Bold: **text** hoặc __text__
+    cleanText = cleanText.replace(/(\*\*|__)([\s\S]*?)\1/g, '<strong>$2</strong>');
+    // Italic: *text* hoặc _text_
+    cleanText = cleanText.replace(/(^|[^\*])\*([^\*\n]+)\*([^\*]|$)/g, '$1<em>$2</em>$3');
+    cleanText = cleanText.replace(/(^|[^_])_([^_\n]+)_([^_]|$)/g, '$1<em>$2</em>$3');
+    // Strikethrough: ~~text~~
+    cleanText = cleanText.replace(/~~(.*?)~~/g, '<del>$1</del>');
+    // Inline Code: `code`
+    cleanText = cleanText.replace(/`([^`\n]+)`/g, '<code class="ai-inline-code">$1</code>');
+
+    // Xóa triệt để các dấu ** hoặc * đơn lẻ không có cặp đóng
+    cleanText = cleanText.replace(/\*\*/g, '');
+
+    // 5. Danh sách đầu dòng (- item hoặc * item hoặc 1. item)
+    cleanText = cleanText.replace(/^[•\-\*]\s+(.*$)/gim, '<li>$1</li>');
+    cleanText = cleanText.replace(/^(\d+)\.\s+(.*$)/gim, '<li>$2</li>');
+
+    // 6. Ngắt dòng
     cleanText = cleanText.replace(/\n/g, '<br>');
 
-    // 5. Khôi phục lại công thức KaTeX nguyên vẹn (sử dụng split/join để tránh lỗi $1 của regex replace)
+    // 7. Khôi phục lại công thức KaTeX nguyên vẹn (sử dụng split/join)
     mathPlaceholders.forEach((phMath, idx) => {
       const ph = `KATEXPLACEHOLDER${idx}END`;
       cleanText = cleanText.split(ph).join(phMath);
@@ -6542,6 +6618,112 @@ document.addEventListener("DOMContentLoaded", () => {
   function solveMathOrExplainLocally({ prompt, mode, studentName, grade, context }) {
     const raw = (prompt || "").trim();
     const lower = raw.toLowerCase();
+
+    // 0. CHẾ ĐỘ ĐÁNH GIÁ & CHẤM ĐIỂM VẤN ĐÁP ĐỊNH LÝ (ƯU TIÊN HÀNG ĐẦU KHI MODE === EVALUATE)
+    if (mode === "evaluate") {
+      const std = context?.standardAnswer || "";
+      const thmTitle = context?.theoremTitle || "Định lý";
+      const userAns = (context?.studentAnswer || prompt || "").trim();
+      const userAnsLower = userAns.toLowerCase();
+
+      // Danh sách các mẫu câu thể hiện không biết / chưa học / chịu / quên
+      const unknowingPhrases = [
+        "không biết", "ko biết", "k biết", "chưa biết", "khum biết",
+        "không nhớ", "ko nhớ", "k nhớ", "chưa nhớ",
+        "chưa học", "chịu", "chịu thôi", "em chịu", "chịu thua",
+        "không rõ", "ko rõ", "k rõ", "chưa rõ",
+        "tôi không biết", "em không biết", "em ko biết", "em k biết",
+        "quên", "quên rồi", "quên mất", "em quên", "chưa học tới",
+        "không hiểu", "ko hiểu", "k hiểu", "không làm được",
+        "không có", "không nhớ gì", "chả biết", "chả nhớ",
+        "nothing", "idk", "i don't know", "dont know"
+      ];
+
+      const isUnknowing = unknowingPhrases.some(phrase => userAnsLower.includes(phrase)) ||
+        userAns.length < 5 ||
+        /^[^a-zA-Z0-9\u00C0-\u1EF9]+$/.test(userAns);
+
+      if (isUnknowing) {
+        return `<div class="score-badge-low">⭐ Điểm số: 0 / 10 (Chưa nắm được)</div>
+
+💡 **Nhận xét của Thầy**:
+Không sao cả ${studentName} ơi! Việc chưa nhớ hay chưa thuộc định lý là hoàn toàn bình thường khi mới học. Thầy trò mình cùng nhau ôn lại ngay bây giờ nhé!
+
+📖 **Phát biểu chuẩn SGK Kết nối tri thức**:
+*"${std || "Xem lại nội dung định lý trong sách giáo khoa."}"*
+
+${context?.formula ? `📐 **Công thức toán học cần nhớ**:\n$$${context.formula}$$` : ""}
+
+🎯 **Lời khuyên cho ${studentName}**:
+- Hãy đọc to định lý trên 2-3 lần để ghi nhớ vào trí nhớ dài hạn.
+- Em hãy lật thẻ **Flashcard 3D** hoặc làm bài **Thử thách Điền khuyết** để khắc sâu kiến thức nhé! Định lý này đã được tự động lưu vào **Hộp Đỏ (Hộp 1)** để nhắc em ôn lại.`;
+      }
+
+      // Đánh giá dựa trên độ khớp từ khóa và ngữ nghĩa
+      const keywords = context?.keywords || [];
+      let matchedCount = 0;
+      const matchedList = [];
+      const missedList = [];
+
+      keywords.forEach(kw => {
+        const kwClean = kw.toLowerCase().replace(/[\$\\]/g, "");
+        if (userAnsLower.includes(kwClean) || (kwClean.length > 3 && userAnsLower.includes(kwClean.slice(0, Math.floor(kwClean.length * 0.8))))) {
+          matchedCount++;
+          matchedList.push(kw);
+        } else {
+          missedList.push(kw);
+        }
+      });
+
+      const totalKws = Math.max(1, keywords.length);
+      const ratio = matchedCount / totalKws;
+
+      // Tính điểm
+      let score = 0;
+      let badgeClass = "score-badge-low";
+      let comment = "";
+
+      if (ratio >= 0.7 || userAnsLower.includes(std.toLowerCase().slice(0, 30))) {
+        score = Math.min(10, (9.0 + Math.random() * 1.0)).toFixed(1);
+        badgeClass = "score-badge-high";
+        comment = `🌟 **Xuất sắc!** Câu trả lời của ${studentName} rất chuẩn xác, nắm vững bản chất toán học của định lý **${thmTitle}**!`;
+      } else if (ratio >= 0.35) {
+        score = (5.5 + ratio * 3.0).toFixed(1);
+        badgeClass = "score-badge-med";
+        comment = `👍 **Khá tốt!** ${studentName} đã nắm được ý chính của định lý, tuy nhiên còn thiếu một số ý/điều kiện quan trọng.`;
+      } else {
+        // Kiểm tra xem có từ toán học liên quan không
+        const mathWords = ["tam giác", "góc", "bằng nhau", "song song", "cạnh", "chia hết", "tổng", "đối đỉnh", "lũy thừa", "phân số", "tỉ số", "bằng", "vuông", "đường thẳng"];
+        const hasSomeMath = mathWords.some(w => userAnsLower.includes(w));
+        if (hasSomeMath) {
+          score = (3.0 + Math.random() * 1.5).toFixed(1);
+          badgeClass = "score-badge-low";
+          comment = `⚠️ ${studentName} có đề cập đến một số khái niệm liên quan nhưng cách phát biểu chưa chính xác hoặc còn nhầm lẫn.`;
+        } else {
+          score = (1.0 + Math.random() * 1.0).toFixed(1);
+          badgeClass = "score-badge-low";
+          comment = `❌ Câu trả lời của ${studentName} chưa đúng trọng tâm của định lý **${thmTitle}**.`;
+        }
+      }
+
+      let detailBreakdown = "";
+      if (matchedList.length > 0) {
+        detailBreakdown += `\n- ✅ **Ý đã nêu đúng**: ${matchedList.join(", ")}`;
+      }
+      if (missedList.length > 0) {
+        detailBreakdown += `\n- 🔍 **Ý/Điều kiện còn thiếu**: ${missedList.join(", ")}`;
+      }
+
+      return `<div class="${badgeClass}">⭐ Điểm số: ${score} / 10</div>
+
+💡 **Nhận xét của Thầy**:
+${comment}${detailBreakdown}
+
+📖 **Phát biểu chuẩn SGK Kết nối tri thức**:
+*"${std}"*
+
+${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$` : ""}`;
+    }
 
     // 1. Phân tích bài toán về Góc và Tam giác (Định lý Tổng ba góc trong tam giác)
     if (
@@ -6686,17 +6868,6 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
 2. 🎯 **Kết luận**: ${foundThm.conclusion || "Yếu tố cần chứng minh hoặc tính toán"}
 3. ❓ **Câu hỏi rèn luyện**: ${foundThm.aiQuestion || "Em hãy áp dụng công thức trên để tính nhé!"}`;
       }
-    }
-
-    // 8. Chế độ Đánh giá / Chấm điểm Định lý
-    if (mode === "evaluate") {
-      const std = context?.standardAnswer || "";
-      return `⭐ **Điểm số**: 9.5 / 10
-
-💡 **Nhận xét của Thầy**: Câu trả lời của ${studentName} rất tốt, hiểu đúng bản chất toán học và diễn đạt tự nhiên!
-${std ? `\n📖 **Chuẩn SGK Kết nối tri thức**: *"${std}"*` : ''}
-
-🎉 Em tiếp tục giữ vững phong độ học tập tuyệt vời này nhé!`;
     }
 
     // 9. Phản hồi Socratic dẫn dắt
@@ -7155,20 +7326,44 @@ ${std ? `\n📖 **Chuẩn SGK Kết nối tri thức**: *"${std}"*` : ''}
     feedbackBox.style.display = "block";
     feedbackContent.innerHTML = "Đang đối chiếu với chuẩn SGK Kết nối tri thức...";
 
-    const promptText = `Học sinh trả lời câu hỏi: "${thm.aiQuestion}"\nCâu trả lời của học sinh: "${answer}"\nĐịnh lý chuẩn: "${thm.standardAnswer}"`;
+    const promptText = `Học sinh trả lời câu hỏi: "${thm.aiQuestion || thm.title}"\nCâu trả lời của học sinh: "${answer}"\nĐịnh lý chuẩn: "${thm.standardAnswer}"`;
+
+    const studentName = (currentUser && !currentUser.isGuest) ? currentUser.fullname : "em";
 
     const reply = await callAIBackend({
       prompt: promptText,
       mode: "evaluate",
       context: {
+        studentName: studentName,
+        studentAnswer: answer,
         theoremTitle: thm.title,
-        standardAnswer: thm.standardAnswer
+        standardAnswer: thm.standardAnswer,
+        keywords: thm.keywords || [],
+        formula: thm.formula || "",
+        hypothesis: thm.hypothesis || "",
+        conclusion: thm.conclusion || ""
       }
     });
 
-    feedbackContent.innerHTML = reply.replace(/\n/g, "<br>");
+    feedbackContent.innerHTML = formatAIResponseHTML(reply);
     renderAllMath(feedbackContent);
-    playSuccessSound();
+
+    // Cập nhật Leitner Box và âm thanh theo kết quả
+    const isHighScore = reply.includes("score-badge-high") || reply.includes("Điểm số: 9") || reply.includes("Điểm số: 10") || reply.includes("Điểm số: 8.");
+    const isMedScore = reply.includes("score-badge-med") || reply.includes("Điểm số: 6") || reply.includes("Điểm số: 7");
+
+    if (isHighScore) {
+      playCelebration();
+      setLeitnerBox(thm.id, "green");
+      addExpAndCoins(20, 10);
+    } else if (isMedScore) {
+      playSuccessSound();
+      setLeitnerBox(thm.id, "yellow");
+      addExpAndCoins(10, 5);
+    } else {
+      playTone(220, "sawtooth", 0.25);
+      setLeitnerBox(thm.id, "red");
+    }
 
     btnSubmit.disabled = false;
     btnSubmit.innerHTML = `<span>🚀 Gửi Câu Trả Lời Cho AI Chấm Điểm</span>`;

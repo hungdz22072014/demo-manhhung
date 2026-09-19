@@ -78,7 +78,27 @@ Phong cách:
   + Nếu học sinh hỏi BẤT KỲ CÂU HỎI NÀO KHÁC (kiến thức chung, mẹo tính nhanh, logic toán...): Thầy trả lời tường minh, sâu sắc, hữu ích và truyền cảm hứng học tập.`;
 
         if (mode === "evaluate") {
-          geminiSystemInstruction += `\n[CHẾ ĐỘ ĐÁNH GIÁ ĐỊNH LÝ]: So sánh với đáp án chuẩn: "${context?.standardAnswer || ""}". Đánh giá ý nghĩa ngữ nghĩa, cho điểm 1-10, khen ngợi và chỉ ra điều kiện thiếu một cách tường tận.`;
+          geminiSystemInstruction += `\n[CHẾ ĐỘ CHẤM ĐIỂM & ĐÁNH GIÁ VẤN ĐÁP ĐỊNH LÝ]:
+Định lý: "${context?.theoremTitle || ""}"
+Chuẩn SGK Kết nối tri thức: "${context?.standardAnswer || ""}"
+Từ khóa trọng tâm: ${JSON.stringify(context?.keywords || [])}
+Câu trả lời của học sinh: "${context?.studentAnswer || prompt}"
+
+TIÊU CHÍ CHẤM ĐIỂM NGHIÊM NGẶT (TUYỆT ĐỐI TUÂN THỦ):
+1. NẾU HỌC SINH NÓI "KHÔNG BIẾT", "CHƯA HỌC", "QUÊN RỒI", "CHỊU", "TÔI KHÔNG BIẾT", "KHÔNG NHỚ", HOẶC TRẢ LỜI LINH TINH / SAI HOÀN TOÀN:
+   - BẮT BUỘC CHẤM: 0 / 10 hoặc 1 / 10 điểm (TUYỆT ĐỐI KHÔNG ĐƯỢC CHẤM 8-9 ĐIỂM HOẶC KHEN CHÍNH XÁC).
+   - Nhận xét nhẹ nhàng, động viên học sinh đừng nản lòng, việc chưa thuộc là bình thường và hướng dẫn em đọc kỹ định lý chuẩn bên dưới để ôn tập.
+2. NẾU HỌC SINH TRẢ LỜI ĐÚNG MỘT PHẦN NHƯNG THIẾU ĐIỀU KIỆN:
+   - Chấm điểm: 4/10 đến 7/10 điểm tương ứng. Chỉ rõ điều kiện còn thiếu.
+3. NẾU HỌC SINH PHÁT BIỂU ĐẦY ĐỦ, CHÍNH XÁC:
+   - Chấm điểm: 8.5/10 đến 10/10 điểm.
+
+CẤU TRÚC PHẢN HỒI:
+⭐ **Điểm số**: X / 10
+💡 **Nhận xét của Thầy**: [Lời nhận xét công tâm, đúng thực tế]
+- ✅ **Ý đã đúng**: [Nêu rõ nếu có]
+- 🔍 **Ý/Điều kiện còn thiếu hoặc cần sửa**: [Chỉ ra cụ thể nếu có]
+📖 **Phát biểu chuẩn SGK Kết nối tri thức**: "${context?.standardAnswer || ""}"`;
         }
 
         const geminiBody = {

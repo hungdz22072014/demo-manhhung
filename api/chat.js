@@ -54,8 +54,29 @@ Xưng hô: Xưng 'Thầy' và gọi học sinh bằng tên thân mật (nếu c�
    - ❓ **Bước 3: Dẫn dắt từng bước**: Đặt một câu hỏi hướng dẫn cụ thể (kèm phép thế số) để học sinh tự tính ra kết quả.`;
     } else if (mode === "evaluate") {
       systemInstruction += `
-[ĐÁNH GIÁ ĐỊNH LÝ]: So sánh câu trả lời của học sinh với định lý chuẩn: ${context?.standardAnswer || ""}.
-Đánh giá khách quan, chấm điểm (thang điểm 1-10), khen ngợi điểm sáng tạo và chỉ rõ những từ khóa/điều kiện còn thiếu theo chuẩn SGK Kết nối tri thức.`;
+[CHẾ ĐỘ CHẤM ĐIỂM & ĐÁNH GIÁ VẤN ĐÁP ĐỊNH LÝ]:
+Định lý cần phát biểu: "${context?.theoremTitle || ""}"
+Nội dung chuẩn SGK Kết nối tri thức: "${context?.standardAnswer || ""}"
+Từ khóa trọng tâm: ${JSON.stringify(context?.keywords || [])}
+Câu trả lời thực tế của học sinh: "${context?.studentAnswer || prompt}"
+
+TIÊU CHÍ CHẤM ĐIỂM NGHIÊM NGẶT (TUYỆT ĐỐI TUÂN THỦ):
+1. NẾU HỌC SINH NÓI "KHÔNG BIẾT", "CHƯA HỌC", "QUÊN RỒI", "CHỊU", "TÔI KHÔNG BIẾT", "KHÔNG NHỚ", HOẶC TRẢ LỜI LINH TINH / SAI HOÀN TOÀN / KHÔNG LIÊN QUAN:
+   - BẮT BUỘC CHẤM: 0 / 10 hoặc 1 / 10 điểm. (TUYỆT ĐỐI KHÔNG ĐƯỢC CHẤM 8-9 ĐIỂM HOẶC KHEN CHÍNH XÁC).
+   - Nhận xét: Nhẹ nhàng, động viên học sinh đừng nản lòng, việc chưa thuộc là bình thường và hướng dẫn em đọc kỹ định lý chuẩn bên dưới để ôn tập.
+2. NẾU HỌC SINH TRẢ LỜI ĐÚNG MỘT PHẦN NHƯNG THIẾU ĐIỀU KIỆN (ví dụ: thiếu góc xen giữa, thiếu khác 0, thiếu tổng bằng 180 độ...):
+   - Chấm điểm: 4/10 đến 7/10 điểm tùy theo mức độ đầy đủ.
+   - Nhận xét rõ: Phần đã đúng và chỉ rõ chính xác điều kiện còn thiếu.
+3. NẾU HỌC SINH PHÁT BIỂU ĐẦY ĐỦ, CHÍNH XÁC THEO BẢN CHẤT ĐỊNH LÝ:
+   - Chấm điểm: 8.5/10 đến 10/10 điểm và khen ngợi.
+
+CẤU TRÚC PHẢN HỒI (bắt buộc theo định dạng sau):
+⭐ **Điểm số**: X / 10
+💡 **Nhận xét của Thầy**: [Lời nhận xét công tâm, đúng thực tế]
+- ✅ **Ý đã đúng**: [Nêu rõ nếu có]
+- 🔍 **Ý/Điều kiện còn thiếu hoặc cần sửa**: [Chỉ ra cụ thể nếu có]
+📖 **Phát biểu chuẩn SGK Kết nối tri thức**: "${context?.standardAnswer || ""}"
+${context?.formula ? `📐 **Công thức**: $$${context.formula}$$` : ""}`;
     }
 
     const geminiPayload = {
