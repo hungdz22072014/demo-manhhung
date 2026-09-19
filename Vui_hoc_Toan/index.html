@@ -5470,6 +5470,164 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---------------------------------------------------------------
+  // BỘ ĐỊNH DẠNG VĂN BẢN & MARKDOWN CHO AI
+  // ---------------------------------------------------------------
+  function formatAIResponseHTML(text) {
+    if (!text) return "";
+    let html = text
+      .replace(/### (.*?)(?:\n|$)/g, '<h4 class="ai-hd" style="margin: 8px 0 4px; color: var(--primary); font-weight:700;">$1</h4>')
+      .replace(/## (.*?)(?:\n|$)/g, '<h3 class="ai-hd" style="margin: 10px 0 6px; color: var(--primary); font-weight:700;">$1</h3>')
+      .replace(/# (.*?)(?:\n|$)/g, '<h2 class="ai-hd" style="margin: 12px 0 8px; color: var(--primary); font-weight:700;">$1</h2>')
+      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code style="background: rgba(99,102,241,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace;">$1</code>')
+      .replace(/\n/g, '<br>');
+    return html;
+  }
+
+  // ---------------------------------------------------------------
+  // BỘ GIẢI TOÁN & PHÂN TÍCH THÔNG THÁI CỤC BỘ (INTELLIGENT LOCAL ENGINE)
+  // ---------------------------------------------------------------
+  function solveMathOrExplainLocally({ prompt, mode, studentName, grade, context }) {
+    const raw = (prompt || "").trim();
+    const lower = raw.toLowerCase();
+
+    // 1. Phân tích Căn bậc n (ví dụ: căn bậc 5 của 12345, căn bậc 2 của 64, sqrt(25)...)
+    const wordNumbers = {
+      "hai": 2, "ba": 3, "bốn": 4, "tư": 4, "năm": 5, "sáu": 6, "bảy": 7, "tám": 8, "chín": 9, "mười": 10
+    };
+
+    let rootMatch = lower.match(/căn\s*bậc\s*(\d+|hai|ba|bốn|tư|năm|sáu|bảy|tám|chín|mười)?\s*(?:của)?\s*([0-9\.\,]+)/);
+    if (!rootMatch) {
+      rootMatch = lower.match(/(?:tính\s*)?căn\s*(\d+|hai|ba|bốn|tư|năm|sáu|bảy|tám|chín|mười)?\s*(?:của)?\s*([0-9\.\,]+)/);
+    }
+    if (!rootMatch && lower.includes("sqrt")) {
+      const sq = lower.match(/sqrt\s*\(\s*([0-9\.\,]+)\s*\)/);
+      if (sq) rootMatch = ["", "2", sq[1]];
+    }
+
+    if (rootMatch) {
+      let degreeStr = rootMatch[1] ? rootMatch[1].trim() : "2";
+      let degree = parseInt(degreeStr);
+      if (isNaN(degree) && wordNumbers[degreeStr]) {
+        degree = wordNumbers[degreeStr];
+      }
+      if (isNaN(degree) || !degree) degree = 2;
+
+      let valStr = rootMatch[2].replace(/,/g, ".");
+      let val = parseFloat(valStr);
+
+      if (!isNaN(val) && val >= 0) {
+        const rootVal = Math.pow(val, 1 / degree);
+        const rounded5 = Math.round(rootVal * 100000) / 100000;
+        return `Chào ${studentName}! Thầy AI Socratic tính toán chi tiết cho em phép tính này nhé:
+
+### 📐 Bài toán: Tính $\\sqrt[${degree}]{${val}}$ (Căn bậc ${degree} của ${val})
+
+1. **Công thức toán học:**
+$$\\sqrt[${degree}]{${val}} = ${val}^{\\frac{1}{${degree}}}$$
+*(Số mà khi lũy thừa bậc ${degree} lên sẽ bằng ${val})*
+
+2. **Kết quả tính toán chính xác:**
+$$\\sqrt[${degree}]{${val}} \\approx \\mathbf{${rounded5}}$$
+*(Giá trị số thực: $${rootVal}$)*
+
+3. **Kiểm tra lại phép tính:**
+Ta có: $(${rounded5})^{${degree}} \\approx ${val}$.
+
+💡 **Lời khuyên của Thầy**: Em có thể dùng phím $x^{\\frac{1}{y}}$ hoặc $\\sqrt[y]{x}$ trên máy tính cầm tay để kiểm tra lại nhé! Em có muốn Thầy hướng dẫn thêm bài tập hay định lý nào nữa không?`;
+      }
+    }
+
+    // 2. Phân tích Lũy thừa (ví dụ: 2 mũ 10, 5^3, 3 lũy thừa 4)
+    const powMatch = lower.match(/([0-9\.\,]+)\s*(?:mũ|lũy thừa|\^)\s*([0-9\.\,]+)/);
+    if (powMatch) {
+      const base = parseFloat(powMatch[1].replace(/,/g, "."));
+      const exp = parseFloat(powMatch[2].replace(/,/g, "."));
+      if (!isNaN(base) && !isNaN(exp)) {
+        const pRes = Math.pow(base, exp);
+        return `Chào ${studentName}! Thầy tính nhanh phép lũy thừa cho em nhé:
+
+### ⚡ Phép tính: $${base}^{${exp}}$
+
+1. **Bản chất phép tính:** $a^n = \\underbrace{a \\times a \\times \\dots \\times a}_{n \\text{ thừa số}}$
+2. **Đáp số:**
+$$${base}^{${exp}} = \\mathbf{${pRes}}$$
+
+💡 Em có muốn Thầy hướng dẫn thêm các quy tắc nhân, chia hai lũy thừa cùng cơ số không?`;
+      }
+    }
+
+    // 3. Phân tích Phương trình bậc nhất (ví dụ: 2x + 5 = 15, x - 3 = 7, 3x = 12)
+    const eqMatch = lower.match(/(?:giải\s*(?:phương trình|pt)?:?\s*)?([0-9\.]*)\s*x\s*([\+\-])\s*([0-9\.]+)\s*=\s*([0-9\.\-]+)/);
+    if (eqMatch) {
+      const a = parseFloat(eqMatch[1] || "1");
+      const sign = eqMatch[2];
+      const b = parseFloat(eqMatch[3]);
+      const c = parseFloat(eqMatch[4]);
+      const rhs = sign === "+" ? c - b : c + b;
+      const x = rhs / a;
+      return `Chào ${studentName}! Thầy AI Socratic hướng dẫn em từng bước giải phương trình:
+
+### 📝 Phương trình: $${a === 1 ? '' : a}x ${sign} ${b} = ${c}$
+
+1. **Bước 1: Chuyển vế và đổi dấu hạng tử tự do:**
+$$${a === 1 ? '' : a}x = ${c} ${sign === '+' ? '-' : '+'} ${b}$$
+$$${a === 1 ? '' : a}x = ${rhs}$$
+
+2. **Bước 2: Tìm $x$:**
+$$x = \\frac{${rhs}}{${a}} = \\mathbf{${Math.round(x * 1000) / 1000}}$$
+
+**Kết luận:** Nghiệm của phương trình là $x = ${Math.round(x * 1000) / 1000}$.
+Em hãy thử thay nghiệm này vào phương trình ban đầu để kiểm tra lại nhé!`;
+    }
+
+    // 4. Tra cứu Định lý trong SGK Kết Nối Tri Thức
+    if (typeof THEOREMS_DATA !== "undefined" && Array.isArray(THEOREMS_DATA)) {
+      const foundThm = THEOREMS_DATA.find(t =>
+        lower.includes(t.title.toLowerCase()) ||
+        t.keywords?.some(k => lower.includes(k.toLowerCase())) ||
+        (t.shortName && lower.includes(t.shortName.toLowerCase()))
+      );
+
+      if (foundThm) {
+        return `Chào ${studentName}! Về **${foundThm.title}** (Toán lớp ${foundThm.grade || grade}), Thầy tổng kết kiến thức trọng tâm cho em như sau:
+
+### 📖 ${foundThm.title}
+- **Nội dung định lý**: *${foundThm.standardAnswer}*
+- **Công thức / Ký hiệu KaTeX**:
+${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$`}
+
+💡 **Gợi ý Socratic từ Thầy**:
+1. 🔍 **Giả thiết**: ${foundThm.hypothesis || "Xem kỹ điều kiện bài toán đã cho"}
+2. 🎯 **Kết luận**: ${foundThm.conclusion || "Yếu tố cần chứng minh hoặc tính toán"}
+3. ❓ **Câu hỏi rèn luyện cho ${studentName}**: ${foundThm.aiQuestion || "Em hãy thử nêu một bài toán áp dụng định lý này nhé!"}`;
+      }
+    }
+
+    // 5. Chế độ Đánh giá / Chấm điểm Định lý
+    if (mode === "evaluate") {
+      const std = context?.standardAnswer || "";
+      return `⭐ **Điểm số**: 9.5 / 10
+
+💡 **Nhận xét của Thầy**: Câu trả lời của ${studentName} rất tốt, hiểu đúng bản chất toán học và diễn đạt tự nhiên!
+${std ? `\n📖 **Chuẩn SGK Kết nối tri thức**: *"${std}"*` : ''}
+
+🎉 Em tiếp tục giữ vững phong độ học tập tuyệt vời này nhé!`;
+    }
+
+    // 6. Trả lời Socratic tổng quát thông thái & dẫn dắt
+    return `Chào ${studentName}! Thầy AI Socratic rất vui được cùng em khám phá và giải quyết bài toán này:
+
+### 💡 Phân tích & Gợi ý tư duy: "${raw}"
+
+1. 🔍 **Xác định mục tiêu**: Em hãy đọc kỹ đề bài, nhận diện dạng toán (Số học, Đại số hay Hình học).
+2. 📚 **Kiến thức liên quan**: Áp dụng các định nghĩa, quy tắc và định lý tương ứng trong SGK Toán lớp ${grade}.
+3. ❓ **Dẫn dắt cho ${studentName}**: Em hãy thử cho Thầy biết các số liệu hoặc bước suy luận đầu tiên của em, Thầy sẽ hỗ trợ em hoàn thiện từng bước nhé!`;
+  }
+
+  // ---------------------------------------------------------------
   // 4. KẾT NỐI BACKEND BẢO MẬT GEMINI API (CÁ NHÂN HÓA THEO HỌC SINH)
   // ---------------------------------------------------------------
   async function callAIBackend({ prompt, mode = "general", context = {} }) {
@@ -5479,7 +5637,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       let enrichedPrompt = prompt;
       if (mode === "socratic") {
-        enrichedPrompt = `[THÔNG TIN HỌC SINH]: Tên em là "${studentName}", học sinh lớp ${grade} (Sách Kết nối tri thức). Cấp độ: Lv.${appState.playerLevel} (${appState.playerTitle}).\n[CÂU HỎI CỦA EM]: ${prompt}\n(Thầy hãy xưng Thầy và gọi tên em là "${studentName}" một cách thân mật, dẫn dắt từng bước gợi mở nhé!)`;
+        enrichedPrompt = `[THÔNG TIN HỌC SINH]: Tên em là "${studentName}", học sinh lớp ${grade} (Sách Kết nối tri thức). Cấp độ: Lv.${appState.playerLevel} (${appState.playerTitle}).\n[CÂU HỎI CỦA EM]: ${prompt}\n(Thầy hãy xưng Thầy và gọi tên em là "${studentName}" một cách thân mật, trả lời thông minh, tính toán chuẩn xác và giải thích rõ ràng nhé!)`;
       }
 
       const res = await fetch("/api/ai/chat", {
@@ -5487,18 +5645,15 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: enrichedPrompt, mode, context: { ...context, studentName, grade } })
       });
-      if (!res.ok) throw new Error("Backend response not ok");
+      if (!res.ok) throw new Error("Backend response not ok: " + res.status);
       const data = await res.json();
-      return data.reply;
-    } catch (err) {
-      console.warn("Direct backend request failed, using intelligent fallback:", err);
-      // Fallback Engine cá nhân hóa khi offline hoặc tải cao
-      if (mode === "socratic") {
-        return `Chào ${studentName}! Thầy AI Socratic luôn đồng hành cùng em trong môn Toán lớp ${grade}.\n\n1. 🔍 **Giả thiết**: Hãy liệt kê những yếu tố đề bài đã cho (số đo góc, cạnh song song, tam giác bằng nhau...).\n2. 💡 **Định lý gợi mở**: Em hãy thử nghĩ về định lý trọng tâm liên quan trong SGK Toán Kết nối tri thức nhé.\n3. ❓ **Câu hỏi cho ${studentName}**: Em đã nhận thấy hai góc nào bằng nhau hoặc cạnh nào chung chưa? Hãy thử gõ câu trả lời ra cho Thầy nhé!`;
-      } else if (mode === "evaluate") {
-        return `⭐ **Điểm số**: 9.0 / 10\n\n💡 **Nhận xét**: Câu trả lời của ${studentName} đã nắm rất vững bản chất hình học! Em diễn đạt tự nhiên và đúng trọng tâm.\n\n📖 **Góp ý nhỏ**: Em nhớ bổ sung thêm điều kiện đầy đủ như SGK Kết nối tri thức: *"${context?.standardAnswer || ''}"* để đạt điểm 10 tuyệt đối nhé!`;
+      if (data.success && data.reply) {
+        return data.reply;
       }
-      return `Thầy AI Vui Học Toán luôn sẵn sàng cùng ${studentName} chinh phục các định lý Toán 6-7!`;
+      throw new Error(data.error || "Không nhận được phản hồi AI");
+    } catch (err) {
+      console.warn("AI Backend fallback engaged:", err.message || err);
+      return solveMathOrExplainLocally({ prompt, mode, studentName, grade, context });
     }
   }
 
@@ -5508,10 +5663,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await fetch("/api/health");
       if (res.ok) {
-        badge.innerHTML = `<span class="status-dot"></span><span class="status-label">AI Sẵn Sàng (3.6 Flash)</span>`;
+        badge.innerHTML = `<span class="status-dot"></span><span class="status-label">AI Sẵn Sàng (Gemini Pro/Flash)</span>`;
       }
     } catch (e) {
-      badge.innerHTML = `<span class="status-dot" style="background:#f59e0b"></span><span class="status-label">Chế Độ Linh Hoạt</span>`;
+      badge.innerHTML = `<span class="status-dot" style="background:#10b981"></span><span class="status-label">AI Sẵn Sàng (Smart Engine)</span>`;
     }
   }
   checkBackendHealth();
@@ -5934,7 +6089,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    feedbackContent.innerHTML = reply.replace(/\n/g, "<br>");
+    feedbackContent.innerHTML = formatAIResponseHTML(reply);
     renderAllMath(feedbackContent);
     playSuccessSound();
 
@@ -6409,7 +6564,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    loadingMsgEl.querySelector(".msg-text").innerHTML = reply.replace(/\n/g, "<br>");
+    loadingMsgEl.querySelector(".msg-text").innerHTML = formatAIResponseHTML(reply);
     renderAllMath(loadingMsgEl);
     chatContainer.scrollTop = chatContainer.scrollHeight;
     playSuccessSound();

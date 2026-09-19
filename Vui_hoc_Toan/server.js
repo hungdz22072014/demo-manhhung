@@ -1,5 +1,5 @@
 // =================================================================
-// NODE.JS / EXPRESS BACKEND SERVER - BẢO MẬT API KEY
+// NODE.JS / EXPRESS BACKEND SERVER - BẢO MẬT API KEY & MULTI-MODEL FALLBACK
 // =================================================================
 
 const http = require("http");
@@ -13,8 +13,16 @@ if (!API_KEY && fs.existsSync(keyFilePath)) {
     API_KEY = fs.readFileSync(keyFilePath, "utf8").trim();
   } catch (e) {}
 }
+
 const PORT = process.env.PORT || 3000;
-const MODEL = "gemini-3.6-flash";
+const PREFERRED_MODELS = [
+  "gemini-3.5-flash",
+  "gemini-3.5-flash-lite",
+  "gemini-3.6-flash",
+  "gemini-flash-latest",
+  "gemini-3.1-flash-lite",
+  "gemini-3-flash-preview"
+];
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -42,7 +50,12 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === "/api/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ status: "ok", model: MODEL, secured: true }));
+    return res.end(JSON.stringify({
+      status: "ok",
+      models: PREFERRED_MODELS,
+      activeModel: PREFERRED_MODELS[0],
+      secured: true
+    }));
   }
 
   if (url.pathname === "/api/ai/chat" && req.method === "POST") {
@@ -52,57 +65,74 @@ const server = http.createServer(async (req, res) => {
       try {
         const payload = JSON.parse(body || "{}");
         const { prompt, mode, context } = payload;
+        const studentName = context?.studentName || "em";
+        const grade = context?.grade || 7;
 
-        let geminiSystemInstruction = `Bạn là trợ lý AI 'Vui Học Toán' (Toán THCS lớp 6-7 theo bộ sách Kết nối tri thức với cuộc sống). Luôn dùng tiếng Việt thân thiện, công thức KaTeX ($...$), bám sát chuẩn kiến thức SGK Kết nối tri thức.`;
+        let geminiSystemInstruction = `Bạn là "Thầy AI Socratic" - Trợ lý & Gia sư AI Toán học Thông Thái, Toàn Năng (Đồng hành cùng học sinh THCS lớp 6, 7 theo bộ sách Kết nối tri thức với cuộc sống và Toán học tổng quát).
+Phong cách:
+- Thân thiện, sư phạm, xưng là "Thầy" và gọi học sinh là "${studentName}".
+- Sử dụng tiếng Việt chuẩn mực, công thức toán viết bằng ký hiệu KaTeX/LaTeX chuẩn ($...$ cho inline và $$...$$ cho khối công thức).
+- Trả lời thông minh, chính xác, linh hoạt theo đúng bản chất câu hỏi:
+  + Nếu học sinh yêu cầu TÍNH TOÁN CỤ THỂ (ví dụ: căn bậc n, luỹ thừa, biểu thức số học, giá trị đại số...): Thầy PHẢI tính toán chính xác kết quả số học ra giá trị cụ thể, hiển thị công thức đẹp mắt, giải thích từng bước rõ ràng. Tuyệt đối không từ chối và không trả lời rập khuôn theo một khuôn mẫu không liên quan.
+  + Nếu học sinh hỏi BÀI TẬP / HÌNH HỌC / ĐỊNH LÝ: Thầy gợi mở tư duy theo phương pháp Socratic, nêu rõ giả thiết, định lý liên quan và hướng dẫn từng bước để học sinh hiểu sâu bản chất.
+  + Nếu học sinh hỏi BẤT KỲ CÂU HỎI NÀO KHÁC (kiến thức chung, mẹo tính nhanh, logic toán...): Thầy trả lời tường minh, sâu sắc, hữu ích và truyền cảm hứng học tập.`;
 
-        if (mode === "socratic") {
-          geminiSystemInstruction += ` [PHƯƠNG PHÁP SOCRATIC]: Không giải bài hộ. Hãy hỏi gợi mở: 1) Xác định giả thiết & kết luận; 2) Gợi ý định lý SGK; 3) Đặt 1 câu hỏi nhỏ tiếp theo để học sinh tự suy luận.`;
-        } else if (mode === "evaluate") {
-          geminiSystemInstruction += ` [ĐÁNH GIÁ ĐỊNH LÝ]: So sánh với đáp án chuẩn: ${context?.standardAnswer || ""}. Đánh giá ý nghĩa ngữ nghĩa, cho điểm 1-10, khen ngợi và chỉ ra điều kiện thiếu.`;
+        if (mode === "evaluate") {
+          geminiSystemInstruction += `\n[CHẾ ĐỘ ĐÁNH GIÁ ĐỊNH LÝ]: So sánh với đáp án chuẩn: "${context?.standardAnswer || ""}". Đánh giá ý nghĩa ngữ nghĩa, cho điểm 1-10, khen ngợi và chỉ ra điều kiện thiếu một cách tường tận.`;
         }
 
         const geminiBody = {
           contents: [
             {
               role: "user",
-              parts: [{ text: `${geminiSystemInstruction}\n\n[YÊU CẦU CỦA HỌC SINH]:\n${prompt || "Xin chào!"}` }]
+              parts: [{ text: `${geminiSystemInstruction}\n\n[CÂU HỎI HOẶC YÊU CẦU CỦA HỌC SINH]:\n${prompt || "Xin chào Thầy!"}` }]
             }
           ],
-          generationConfig: { temperature: 0.4, maxOutputTokens: 1200 }
+          generationConfig: { temperature: 0.3, maxOutputTokens: 2000 }
         };
 
-        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(geminiBody)
-        });
-
-        const data = await geminiRes.json();
-        if (data.error) {
-          console.error("Gemini API Error:", data.error);
-          throw new Error(data.error.message || "Gemini API Error");
-        }
-
         let replyText = "";
-        const parts = data?.candidates?.[0]?.content?.parts;
-        if (Array.isArray(parts)) {
-          for (const p of parts) {
-            if (p.text) replyText += p.text;
+        let usedModel = "";
+        let lastError = null;
+
+        for (const modelName of PREFERRED_MODELS) {
+          try {
+            const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${API_KEY}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(geminiBody)
+            });
+
+            const data = await geminiRes.json();
+            if (geminiRes.ok && data.candidates && data.candidates[0]?.content?.parts) {
+              const parts = data.candidates[0].content.parts;
+              for (const p of parts) {
+                if (p.text) replyText += p.text;
+              }
+              if (replyText.trim()) {
+                usedModel = modelName;
+                break;
+              }
+            } else {
+              lastError = data.error || { message: `Model ${modelName} code ${geminiRes.status}` };
+            }
+          } catch (modelErr) {
+            lastError = modelErr;
           }
         }
 
         if (!replyText) {
-          replyText = "Thầy đã ghi nhận câu trả lời của em!";
+          throw new Error(lastError?.message || "Không gọi được AI");
         }
 
         res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-        return res.end(JSON.stringify({ success: true, reply: replyText, model: MODEL }));
+        return res.end(JSON.stringify({ success: true, reply: replyText, model: usedModel }));
       } catch (err) {
         console.error("Server AI Handler Error:", err.message || err);
         res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
         return res.end(JSON.stringify({
-          success: true,
-          reply: "Chào em! Thầy AI Vui Học Toán đồng hành cùng em. Hãy xem lại giả thiết bài toán và định lý liên quan nhé!",
+          success: false,
+          error: err.message || "Lỗi xử lý AI",
           isFallback: true
         }));
       }
@@ -140,4 +170,3 @@ process.on("unhandledRejection", (reason) => {
 server.listen(PORT, () => {
   console.log(`[OK] Server running at http://localhost:${PORT}`);
 });
-
