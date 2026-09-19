@@ -5757,7 +5757,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 1. Bảo vệ các khối công thức KaTeX ($$...$$ và $...$) trước khi parse markdown
     const mathPlaceholders = [];
     let cleanText = text.replace(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g, (match) => {
-      const ph = `%%%MATH_PLACEHOLDER_${mathPlaceholders.length}%%%`;
+      const ph = `KATEXPLACEHOLDER${mathPlaceholders.length}END`;
       mathPlaceholders.push(match);
       return ph;
     });
@@ -5771,20 +5771,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. Định dạng Bold, Italic, Strikethrough, Inline Code
     cleanText = cleanText
       .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-      .replace(/___(.*?)___/g, '<strong><em>$1</em></strong>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/__(.*?)__/g, '<strong>$1</strong>')
       .replace(/\*([^\*\n]+)\*/g, '<em>$1</em>')
-      .replace(/_([^_\n]+)_/g, '<em>$1</em>')
       .replace(/~~(.*?)~~/g, '<del>$1</del>')
       .replace(/`([^`\n]+)`/g, '<code class="ai-inline-code">$1</code>');
 
     // 4. Ngắt dòng
     cleanText = cleanText.replace(/\n/g, '<br>');
 
-    // 5. Khôi phục lại công thức KaTeX nguyên vẹn
+    // 5. Khôi phục lại công thức KaTeX nguyên vẹn (sử dụng split/join để tránh lỗi $1 của regex replace)
     mathPlaceholders.forEach((phMath, idx) => {
-      cleanText = cleanText.replace(`%%%MATH_PLACEHOLDER_${idx}%%%`, phMath);
+      const ph = `KATEXPLACEHOLDER${idx}END`;
+      cleanText = cleanText.split(ph).join(phMath);
     });
 
     return cleanText;
