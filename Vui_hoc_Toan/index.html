@@ -6613,6 +6613,96 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---------------------------------------------------------------
+  // 3.1.1. BỘ CHUẨN HÓA VĂN BẢN TOÁN HỌC & TỪ ĐỒNG NGHĨA LINH HOẠT
+  // ---------------------------------------------------------------
+  function normalizeMathText(text) {
+    if (!text) return "";
+    return text
+      .toLowerCase()
+      .replace(/[°º]/g, " độ ")
+      .replace(/\+/g, " cộng ")
+      .replace(/-(?!\w)/g, " trừ ")
+      .replace(/\*/g, " nhân ")
+      .replace(/\//g, " chia ")
+      .replace(/=/g, " bằng ")
+      .replace(/≠|!=/g, " khác ")
+      .replace(/⊥/g, " vuông góc ")
+      .replace(/\/\//g, " song song ")
+      .replace(/[,\.;:!\?"'\(\)\[\]\{\}]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  const SYNONYMS_MAP = [
+    { keys: ["90 độ", "90", "vuông", "góc vuông"], canonical: "90 độ" },
+    { keys: ["180 độ", "180", "hai góc vuông"], canonical: "180 độ" },
+    { keys: ["60 độ", "60"], canonical: "60 độ" },
+    { keys: ["chẵn", "0 2 4 6 8", "0, 2, 4, 6, 8", "chữ số chẵn", "số chẵn"], canonical: "chẵn" },
+    { keys: ["0", "số 0", "chữ số 0", "không"], canonical: "0" },
+    { keys: ["bằng nhau", "bằng", "như nhau", "đều bằng nhau", "bằng với"], canonical: "bằng nhau" },
+    { keys: ["vuông góc", "vuông góc với nhau", "cắt vuông góc", "vuông góc với"], canonical: "vuông góc" },
+    { keys: ["song song", "song song với nhau", "song song với"], canonical: "song song" },
+    { keys: ["khác 0", "khác không", "b khác 0", "mẫu khác 0", "khác số 0"], canonical: "khác 0" },
+    { keys: ["nhỏ nhất", "bé nhất", "min"], canonical: "nhỏ nhất" },
+    { keys: ["lớn nhất", "cao nhất", "max", "dài nhất"], canonical: "lớn nhất" },
+    { keys: ["tổng", "tổng các chữ số", "tổng số"], canonical: "tổng" },
+    { keys: ["cộng", "cộng lại", "cộng các số mũ"], canonical: "cộng" },
+    { keys: ["trừ", "trừ đi", "trừ các số mũ"], canonical: "trừ" },
+    { keys: ["nhân", "nhân lại", "nhân với"], canonical: "nhân" },
+    { keys: ["chia", "chia cho", "chia hết"], canonical: "chia" },
+    { keys: ["trung điểm", "điểm chính giữa", "chính giữa", "ở giữa"], canonical: "trung điểm" },
+    { keys: ["cách đều", "khoảng cách bằng nhau", "cách đều nhau"], canonical: "cách đều" },
+    { keys: ["nằm giữa", "ở giữa hai điểm", "ở giữa"], canonical: "nằm giữa" },
+    { keys: ["đổi dấu", "thay đổi dấu"], canonical: "đổi dấu" },
+    { keys: ["dấu trừ", "trừ", "âm"], canonical: "dấu trừ" },
+    { keys: ["dấu cộng", "cộng", "dương"], canonical: "dấu cộng" },
+    { keys: ["tia đối", "đối nhau", "tia đối nhau"], canonical: "tia đối" },
+    { keys: ["c-c-c", "cạnh - cạnh - cạnh", "cạnh cạnh cạnh", "ccc"], canonical: "c-c-c" },
+    { keys: ["c-g-c", "cạnh - góc - cạnh", "cạnh góc cạnh", "cgc"], canonical: "c-g-c" },
+    { keys: ["g-c-g", "góc - cạnh - góc", "góc cạnh góc", "gcg"], canonical: "g-c-g" },
+    { keys: ["2/3", "hai phần ba", "2 phần 3"], canonical: "2/3" },
+    { keys: ["1/2", "một nửa", "nửa", "chia đôi", "chia 2"], canonical: "1/2" },
+    { keys: ["trọng tâm", "g", "điểm g"], canonical: "trọng tâm" },
+    { keys: ["trực tâm", "h", "điểm h"], canonical: "trực tâm" },
+    { keys: ["cạnh huyền", "huyền"], canonical: "cạnh huyền" }
+  ];
+
+  function checkBlankAnswer(userRaw, expectedRaw) {
+    if (!userRaw && !expectedRaw) return true;
+    if (!userRaw || !expectedRaw) return false;
+
+    const expectedList = Array.isArray(expectedRaw) ? expectedRaw : [expectedRaw];
+    const userNorm = normalizeMathText(userRaw);
+
+    for (const exp of expectedList) {
+      const expNorm = normalizeMathText(exp);
+
+      // 1. Exact match sau khi chuẩn hóa
+      if (userNorm === expNorm) return true;
+
+      // 2. Tra cứu nhóm từ đồng nghĩa (Synonyms)
+      for (const group of SYNONYMS_MAP) {
+        const userInGroup = group.keys.some(k => normalizeMathText(k) === userNorm || userNorm.includes(normalizeMathText(k)));
+        const expInGroup = group.keys.some(k => normalizeMathText(k) === expNorm || expNorm.includes(normalizeMathText(k)));
+        if (userInGroup && expInGroup) return true;
+      }
+
+      // 3. Kiểm tra chứa nhau (Inclusion check)
+      if (userNorm.length >= 3 && expNorm.includes(userNorm)) return true;
+      if (expNorm.length >= 3 && userNorm.includes(expNorm)) return true;
+
+      // 4. Bỏ qua dấu tiếng Việt / khoảng trắng nếu khớp các ký tự chính
+      const uClean = userNorm.replace(/[^a-z0-9]/g, "");
+      const eClean = expNorm.replace(/[^a-z0-9]/g, "");
+      if (uClean.length >= 3 && (uClean === eClean || eClean.includes(uClean) || uClean.includes(eClean))) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // ---------------------------------------------------------------
   // 3.2. BỘ GIẢI TOÁN & GỢI Ý SOCRATIC CHUYÊN SÂU CỤC BỘ (LOCAL INTELLIGENT ENGINE)
   // ---------------------------------------------------------------
   function solveMathOrExplainLocally({ prompt, mode, studentName, grade, context }) {
@@ -6623,8 +6713,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mode === "evaluate") {
       const std = context?.standardAnswer || "";
       const thmTitle = context?.theoremTitle || "Định lý";
-      const userAns = (context?.studentAnswer || prompt || "").trim();
-      const userAnsLower = userAns.toLowerCase();
+      const userAnsClean = (context?.studentAnswer || prompt || "").trim();
+      const userAnsLower = userAnsClean.toLowerCase();
+      const stdClean = (std || "").trim();
+      const stdLower = stdClean.toLowerCase();
 
       // Danh sách các mẫu câu thể hiện không biết / chưa học / chịu / quên
       const unknowingPhrases = [
@@ -6640,8 +6732,8 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
 
       const isUnknowing = unknowingPhrases.some(phrase => userAnsLower.includes(phrase)) ||
-        userAns.length < 5 ||
-        /^[^a-zA-Z0-9\u00C0-\u1EF9]+$/.test(userAns);
+        userAnsClean.length < 4 ||
+        /^[^a-zA-Z0-9\u00C0-\u1EF9]+$/.test(userAnsClean);
 
       if (isUnknowing) {
         return `<div class="score-badge-low">⭐ Điểm số: 0 / 10 (Chưa nắm được)</div>
@@ -6659,6 +6751,22 @@ ${context?.formula ? `📐 **Công thức toán học cần nhớ**:\n$$${contex
 - Em hãy lật thẻ **Flashcard 3D** hoặc làm bài **Thử thách Điền khuyết** để khắc sâu kiến thức nhé! Định lý này đã được tự động lưu vào **Hộp Đỏ (Hộp 1)** để nhắc em ôn lại.`;
       }
 
+      // Kiểm tra trùng khớp hoàn toàn / y hệt với đáp án chuẩn
+      const userNorm = normalizeMathText(userAnsClean);
+      const stdNorm = normalizeMathText(stdClean);
+
+      if (userNorm === stdNorm || userAnsLower === stdLower || (userNorm.length >= 20 && stdNorm.includes(userNorm))) {
+        return `<div class="score-badge-high">⭐ Điểm số: 10 / 10</div>
+
+💡 **Nhận xét của Thầy**:
+🌟 **Hoàn toàn chính xác tuyệt đối (10/10)!** ${studentName} đã phát biểu định lý **${thmTitle}** chuẩn từng câu chữ theo đúng sách giáo khoa Kết nối tri thức!
+
+📖 **Phát biểu chuẩn SGK Kết nối tri thức**:
+*"${std}"*
+
+${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$` : ""}`;
+      }
+
       // Đánh giá dựa trên độ khớp từ khóa và ngữ nghĩa
       const keywords = context?.keywords || [];
       let matchedCount = 0;
@@ -6666,8 +6774,8 @@ ${context?.formula ? `📐 **Công thức toán học cần nhớ**:\n$$${contex
       const missedList = [];
 
       keywords.forEach(kw => {
-        const kwClean = kw.toLowerCase().replace(/[\$\\]/g, "");
-        if (userAnsLower.includes(kwClean) || (kwClean.length > 3 && userAnsLower.includes(kwClean.slice(0, Math.floor(kwClean.length * 0.8))))) {
+        const kwNorm = normalizeMathText(kw);
+        if (userNorm.includes(kwNorm) || (kwNorm.length > 3 && userNorm.includes(kwNorm.slice(0, Math.floor(kwNorm.length * 0.8))))) {
           matchedCount++;
           matchedList.push(kw);
         } else {
@@ -6676,31 +6784,46 @@ ${context?.formula ? `📐 **Công thức toán học cần nhớ**:\n$$${contex
       });
 
       const totalKws = Math.max(1, keywords.length);
-      const ratio = matchedCount / totalKws;
+      const keywordRatio = matchedCount / totalKws;
+
+      // Độ tương đồng văn bản (Token overlap)
+      const userWords = userNorm.split(/\s+/).filter(w => w.length > 1);
+      const stdWords = stdNorm.split(/\s+/).filter(w => w.length > 1);
+      let overlapWords = 0;
+      userWords.forEach(w => {
+        if (stdWords.includes(w)) overlapWords++;
+      });
+      const textOverlapRatio = stdWords.length > 0 ? (overlapWords / stdWords.length) : 0;
+
+      const combinedScore = keywordRatio * 0.6 + textOverlapRatio * 0.4;
 
       // Tính điểm
       let score = 0;
       let badgeClass = "score-badge-low";
       let comment = "";
 
-      if (ratio >= 0.7 || userAnsLower.includes(std.toLowerCase().slice(0, 30))) {
-        score = Math.min(10, (9.0 + Math.random() * 1.0)).toFixed(1);
+      if (combinedScore >= 0.85 || keywordRatio === 1.0) {
+        score = 10;
         badgeClass = "score-badge-high";
-        comment = `🌟 **Xuất sắc!** Câu trả lời của ${studentName} rất chuẩn xác, nắm vững bản chất toán học của định lý **${thmTitle}**!`;
-      } else if (ratio >= 0.35) {
-        score = (5.5 + ratio * 3.0).toFixed(1);
+        comment = `🌟 **Xuất sắc 10/10!** ${studentName} đã phát biểu định lý **${thmTitle}** rất chính xác, đầy đủ toàn bộ ý và từ khóa trọng tâm!`;
+      } else if (combinedScore >= 0.65 || keywordRatio >= 0.75) {
+        score = (9.0 + (combinedScore - 0.65) * 2.5).toFixed(1);
+        if (parseFloat(score) > 9.8) score = "9.8";
+        badgeClass = "score-badge-high";
+        comment = `🌟 **Rất xuất sắc!** Câu trả lời của ${studentName} rất chuẩn xác, nắm vững bản chất toán học của định lý **${thmTitle}**!`;
+      } else if (combinedScore >= 0.35 || keywordRatio >= 0.4) {
+        score = (6.0 + (combinedScore - 0.35) * 5.0).toFixed(1);
         badgeClass = "score-badge-med";
-        comment = `👍 **Khá tốt!** ${studentName} đã nắm được ý chính của định lý, tuy nhiên còn thiếu một số ý/điều kiện quan trọng.`;
+        comment = `👍 **Khá tốt!** ${studentName} đã nắm được các ý chính của định lý, tuy nhiên cần bổ sung thêm một số ý/điều kiện quan trọng.`;
       } else {
-        // Kiểm tra xem có từ toán học liên quan không
         const mathWords = ["tam giác", "góc", "bằng nhau", "song song", "cạnh", "chia hết", "tổng", "đối đỉnh", "lũy thừa", "phân số", "tỉ số", "bằng", "vuông", "đường thẳng"];
         const hasSomeMath = mathWords.some(w => userAnsLower.includes(w));
         if (hasSomeMath) {
-          score = (3.0 + Math.random() * 1.5).toFixed(1);
+          score = "3.5";
           badgeClass = "score-badge-low";
-          comment = `⚠️ ${studentName} có đề cập đến một số khái niệm liên quan nhưng cách phát biểu chưa chính xác hoặc còn nhầm lẫn.`;
+          comment = `⚠️ ${studentName} có đề cập đến một số khái niệm toán học nhưng cách phát biểu chưa chính xác hoặc còn nhầm lẫn.`;
         } else {
-          score = (1.0 + Math.random() * 1.0).toFixed(1);
+          score = "1.0";
           badgeClass = "score-badge-low";
           comment = `❌ Câu trả lời của ${studentName} chưa đúng trọng tâm của định lý **${thmTitle}**.`;
         }
@@ -7177,10 +7300,10 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
 
     inputs.forEach(input => {
       const idx = parseInt(input.dataset.index);
-      const userVal = input.value.trim().toLowerCase();
-      const expected = thm.fillBlank.answers[idx].trim().toLowerCase();
+      const userVal = input.value;
+      const expected = thm.fillBlank.answers[idx];
 
-      if (userVal === expected || (expected.includes(userVal) && userVal.length > 2)) {
+      if (checkBlankAnswer(userVal, expected)) {
         input.classList.remove("incorrect");
         input.classList.add("correct");
       } else {
