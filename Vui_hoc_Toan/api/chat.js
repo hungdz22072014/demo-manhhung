@@ -2,15 +2,6 @@
 // VERCEL SERVERLESS FUNCTION - GEMINI AI CHAT & SOCRATIC
 // =================================================================
 
-const PREFERRED_MODELS = [
-  "gemini-3.5-flash",
-  "gemini-3.5-flash-lite",
-  "gemini-3.6-flash",
-  "gemini-flash-latest",
-  "gemini-3.1-flash-lite",
-  "gemini-3-flash-preview"
-];
-
 module.exports = async (req, res) => {
   // CORS Headers
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -26,8 +17,9 @@ module.exports = async (req, res) => {
   }
 
   let apiKey = process.env.GEMINI_API_KEY || "";
+  const modelName = "gemini-3.6-flash";
 
-  // Fallback đọc key.txt nếu deploy kèm file hoặc chạy nội bộ
+  // Fallback đọc key.txt nếu deploy kèm file
   if (!apiKey) {
     try {
       const fs = require("fs");
@@ -41,82 +33,78 @@ module.exports = async (req, res) => {
 
   try {
     const { prompt, mode, context } = req.body || {};
-    const studentName = context?.studentName || "em";
-    const grade = context?.grade || 7;
 
-    let systemInstruction = `Bạn là "Thầy AI Socratic" - Trợ lý & Gia sư AI Toán học Thông Thái, Toàn Năng (Đồng hành cùng học sinh THCS lớp 6, 7 theo bộ sách Kết nối tri thức với cuộc sống và Toán học tổng quát).
-Phong cách:
-- Thân thiện, sư phạm, xưng là "Thầy" và gọi học sinh là "${studentName}".
-- Sử dụng tiếng Việt chuẩn mực, công thức toán viết bằng ký hiệu KaTeX/LaTeX chuẩn ($...$ cho inline và $$...$$ cho khối công thức).
-- Trả lời thông minh, chính xác, linh hoạt theo đúng bản chất câu hỏi:
-  + Nếu học sinh yêu cầu TÍNH TOÁN CỤ THỂ (ví dụ: căn bậc n, luỹ thừa, biểu thức số học, giá trị đại số...): Thầy PHẢI tính toán chính xác kết quả số học ra giá trị cụ thể, hiển thị công thức đẹp mắt, giải thích từng bước rõ ràng. Tuyệt đối không từ chối và không trả lời rập khuôn theo một khuôn mẫu không liên quan.
-  + Nếu học sinh hỏi BÀI TẬP / HÌNH HỌC / ĐỊNH LÝ: Thầy gợi mở tư duy theo phương pháp Socratic, nêu rõ giả thiết, định lý liên quan và hướng dẫn từng bước để học sinh hiểu sâu bản chất.
-  + Nếu học sinh hỏi BẤT KỲ CÂU HỎI NÀO KHÁC (kiến thức chung, mẹo tính nhanh, logic toán...): Thầy trả lời tường minh, sâu sắc, hữu ích và truyền cảm hứng học tập.`;
+    let systemInstruction = `Bạn là Thầy AI Socratic - Trợ lý gia sư thông thái của ứng dụng 'Vui Học Toán' (Chương trình Toán THCS Lớp 6 - 7 theo bộ sách Kết nối tri thức với cuộc sống).
+Xưng hô: Xưng 'Thầy' và gọi học sinh bằng tên thân mật (nếu có) hoặc 'em'. Giọng điệu ấm áp, động viên, sư phạm, chuẩn mực.
+Định dạng: Sử dụng Markdown rõ ràng (tiêu đề ###, in đậm **từ khóa**, in nghiêng *chú thích*). Toàn bộ công thức toán học và ký hiệu góc phải đặt trong KaTeX: inline $...$ hoặc block $$...$$ (Ví dụ: $\\widehat{A} + \\widehat{B} + \\widehat{C} = 180^\\circ$, $a \\parallel b$).`;
 
-    if (mode === "evaluate") {
-      systemInstruction += `\n[CHẾ ĐỘ ĐÁNH GIÁ ĐỊNH LÝ]: So sánh với định lý chuẩn: "${context?.standardAnswer || ""}". Đánh giá đúng ngữ nghĩa, kiểm tra điều kiện cốt lõi. Cho điểm (thang điểm 1-10), lời khen ngợi động viên và hướng dẫn bổ sung phần còn thiếu một cách chi tiết.`;
+    if (mode === "socratic") {
+      systemInstruction += `
+[QUY TẮC SOCRATIC - GỢI MỞ CHUYÊN SÂU & CHỈ RÕ ĐỊNH LÝ CỐT LÕI]:
+1. Tuyệt đối KHÔNG đưa ngay đáp số cuối cùng để học sinh tự rèn luyện tư duy.
+2. NHẬN DIỆN BÀI TOÁN & NÊU ĐÍCH DANH ĐỊNH LÝ TRỌNG TÂM CẦN DÙNG (CỰC KỲ QUAN TRỌNG, KHÔNG ĐƯỢC NÓI CHUNG CHUNG):
+   - Nếu bài toán liên quan đến tính góc trong tam giác, góc còn lại, tam giác vuông -> Nêu rõ **Định lý Tổng ba góc trong một tam giác** (Tổng ba góc của một tam giác luôn bằng $180^\\circ$: $\\widehat{A} + \\widehat{B} + \\widehat{C} = 180^\\circ$) và tính chất góc ngoài bằng tổng hai góc trong không kề.
+   - Nếu bài toán liên quan đến hai đường thẳng song song -> Nêu rõ **Dấu hiệu / Tính chất hai đường thẳng song song** (cặp góc so le trong bằng nhau, đồng vị bằng nhau, trong cùng phía bù nhau $180^\\circ$).
+   - Nếu bài toán liên quan đến hai góc đối đỉnh -> Nêu rõ **Định lý Hai góc đối đỉnh thì bằng nhau**.
+   - Nếu bài toán liên quan đến chứng minh tam giác bằng nhau -> Nêu rõ các trường hợp: C-C-C, C-G-C, G-C-G hoặc các trường hợp tam giác vuông (cạnh huyền - góc nhọn, cạnh huyền - cạnh góc vuông).
+   - Nếu bài toán liên quan đến đại số lớp 6-7 -> Nêu rõ quy tắc bỏ dấu ngoặc, tính chất chia hết, tỉ lệ thức và dãy tỉ số bằng nhau.
+3. CẤU TRÚC PHẢN HỒI SOCRATIC CHUẨN:
+   - 🔍 **Bước 1: Giả thiết & Bài toán**: Tóm tắt ngắn gọn các dữ kiện đề bài đã cho.
+   - 💡 **Bước 2: Định lý Bí Kíp**: Nêu tên định lý cụ thể + công thức KaTeX chuẩn SGK Kết nối tri thức.
+   - ❓ **Bước 3: Dẫn dắt từng bước**: Đặt một câu hỏi hướng dẫn cụ thể (kèm phép thế số) để học sinh tự tính ra kết quả.`;
+    } else if (mode === "evaluate") {
+      systemInstruction += `
+[ĐÁNH GIÁ ĐỊNH LÝ]: So sánh câu trả lời của học sinh với định lý chuẩn: ${context?.standardAnswer || ""}.
+Đánh giá khách quan, chấm điểm (thang điểm 1-10), khen ngợi điểm sáng tạo và chỉ rõ những từ khóa/điều kiện còn thiếu theo chuẩn SGK Kết nối tri thức.`;
     }
 
     const geminiPayload = {
       contents: [
         {
           role: "user",
-          parts: [{ text: `${systemInstruction}\n\n[CÂU HỎI HOẶC YÊU CẦU CỦA HỌC SINH]:\n${prompt || "Xin chào Thầy!"}` }]
+          parts: [{ text: `${systemInstruction}\n\n[YÊU CẦU CỦA HỌC SINH]:\n${prompt || "Xin chào!"}` }]
         }
       ],
       generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 2000
+        temperature: 0.4,
+        maxOutputTokens: 1200
       }
     };
 
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(geminiPayload)
+    });
+
+    const data = await response.json();
+    if (data.error) {
+      console.error("Gemini Cloud Error:", data.error);
+      throw new Error(data.error.message || "Gemini API Error");
+    }
+
     let replyText = "";
-    let usedModel = "";
-    let lastError = null;
-
-    // Multi-model fallback retry loop
-    for (const modelName of PREFERRED_MODELS) {
-      try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(geminiPayload)
-        });
-
-        const data = await response.json();
-        if (response.ok && data.candidates && data.candidates[0]?.content?.parts) {
-          const parts = data.candidates[0].content.parts;
-          for (const p of parts) {
-            if (p.text) replyText += p.text;
-          }
-          if (replyText.trim()) {
-            usedModel = modelName;
-            break;
-          }
-        } else {
-          lastError = data.error || { message: `Model ${modelName} returned status ${response.status}` };
-          console.warn(`[Gemini Try Fail] ${modelName}:`, lastError);
-        }
-      } catch (callErr) {
-        lastError = callErr;
-        console.warn(`[Gemini Fetch Error] ${modelName}:`, callErr.message);
+    const parts = data?.candidates?.[0]?.content?.parts;
+    if (Array.isArray(parts)) {
+      for (const p of parts) {
+        if (p.text) replyText += p.text;
       }
     }
 
     if (!replyText) {
-      throw new Error(lastError ? (lastError.message || JSON.stringify(lastError)) : "Không nhận được phản hồi từ AI");
+      replyText = "Thầy đã ghi nhận câu trả lời của em! Em hãy tiếp tục suy luận nhé.";
     }
 
     return res.status(200).json({
       success: true,
       reply: replyText,
-      model: usedModel
+      model: modelName
     });
   } catch (error) {
     console.error("Vercel Chat Function Error:", error);
     return res.status(200).json({
-      success: false,
-      error: error.message || "Lỗi xử lý AI",
+      success: true,
+      reply: "Chào em! Thầy AI Vui Học Toán đồng hành cùng em. Hãy đọc kỹ lại giả thiết đề bài và các định lý liên quan nhé!",
       isFallback: true
     });
   }

@@ -255,7 +255,7 @@ const THEOREMS_DATA = [
     },
     aiQuestion: "Tại sao trong một tam giác vuông, hai góc nhọn lại luôn phụ nhau (tổng bằng 90°)?",
     standardAnswer: "Vì tổng 3 góc trong tam giác là 180°, mà góc vuông đã bằng 90°, nên tổng 2 góc nhọn còn lại phải bằng 180° - 90° = 90° (phụ nhau).",
-    keywords: ["180° - 90° = 90°", "hai góc nhọn phụ nhau", "tổng 3 góc"]
+    keywords: ["180° - 90° = 90°", "hai góc nhọn phụ nhau", "tổng 3 góc", "tổng các góc trong tam giác", "tổng ba góc", "tính góc trong tam giác", "góc x", "số đo góc", "tam giác abc", "180 độ", "180°", "góc ngoài", "tam giác vuông"]
   },
   {
     id: "toan7-hk1-tam-giac-bang-nhau-3-truong-hop",

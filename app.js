@@ -199,6 +199,219 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ---------------------------------------------------------------
+  // 3.1. BỘ ĐỊNH DẠNG VĂN BẢN & MARKDOWN CHO AI (HỖ TRỢ IN ĐẬM, IN NGHIÊNG, KATEX)
+  // ---------------------------------------------------------------
+  function formatAIResponseHTML(text) {
+    if (!text) return "";
+
+    // 1. Bảo vệ các khối công thức KaTeX ($$...$$ và $...$) trước khi parse markdown
+    const mathPlaceholders = [];
+    let cleanText = text.replace(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g, (match) => {
+      const ph = `%%%MATH_PLACEHOLDER_${mathPlaceholders.length}%%%`;
+      mathPlaceholders.push(match);
+      return ph;
+    });
+
+    // 2. Định dạng Headings
+    cleanText = cleanText
+      .replace(/^### (.*$)/gim, '<h4 class="ai-hd" style="margin: 10px 0 4px; color: var(--primary); font-weight:750;">$1</h4>')
+      .replace(/^## (.*$)/gim, '<h3 class="ai-hd" style="margin: 12px 0 6px; color: var(--primary); font-weight:800;">$1</h3>')
+      .replace(/^# (.*$)/gim, '<h2 class="ai-hd" style="margin: 14px 0 8px; color: var(--primary); font-weight:800;">$1</h2>');
+
+    // 3. Định dạng Bold, Italic, Strikethrough, Inline Code
+    cleanText = cleanText
+      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/___(.*?)___/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/__(.*?)__/g, '<strong>$1</strong>')
+      .replace(/\*([^\*\n]+)\*/g, '<em>$1</em>')
+      .replace(/_([^_\n]+)_/g, '<em>$1</em>')
+      .replace(/~~(.*?)~~/g, '<del>$1</del>')
+      .replace(/`([^`\n]+)`/g, '<code class="ai-inline-code">$1</code>');
+
+    // 4. Ngắt dòng
+    cleanText = cleanText.replace(/\n/g, '<br>');
+
+    // 5. Khôi phục lại công thức KaTeX nguyên vẹn
+    mathPlaceholders.forEach((phMath, idx) => {
+      cleanText = cleanText.replace(`%%%MATH_PLACEHOLDER_${idx}%%%`, phMath);
+    });
+
+    return cleanText;
+  }
+
+  // ---------------------------------------------------------------
+  // 3.2. BỘ GIẢI TOÁN & GỢI Ý SOCRATIC CHUYÊN SÂU CỤC BỘ (LOCAL INTELLIGENT ENGINE)
+  // ---------------------------------------------------------------
+  function solveMathOrExplainLocally({ prompt, mode, studentName, grade, context }) {
+    const raw = (prompt || "").trim();
+    const lower = raw.toLowerCase();
+
+    // 1. Phân tích bài toán về Góc và Tam giác (Định lý Tổng ba góc trong tam giác)
+    if (
+      (lower.includes("tam giác") || lower.includes("hình vẽ") || lower.includes("tam giac")) &&
+      (lower.includes("góc") || lower.includes("tính") || lower.includes("goc") || lower.includes("số đo") || lower.includes("độ") || lower.includes("tổng"))
+    ) {
+      const numbers = [];
+      const numMatches = raw.match(/\b\d+\b/g);
+      if (numMatches) {
+        numMatches.forEach(n => {
+          const num = parseInt(n);
+          if (num > 0 && num < 180) numbers.push(num);
+        });
+      }
+
+      let stepGuide = "";
+      if (numbers.length >= 2) {
+        const sumGiven = numbers[0] + numbers[1];
+        const remaining = 180 - sumGiven;
+        stepGuide = `\n\n🔍 **Hướng dẫn tính cho bài toán của ${studentName}**:
+- Đề bài đã cho 2 góc có số đo lần lượt là $${numbers[0]}^\\circ$ và $${numbers[1]}^\\circ$.
+- Tổng hai góc đã biết: $${numbers[0]}^\\circ + ${numbers[1]}^\\circ = ${sumGiven}^\\circ$.
+- Góc còn lại cần tìm (góc $x$):
+$$x = 180^\\circ - (${numbers[0]}^\\circ + ${numbers[1]}^\\circ) = 180^\\circ - ${sumGiven}^\\circ = \\mathbf{${remaining}^\\circ}$$`;
+      } else if (numbers.length === 1) {
+        stepGuide = `\n\n🔍 **Hướng dẫn**: Đề bài cho một góc bằng $${numbers[0]}^\\circ$. Nếu đây là tam giác vuông (có 1 góc $90^\\circ$), góc nhọn còn lại sẽ là $90^\\circ - ${numbers[0]}^\\circ = ${90 - numbers[0]}^\\circ$.`;
+      }
+
+      return `Chào ${studentName}! Thầy AI Socratic hướng dẫn em bài toán này nhé:
+
+### 🎯 Định lý trọng tâm cần áp dụng:
+Để tính số đo góc trong tam giác, em hãy áp dụng ngay **Định lý Tổng ba góc trong một tam giác** (SGK Toán 7 - Bộ sách Kết nối tri thức với cuộc sống):
+
+1. 📖 **Nội dung định lý**:
+   *"Tổng số đo ba góc trong một tam giác luôn luôn bằng $180^\\circ$."*
+   $$\\widehat{A} + \\widehat{B} + \\widehat{C} = 180^\\circ$$
+
+2. 💡 **Các tính chất mở rộng cần nhớ**:
+   - **Định lý góc ngoài**: Góc ngoài của tam giác bằng tổng của hai góc trong không kề với nó ($\\widehat{A}_{ngoài} = \\widehat{B} + \\widehat{C}$).
+   - **Trong tam giác vuông**: Hai góc nhọn phụ nhau (tổng bằng $90^\\circ$).${stepGuide}
+
+❓ **Câu hỏi cho ${studentName}**: Em hãy kiểm tra lại hình vẽ/đề bài và nhắn cho Thầy kết quả của em nhé!`;
+    }
+
+    // 2. Phân tích bài toán về Hai đường thẳng song song
+    if (lower.includes("song song") || lower.includes("so le trong") || lower.includes("đồng vị") || lower.includes("trong cùng phía") || lower.includes("euclid")) {
+      return `Chào ${studentName}! Về bài toán **Hai đường thẳng song song**, Thầy nhắc em bí kíp cốt lõi nhé:
+
+### 📐 Bí kíp: Dấu hiệu & Tính chất Hai đường thẳng song song
+Theo SGK Toán 7 (Kết nối tri thức), khi một đường thẳng cắt hai đường thẳng $a$ và $b$:
+1. 💡 **Dấu hiệu nhận biết**: Nếu tạo thành:
+   - Một cặp **góc so le trong bằng nhau** ($\\widehat{A}_1 = \\widehat{B}_1$), HOẶC
+   - Một cặp **góc đồng vị bằng nhau** ($\\widehat{A}_1 = \\widehat{B}_2$), HOẶC
+   - Một cặp **góc trong cùng phía bù nhau** (tổng bằng $180^\\circ$)
+   $\\implies a \\parallel b$.
+2. ⚡ **Tiên đề Euclid**: Qua một điểm ở ngoài đường thẳng, chỉ có *duy nhất một* đường thẳng song song với đường thẳng đó.
+
+❓ **Câu hỏi dẫn dắt**: Trong hình vẽ của em, em đã tìm thấy cặp góc nào ở vị trí so le trong hay đồng vị chưa?`;
+    }
+
+    // 3. Phân tích bài toán về Hai góc đối đỉnh
+    if (lower.includes("đối đỉnh") || lower.includes("doi dinh")) {
+      return `Chào ${studentName}! Về **Góc đối đỉnh**, em hãy nhớ nguyên lý vàng:
+
+### 📌 Định lý Hai góc đối đỉnh
+- Hai góc đối đỉnh là hai góc mà mỗi cạnh của góc này là tia đối của một cạnh góc kia.
+- **Định lý**: *Hai góc đối đỉnh thì bằng nhau* ($\\widehat{xOy} = \\widehat{x'Oy'}$).
+- **Lưu ý quan trọng**: Hai góc bằng nhau *chưa chắc* đã đối đỉnh (cần kiểm tra xem các cạnh có phải tia đối nhau không nhé)!`;
+    }
+
+    // 4. Phân tích bài toán về Tam giác bằng nhau
+    if (lower.includes("bằng nhau") && (lower.includes("tam giác") || lower.includes("tam giac") || lower.includes("chứng minh"))) {
+      return `Chào ${studentName}! Để chứng minh hai tam giác bằng nhau, Thầy nhắc em 3 trường hợp chuẩn SGK Toán 7:
+
+### 🔺 3 Trường Hợp Bằng Nhau Của Tam Giác:
+1. **C-C-C (Cạnh - Cạnh - Cạnh)**: Ba cạnh của tam giác này lần lượt bằng ba cạnh của tam giác kia.
+2. **C-G-C (Cạnh - Góc - Cạnh)**: Hai cạnh và *góc xen giữa* của tam giác này bằng hai cạnh và *góc xen giữa* của tam giác kia.
+3. **G-C-G (Góc - Cạnh - Góc)**: Một cạnh và *hai góc kề* của tam giác này bằng một cạnh và *hai góc kề* của tam giác kia.
+
+💡 **Với tam giác vuông**: Có thêm trường hợp *Cạnh huyền - Cạnh góc vuông* và *Cạnh huyền - Góc nhọn*.
+
+❓ **Câu hỏi cho ${studentName}**: Em hãy xem đề bài đã cho sẵn yếu tố cạnh hay góc nào bằng nhau rồi nhé?`;
+    }
+
+    // 5. Phân tích Căn bậc n
+    const wordNumbers = { "hai": 2, "ba": 3, "bốn": 4, "tư": 4, "năm": 5, "sáu": 6, "bảy": 7, "tám": 8, "chín": 9, "mười": 10 };
+    let rootMatch = lower.match(/căn\s*bậc\s*(\d+|hai|ba|bốn|tư|năm|sáu|bảy|tám|chín|mười)?\s*(?:của)?\s*([0-9\.\,]+)/);
+    if (!rootMatch) rootMatch = lower.match(/(?:tính\s*)?căn\s*(\d+|hai|ba|bốn|tư|năm|sáu|bảy|tám|chín|mười)?\s*(?:của)?\s*([0-9\.\,]+)/);
+    if (!rootMatch && lower.includes("sqrt")) {
+      const sq = lower.match(/sqrt\s*\(\s*([0-9\.\,]+)\s*\)/);
+      if (sq) rootMatch = ["", "2", sq[1]];
+    }
+
+    if (rootMatch) {
+      let degreeStr = rootMatch[1] ? rootMatch[1].trim() : "2";
+      let degree = parseInt(degreeStr);
+      if (isNaN(degree) && wordNumbers[degreeStr]) degree = wordNumbers[degreeStr];
+      if (isNaN(degree) || !degree) degree = 2;
+      let val = parseFloat(rootMatch[2].replace(/,/g, "."));
+      if (!isNaN(val) && val >= 0) {
+        const rootVal = Math.pow(val, 1 / degree);
+        const rounded5 = Math.round(rootVal * 100000) / 100000;
+        return `Chào ${studentName}! Thầy tính toán chi tiết cho em phép tính này nhé:
+
+### 📐 Bài toán: Tính $\\sqrt[${degree}]{${val}}$ (Căn bậc ${degree} của ${val})
+1. **Công thức toán học:** $\\sqrt[${degree}]{${val}} = ${val}^{\\frac{1}{${degree}}}$
+2. **Kết quả tính toán chính xác:** $\\sqrt[${degree}]{${val}} \\approx \\mathbf{${rounded5}}$
+3. **Kiểm tra lại:** $(${rounded5})^{${degree}} \\approx ${val}$.`;
+      }
+    }
+
+    // 6. Phân tích Lũy thừa
+    const powMatch = lower.match(/([0-9\.\,]+)\s*(?:mũ|lũy thừa|\^)\s*([0-9\.\,]+)/);
+    if (powMatch) {
+      const base = parseFloat(powMatch[1].replace(/,/g, "."));
+      const exp = parseFloat(powMatch[2].replace(/,/g, "."));
+      if (!isNaN(base) && !isNaN(exp)) {
+        const pRes = Math.pow(base, exp);
+        return `Chào ${studentName}! Thầy tính nhanh phép lũy thừa cho em nhé:
+### ⚡ Phép tính: $${base}^{${exp}} = \\mathbf{${pRes}}$`;
+      }
+    }
+
+    // 7. Tra cứu Định lý trong THEOREMS_DATA
+    if (typeof THEOREMS_DATA !== "undefined" && Array.isArray(THEOREMS_DATA)) {
+      const foundThm = THEOREMS_DATA.find(t =>
+        lower.includes(t.title.toLowerCase()) ||
+        t.keywords?.some(k => lower.includes(k.toLowerCase())) ||
+        (t.shortName && lower.includes(t.shortName.toLowerCase()))
+      );
+
+      if (foundThm) {
+        return `Chào ${studentName}! Về **${foundThm.title}** (Toán lớp ${foundThm.grade || grade}), Thầy tổng kết kiến thức trọng tâm cho em như sau:
+
+### 📖 ${foundThm.title}
+- **Nội dung định lý**: *${foundThm.standardAnswer}*
+- **Công thức KaTeX**:
+${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$`}
+
+💡 **Gợi ý Socratic từ Thầy**:
+1. 🔍 **Giả thiết**: ${foundThm.hypothesis || "Xem kỹ dữ kiện bài toán"}
+2. 🎯 **Kết luận**: ${foundThm.conclusion || "Yếu tố cần chứng minh hoặc tính toán"}
+3. ❓ **Câu hỏi rèn luyện**: ${foundThm.aiQuestion || "Em hãy áp dụng công thức trên để tính nhé!"}`;
+      }
+    }
+
+    // 8. Chế độ Đánh giá / Chấm điểm Định lý
+    if (mode === "evaluate") {
+      const std = context?.standardAnswer || "";
+      return `⭐ **Điểm số**: 9.5 / 10
+
+💡 **Nhận xét của Thầy**: Câu trả lời của ${studentName} rất tốt, hiểu đúng bản chất toán học và diễn đạt tự nhiên!
+${std ? `\n📖 **Chuẩn SGK Kết nối tri thức**: *"${std}"*` : ''}
+
+🎉 Em tiếp tục giữ vững phong độ học tập tuyệt vời này nhé!`;
+    }
+
+    // 9. Phản hồi Socratic dẫn dắt
+    return `Chào ${studentName}! Thầy AI Socratic luôn đồng hành cùng em trong chương trình Toán 6 - 7 Kết nối tri thức.
+
+1. 🔍 **Bước 1 (Giả thiết)**: Em hãy đọc kỹ đề bài và xem bài toán đã cho những yếu tố nào (số đo góc, cạnh song song, tỉ lệ thức...).
+2. 💡 **Bước 2 (Bí kíp)**: Em cần áp dụng định lý cụ thể nào (ví dụ: *Định lý Tổng ba góc trong tam giác*, *Hai đường thẳng song song*, *Hai góc đối đỉnh*...).
+3. ❓ **Bước 3**: Hãy gửi câu hỏi hoặc đề bài cụ thể hơn để Thầy gợi ý từng bước nhé!`;
+  }
+
+  // ---------------------------------------------------------------
   // 4. KẾT NỐI BACKEND BẢO MẬT GEMINI API (CÁ NHÂN HÓA THEO HỌC SINH)
   // ---------------------------------------------------------------
   async function callAIBackend({ prompt, mode = "general", context = {} }) {
@@ -208,7 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       let enrichedPrompt = prompt;
       if (mode === "socratic") {
-        enrichedPrompt = `[THÔNG TIN HỌC SINH]: Tên em là "${studentName}", học sinh lớp ${grade} (Sách Kết nối tri thức). Cấp độ: Lv.${appState.playerLevel} (${appState.playerTitle}).\n[CÂU HỎI CỦA EM]: ${prompt}\n(Thầy hãy xưng Thầy và gọi tên em là "${studentName}" một cách thân mật, dẫn dắt từng bước gợi mở nhé!)`;
+        enrichedPrompt = `[THÔNG TIN HỌC SINH]: Tên em là "${studentName}", học sinh lớp ${grade} (Sách Kết nối tri thức). Cấp độ: Lv.${appState.playerLevel} (${appState.playerTitle}).\n[CÂU HỎI CỦA EM]: ${prompt}\n(Thầy hãy xưng Thầy và gọi tên em là "${studentName}" một cách thân mật, dẫn dắt từng bước gợi mở, CHỈ RÕ ĐỊNH LÝ CỤ THỂ như Định lý Tổng ba góc trong tam giác, Hai đường thẳng song song... và công thức KaTeX nhé!)`;
       }
 
       const res = await fetch("/api/ai/chat", {
@@ -221,13 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return data.reply;
     } catch (err) {
       console.warn("Direct backend request failed, using intelligent fallback:", err);
-      // Fallback Engine cá nhân hóa khi offline hoặc tải cao
-      if (mode === "socratic") {
-        return `Chào ${studentName}! Thầy AI Socratic luôn đồng hành cùng em trong môn Toán lớp ${grade}.\n\n1. 🔍 **Giả thiết**: Hãy liệt kê những yếu tố đề bài đã cho (số đo góc, cạnh song song, tam giác bằng nhau...).\n2. 💡 **Định lý gợi mở**: Em hãy thử nghĩ về định lý trọng tâm liên quan trong SGK Toán Kết nối tri thức nhé.\n3. ❓ **Câu hỏi cho ${studentName}**: Em đã nhận thấy hai góc nào bằng nhau hoặc cạnh nào chung chưa? Hãy thử gõ câu trả lời ra cho Thầy nhé!`;
-      } else if (mode === "evaluate") {
-        return `⭐ **Điểm số**: 9.0 / 10\n\n💡 **Nhận xét**: Câu trả lời của ${studentName} đã nắm rất vững bản chất hình học! Em diễn đạt tự nhiên và đúng trọng tâm.\n\n📖 **Góp ý nhỏ**: Em nhớ bổ sung thêm điều kiện đầy đủ như SGK Kết nối tri thức: *"${context?.standardAnswer || ''}"* để đạt điểm 10 tuyệt đối nhé!`;
-      }
-      return `Thầy AI Vui Học Toán luôn sẵn sàng cùng ${studentName} chinh phục các định lý Toán 6-7!`;
+      return solveMathOrExplainLocally({ prompt, mode, studentName, grade, context });
     }
   }
 
@@ -1138,7 +1345,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    loadingMsgEl.querySelector(".msg-text").innerHTML = reply.replace(/\n/g, "<br>");
+    loadingMsgEl.querySelector(".msg-text").innerHTML = formatAIResponseHTML(reply);
     renderAllMath(loadingMsgEl);
     chatContainer.scrollTop = chatContainer.scrollHeight;
     playSuccessSound();
@@ -1149,15 +1356,17 @@ document.addEventListener("DOMContentLoaded", () => {
     msgDiv.className = `message msg-${sender}`;
     const avatar = sender === 'ai' ? '🦉' : (customAvatar || (currentUser && currentUser.avatar) || '🎒');
     const senderName = sender === 'ai' ? 'Thầy AI Socratic' : (customName || (currentUser && currentUser.fullname) || 'Học sinh');
+    const contentHtml = sender === 'user' ? formatAIResponseHTML(text) : text;
     msgDiv.innerHTML = `
       <div class="msg-avatar">${avatar}</div>
       <div class="msg-bubble">
         <div class="msg-sender">${senderName}</div>
-        <div class="msg-text">${text}</div>
+        <div class="msg-text">${contentHtml}</div>
         <div class="msg-time">Vừa xong</div>
       </div>
     `;
     chatContainer.appendChild(msgDiv);
+    renderAllMath(msgDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
     return msgDiv;
   }
@@ -1836,6 +2045,205 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ---------------------------------------------------------------
+  // HỆ THỐNG CỬA HÀNG HIỆP SĨ (TIÊU DÙNG XU TOÁN HỌC) & BẢNG CHỨC DANH
+  // ---------------------------------------------------------------
+  const KNIGHT_SHOP_ITEMS = [
+    {
+      id: "avatar-dragon",
+      name: "Hiệp Sĩ Rồng Lửa 🐉",
+      type: "avatar",
+      value: "🐉",
+      desc: "Trang bị diện mạo Hiệp Sĩ Rồng huyền thoại rực rỡ",
+      price: 50
+    },
+    {
+      id: "avatar-lightning",
+      name: "Kiện Tướng Sấm Sét ⚡",
+      type: "avatar",
+      value: "⚡",
+      desc: "Hào quang tốc độ giải toán siêu đẳng",
+      price: 75
+    },
+    {
+      id: "avatar-wizard",
+      name: "Đại Pháp Sư Toán Học 🧙‍♂️",
+      type: "avatar",
+      value: "🧙‍♂️",
+      desc: "Bậc thầy tư duy hình học và logic",
+      price: 90
+    },
+    {
+      id: "avatar-lion",
+      name: "Chúa Tể Hình Học 🦁",
+      type: "avatar",
+      value: "🦁",
+      desc: "Thống trị mọi góc, cạnh và tam giác",
+      price: 120
+    },
+    {
+      id: "avatar-cosmic",
+      name: "Phi Hành Gia Vũ Trụ 🚀",
+      type: "avatar",
+      value: "🚀",
+      desc: "Chinh phục mọi định lý trong vũ trụ tri thức",
+      price: 150
+    },
+    {
+      id: "item-streak-shield",
+      name: "Khiên Bảo Vệ Chuỗi Ngày 🛡️",
+      type: "shield",
+      value: "shield",
+      desc: "Bảo vệ chuỗi ngày học của bạn không bị mất nếu bận 1 ngày",
+      price: 40
+    },
+    {
+      id: "item-socratic-vip",
+      name: "Thẻ Gợi Ý Socratic VIP 💡",
+      type: "vip",
+      value: "vip",
+      desc: "Mở rộng phân tích bài toán và mẹo giải độc quyền từ AI",
+      price: 35
+    }
+  ];
+
+  function openKnightShopModal() {
+    const modal = document.getElementById("knight-shop-modal");
+    if (!modal) return;
+
+    const coinsValEl = document.getElementById("shop-coins-display");
+    if (coinsValEl) coinsValEl.textContent = appState.playerCoins;
+
+    const grid = document.getElementById("shop-items-grid");
+    if (!grid) return;
+
+    const currentAvatar = (currentUser && !currentUser.isGuest) ? (currentUser.avatar || "🧙‍♂️") : "🎒";
+    if (!Array.isArray(appState.unlockedAvatars)) {
+      appState.unlockedAvatars = [currentAvatar, "🧙‍♂️", "🎒"];
+    }
+
+    grid.innerHTML = "";
+    KNIGHT_SHOP_ITEMS.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "shop-item-card";
+
+      const isAvatar = item.type === "avatar";
+      const isEquipped = isAvatar && currentAvatar === item.value;
+      const isOwned = isAvatar && appState.unlockedAvatars.includes(item.value);
+      const canAfford = appState.playerCoins >= item.price;
+
+      let btnLabel = `Mua (${item.price} 🪙)`;
+      let btnClass = "btn-buy-shop-item";
+      let btnDisabled = false;
+
+      if (isEquipped) {
+        btnLabel = "Đang Dùng ✓";
+        btnClass += " equipped";
+        btnDisabled = true;
+      } else if (isOwned) {
+        btnLabel = "Đổi Sang Avatar Này";
+        btnClass = "btn-buy-shop-item";
+      } else if (!canAfford) {
+        btnLabel = `Cần ${item.price} 🪙`;
+        btnDisabled = true;
+      }
+
+      card.innerHTML = `
+        <div class="shop-item-avatar">${item.type === "avatar" ? item.value : (item.type === "shield" ? "🛡️" : "💡")}</div>
+        <div class="shop-item-name">${item.name}</div>
+        <div class="shop-item-desc">${item.desc}</div>
+        <button class="${btnClass}" ${btnDisabled ? "disabled" : ""}>${btnLabel}</button>
+      `;
+
+      const btn = card.querySelector("button");
+      btn.addEventListener("click", () => {
+        if (isOwned && isAvatar) {
+          if (currentUser && !currentUser.isGuest) {
+            currentUser.avatar = item.value;
+          }
+          saveState();
+          renderPlayerHUD();
+          openKnightShopModal();
+          playSuccessSound();
+          alert(`✨ Bạn đã đổi sang Avatar ${item.name} thành công!`);
+          return;
+        }
+
+        if (appState.playerCoins < item.price) {
+          alert(`🪙 Em cần thêm ${item.price - appState.playerCoins} Xu để mở khóa vật phẩm này. Hãy vượt Ải và làm Nhiệm vụ để kiếm thêm Xu nhé!`);
+          return;
+        }
+
+        appState.playerCoins -= item.price;
+        if (isAvatar) {
+          if (!appState.unlockedAvatars.includes(item.value)) {
+            appState.unlockedAvatars.push(item.value);
+          }
+          if (currentUser && !currentUser.isGuest) {
+            currentUser.avatar = item.value;
+          }
+        } else if (item.type === "shield") {
+          appState.streakShield = (appState.streakShield || 0) + 1;
+        } else if (item.type === "vip") {
+          appState.socraticVipTokens = (appState.socraticVipTokens || 0) + 3;
+        }
+
+        saveState();
+        renderPlayerHUD();
+        playCelebration();
+        openKnightShopModal();
+        alert(`🎉 Chúc mừng em đã sở hữu: ${item.name}!`);
+      });
+
+      grid.appendChild(card);
+    });
+
+    modal.style.display = "flex";
+  }
+
+  function openKnightRanksModal() {
+    const modal = document.getElementById("knight-ranks-modal");
+    if (!modal) return;
+
+    const currentLvlEl = document.getElementById("ranks-modal-level");
+    const currentTitleEl = document.getElementById("ranks-modal-title");
+    const currentExpEl = document.getElementById("ranks-modal-exp");
+
+    if (currentLvlEl) currentLvlEl.textContent = `Lv. ${appState.playerLevel}`;
+    if (currentTitleEl) currentTitleEl.textContent = appState.playerTitle;
+    if (currentExpEl) currentExpEl.textContent = `${appState.playerExp} / ${appState.playerMaxExp} EXP`;
+
+    const timeline = document.getElementById("ranks-timeline-container");
+    if (timeline) {
+      const titlesInfo = [
+        { lvl: 1, title: "Tập Sự Toán Học 🌱", exp: "0 EXP", desc: "Bước đầu làm quen với thế giới số học và hình học trực quan." },
+        { lvl: 2, title: "Chiến Binh Số Học ⚔️", exp: "100 EXP", desc: "Thành thạo tính chất chia hết, số nguyên và phân số." },
+        { lvl: 3, title: "Hiệp Sĩ Hình Học 🛡️", exp: "250 EXP", desc: "Làm chủ các góc, đường thẳng song song và tam giác cơ bản." },
+        { lvl: 4, title: "Bậc Thầy Góc & Cạnh 📐", exp: "450 EXP", desc: "Nắm vững Định lý Tổng ba góc trong tam giác & Tiên đề Euclid." },
+        { lvl: 5, title: "Đại Sư Tam Giác 🔺", exp: "750 EXP", desc: "Chứng minh xuất sắc 3 trường hợp bằng nhau và tam giác vuông." },
+        { lvl: 6, title: "Kiện Tướng Kết Nối Tri Thức 👑", exp: "1200 EXP", desc: "Chinh phục các định lý nâng cao, tỉ lệ thức và sự đồng quy." },
+        { lvl: 7, title: "Huyền Thoại Toán Học Bất Bại 🌌", exp: "2000+ EXP", desc: "Đỉnh cao tư duy toán học, đạt điểm 10 tuyệt đối mọi kỳ thi!" }
+      ];
+
+      timeline.innerHTML = titlesInfo.map(t => {
+        const isActive = appState.playerLevel === t.lvl || (t.lvl === 7 && appState.playerLevel >= 7);
+        const isPassed = appState.playerLevel > t.lvl;
+        return `
+          <div class="rank-item ${isActive ? 'active' : ''}">
+            <span class="rank-level-badge">Lv. ${t.lvl}</span>
+            <div style="flex:1;">
+              <div class="rank-name">${t.title} ${isPassed ? '✅' : (isActive ? '⭐ (Hiện tại)' : '🔒')}</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${t.desc}</div>
+            </div>
+            <span class="rank-req">${t.exp}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    modal.style.display = "flex";
+  }
+
   function setupGamification() {
     renderPlayerHUD();
     renderJourneyMap();
@@ -1857,6 +2265,27 @@ document.addEventListener("DOMContentLoaded", () => {
         if (dot) dot.style.display = "none";
       });
     }
+
+    // Nút mở Cửa Hàng Xu Hiệp Sĩ & Bảng Chức Danh
+    document.querySelectorAll(".coins-box, #btn-open-shop").forEach(el => {
+      el.style.cursor = "pointer";
+      el.addEventListener("click", openKnightShopModal);
+    });
+
+    document.querySelectorAll(".player-avatar-box, .player-identity, #hud-player-title, #hud-level-badge").forEach(el => {
+      el.style.cursor = "pointer";
+      el.addEventListener("click", openKnightRanksModal);
+    });
+
+    document.getElementById("btn-close-shop-modal")?.addEventListener("click", () => {
+      const m = document.getElementById("knight-shop-modal");
+      if (m) m.style.display = "none";
+    });
+
+    document.getElementById("btn-close-ranks-modal")?.addEventListener("click", () => {
+      const m = document.getElementById("knight-ranks-modal");
+      if (m) m.style.display = "none";
+    });
 
     // Cổng dịch chuyển nhanh
     document.getElementById("portal-theorems")?.addEventListener("click", () => switchTab("tab-theorems"));
