@@ -284,29 +284,41 @@ document.addEventListener("DOMContentLoaded", () => {
     { keys: ["bằng nhau", "bằng", "như nhau", "đều bằng nhau", "bằng với"], canonical: "bằng nhau" },
     { keys: ["vuông góc", "vuông góc với nhau", "cắt vuông góc", "vuông góc với"], canonical: "vuông góc" },
     { keys: ["song song", "song song với nhau", "song song với"], canonical: "song song" },
-    { keys: ["khác 0", "khác không", "b khác 0", "mẫu khác 0", "khác số 0"], canonical: "khác 0" },
+    { keys: ["khác 0", "khác không", "b khác 0", "b khác không", "mẫu khác 0", "khác số 0", "b!=0", "b ≠ 0"], canonical: "khác 0" },
     { keys: ["nhỏ nhất", "bé nhất", "min"], canonical: "nhỏ nhất" },
     { keys: ["lớn nhất", "cao nhất", "max", "dài nhất"], canonical: "lớn nhất" },
-    { keys: ["tổng", "tổng các chữ số", "tổng số"], canonical: "tổng" },
-    { keys: ["cộng", "cộng lại", "cộng các số mũ"], canonical: "cộng" },
-    { keys: ["trừ", "trừ đi", "trừ các số mũ"], canonical: "trừ" },
-    { keys: ["nhân", "nhân lại", "nhân với"], canonical: "nhân" },
-    { keys: ["chia", "chia cho", "chia hết"], canonical: "chia" },
+    { keys: ["nhỏ hơn", "bé hơn", "<", "nho hon", "be hon"], canonical: "nhỏ hơn" },
+    { keys: ["lớn hơn", "cao hơn", ">", "lon hon", "cao hon"], canonical: "lớn hơn" },
+    { keys: ["cạnh lớn hơn", "lớn hơn", "dài hơn", "cạnh dài hơn"], canonical: "cạnh lớn hơn" },
+    { keys: ["góc nhọn", "nhọn", "goc nhon", "góc bé hơn 90 độ"], canonical: "góc nhọn" },
+    { keys: ["tổng", "tổng các chữ số", "tổng số", "tổng độ dài", "tong"], canonical: "tổng" },
+    { keys: ["hiệu", "hiệu độ dài", "hieu"], canonical: "hiệu" },
+    { keys: ["cộng", "cộng lại", "cộng các số mũ", "phép cộng"], canonical: "cộng" },
+    { keys: ["trừ", "trừ đi", "trừ các số mũ", "phép trừ"], canonical: "trừ" },
+    { keys: ["nhân", "nhân lại", "nhân với", "phép nhân"], canonical: "nhân" },
+    { keys: ["chia", "chia cho", "chia hết", "phép chia"], canonical: "chia" },
+    { keys: ["chia hết cho 9", "chia hết 9", "chia het cho 9"], canonical: "chia hết cho 9" },
     { keys: ["trung điểm", "điểm chính giữa", "chính giữa", "ở giữa"], canonical: "trung điểm" },
     { keys: ["cách đều", "khoảng cách bằng nhau", "cách đều nhau"], canonical: "cách đều" },
-    { keys: ["nằm giữa", "ở giữa hai điểm", "ở giữa"], canonical: "nằm giữa" },
+    { keys: ["nằm giữa", "ở giữa hai điểm", "ở giữa", "xen giữa", "kề"], canonical: "nằm giữa" },
     { keys: ["đổi dấu", "thay đổi dấu"], canonical: "đổi dấu" },
-    { keys: ["dấu trừ", "trừ", "âm"], canonical: "dấu trừ" },
-    { keys: ["dấu cộng", "cộng", "dương"], canonical: "dấu cộng" },
+    { keys: ["dấu trừ", "trừ", "âm", "-"], canonical: "dấu trừ" },
+    { keys: ["dấu cộng", "cộng", "dương", "+"], canonical: "dấu cộng" },
     { keys: ["tia đối", "đối nhau", "tia đối nhau"], canonical: "tia đối" },
-    { keys: ["c-c-c", "cạnh - cạnh - cạnh", "cạnh cạnh cạnh", "ccc"], canonical: "c-c-c" },
-    { keys: ["c-g-c", "cạnh - góc - cạnh", "cạnh góc cạnh", "cgc"], canonical: "c-g-c" },
-    { keys: ["g-c-g", "góc - cạnh - góc", "góc cạnh góc", "gcg"], canonical: "g-c-g" },
+    { keys: ["c-c-c", "cạnh - cạnh - cạnh", "cạnh cạnh cạnh", "ccc", "c.c.c"], canonical: "c-c-c" },
+    { keys: ["c-g-c", "cạnh - góc - cạnh", "cạnh góc cạnh", "cgc", "c.g.c"], canonical: "c-g-c" },
+    { keys: ["g-c-g", "góc - cạnh - góc", "góc cạnh góc", "gcg", "g.c.g"], canonical: "g-c-g" },
     { keys: ["2/3", "hai phần ba", "2 phần 3"], canonical: "2/3" },
     { keys: ["1/2", "một nửa", "nửa", "chia đôi", "chia 2"], canonical: "1/2" },
     { keys: ["trọng tâm", "g", "điểm g"], canonical: "trọng tâm" },
     { keys: ["trực tâm", "h", "điểm h"], canonical: "trực tâm" },
-    { keys: ["cạnh huyền", "huyền"], canonical: "cạnh huyền" }
+    { keys: ["cạnh huyền", "huyền", "canh huyen"], canonical: "cạnh huyền" },
+    { keys: ["giá trị phân số", "phân số", "giá trị"], canonical: "giá trị phân số" },
+    { keys: ["nghiệm", "nghiệm của đa thức"], canonical: "nghiệm" },
+    { keys: ["x^2 = a", "x2 = a", "x² = a", "x^2=a", "x*x = a", "x^2 bằng a", "bình phương bằng a"], canonical: "x^2 = a" },
+    { keys: ["trung tỉ", "trung ti", "tích trung tỉ"], canonical: "trung tỉ" },
+    { keys: ["ngoại tỉ", "ngoại ti", "tích ngoại tỉ"], canonical: "ngoại tỉ" },
+    { keys: ["một", "1", "duy nhất", "chỉ một"], canonical: "một" }
   ];
 
   function checkBlankAnswer(userRaw, expectedRaw) {
@@ -925,8 +937,12 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
 
     let questionHtml = thm.fillBlank.question;
     thm.fillBlank.answers.forEach((ans, idx) => {
-      questionHtml = questionHtml.replace(`{blank${idx + 1}}`, `<input type="text" class="fill-input" data-index="${idx}" placeholder="...">`);
+      const regex = new RegExp(`\\{blank${idx + 1}\\}`, "g");
+      questionHtml = questionHtml.replace(regex, `<input type="text" class="fill-input" data-index="${idx}" placeholder="..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">`);
     });
+
+    // Phòng thủ an toàn: Xóa hoặc thay thế mọi thẻ {blankN} còn sót lại
+    questionHtml = questionHtml.replace(/\{blank\d+\}/g, `<input type="text" class="fill-input" data-index="0" placeholder="..." autocomplete="off">`);
 
     container.innerHTML = questionHtml;
     renderAllMath(container);

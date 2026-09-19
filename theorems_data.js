@@ -403,9 +403,9 @@ const THEOREMS_DATA = [
     formula: "\\text{Cạnh huyền - Góc nhọn}; \\quad \\text{Cạnh huyền - Cạnh góc vuông}; \\quad AB = AC \\iff \\widehat{B} = \\widehat{C}",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><polygon points="20,80 80,80 20,20" fill="#ecfdf5" stroke="#10b981" stroke-width="4"/><rect x="20" y="65" width="15" height="15" fill="none" stroke="#059669" stroke-width="2"/></svg>`,
     fillBlank: {
-      question: "Nếu {blank1} và một góc nhọn của tam giác vuông này bằng {blank1} và một góc nhọn của tam giác vuông kia thì hai tam giác vuông đó bằng nhau.",
-      answers: ["cạnh huyền"],
-      hints: ["Cạnh đối diện góc vuông"]
+      question: "Nếu {blank1} và một {blank2} của tam giác vuông này bằng cạnh huyền và một góc nhọn của tam giác vuông kia thì hai tam giác vuông đó bằng nhau.",
+      answers: ["cạnh huyền", "góc nhọn"],
+      hints: ["Cạnh đối diện góc vuông", "Góc nhỏ hơn 90 độ"]
     },
     aiQuestion: "Em hãy nêu phát biểu trường hợp bằng nhau đặc biệt 'Cạnh huyền - Cạnh góc vuông' của tam giác vuông?",
     standardAnswer: "Nếu cạnh huyền và một cạnh góc vuông của tam giác vuông này bằng cạnh huyền và một cạnh góc vuông của tam giác vuông kia thì hai tam giác vuông đó bằng nhau.",
