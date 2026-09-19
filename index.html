@@ -1184,6 +1184,41 @@ body {
   color: var(--text-secondary);
 }
 
+.exam-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.exam-filter-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.exam-filter-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.exam-filter-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
 .exam-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -4187,18 +4222,103 @@ body {
         <div class="hub-header">
           <span class="hub-badge">CHUẨN MA TRẬN BỘ GD&ĐT</span>
           <h2 class="hub-title">Phòng Luyện Thi & Khảo Sát Năng Lực</h2>
-          <p class="hub-subtitle">Lựa chọn kì thi và chế độ ôn luyện. Hệ thống sẽ phát hiện lỗ hổng định lý để ôn bù điểm yếu!</p>
+          <p class="hub-subtitle">Đầy đủ 8 đề thi Giữa kì & Cuối kì chuẩn cấu trúc cho Toán 6 và Toán 7. Tự động phát hiện lỗ hổng định lý để ôn bù điểm yếu!</p>
+        </div>
+
+        <!-- Filter pills for Exam Hub -->
+        <div class="exam-filter-bar">
+          <button class="exam-filter-btn active" data-exam-filter="all">🌟 Tất cả 8 đề thi</button>
+          <button class="exam-filter-btn" data-exam-filter="grade-6">📘 Toán Lớp 6 (4 đề)</button>
+          <button class="exam-filter-btn" data-exam-filter="grade-7">📙 Toán Lớp 7 (4 đề)</button>
+          <button class="exam-filter-btn" data-exam-filter="midterm">⏳ Đề Giữa Kì (GK1 - GK2)</button>
+          <button class="exam-filter-btn" data-exam-filter="final">🏆 Đề Cuối Kì (CK1 - CK2)</button>
         </div>
 
         <div class="exam-cards-grid">
-          <!-- Exam 1: Lớp 7 GK1 -->
-          <div class="exam-card" data-exam-id="exam-toan7-gk1">
+          <!-- 1. Lớp 6 GK1 -->
+          <div class="exam-card" data-exam-id="exam-toan6-gk1" data-exam-grade="6" data-exam-type="midterm">
+            <div class="exam-card-top">
+              <span class="exam-grade-badge grade-6">Lớp 6</span>
+              <span class="exam-type-badge midterm">Giữa Kì 1</span>
+            </div>
+            <h3 class="exam-card-title">Đề thi Giữa Kì 1 - Toán 6</h3>
+            <p class="exam-card-desc">Trọng tâm: Dấu hiệu chia hết 2, 3, 5, 9, Phép tính lũy thừa, Số nguyên tố, Hình vuông, Tam giác đều, Hình thoi.</p>
+            <div class="exam-meta">
+              <span>⏱️ 45 phút</span>
+              <span>📋 8 câu hỏi</span>
+              <span>⭐ 10 điểm</span>
+            </div>
+            <div class="exam-card-actions">
+              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan6-gk1">Luyện tập (Có giải thích ngay)</button>
+              <button class="btn btn-primary btn-start-real" data-exam="exam-toan6-gk1">Thi thử bấm giờ ⏱️</button>
+            </div>
+          </div>
+
+          <!-- 2. Lớp 6 CK1 -->
+          <div class="exam-card" data-exam-id="exam-toan6-ck1" data-exam-grade="6" data-exam-type="final">
+            <div class="exam-card-top">
+              <span class="exam-grade-badge grade-6">Lớp 6</span>
+              <span class="exam-type-badge final">Cuối Kì 1</span>
+            </div>
+            <h3 class="exam-card-title">Đề thi Cuối Kì 1 - Toán 6</h3>
+            <p class="exam-card-desc">Trọng tâm: Tập hợp số nguyên, Quy tắc dấu ngoặc, Bội & Ước số nguyên, Hình bình hành, Hình thoi, Thống kê trực quan.</p>
+            <div class="exam-meta">
+              <span>⏱️ 60 phút</span>
+              <span>📋 8 câu hỏi</span>
+              <span>⭐ 10 điểm</span>
+            </div>
+            <div class="exam-card-actions">
+              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan6-ck1">Luyện tập (Có giải thích ngay)</button>
+              <button class="btn btn-primary btn-start-real" data-exam="exam-toan6-ck1">Thi thử bấm giờ ⏱️</button>
+            </div>
+          </div>
+
+          <!-- 3. Lớp 6 GK2 -->
+          <div class="exam-card" data-exam-id="exam-toan6-gk2" data-exam-grade="6" data-exam-type="midterm">
+            <div class="exam-card-top">
+              <span class="exam-grade-badge grade-6">Lớp 6</span>
+              <span class="exam-type-badge midterm">Giữa Kì 2</span>
+            </div>
+            <h3 class="exam-card-title">Đề thi Giữa Kì 2 - Toán 6</h3>
+            <p class="exam-card-desc">Trọng tâm: Khái niệm phân số, Tính chất cơ bản phân số, So sánh và Phép tính phân số, Điểm nằm giữa, Trung điểm.</p>
+            <div class="exam-meta">
+              <span>⏱️ 45 phút</span>
+              <span>📋 8 câu hỏi</span>
+              <span>⭐ 10 điểm</span>
+            </div>
+            <div class="exam-card-actions">
+              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan6-gk2">Luyện tập (Có giải thích ngay)</button>
+              <button class="btn btn-primary btn-start-real" data-exam="exam-toan6-gk2">Thi thử bấm giờ ⏱️</button>
+            </div>
+          </div>
+
+          <!-- 4. Lớp 6 CK2 -->
+          <div class="exam-card" data-exam-id="exam-toan6-ck2" data-exam-grade="6" data-exam-type="final">
+            <div class="exam-card-top">
+              <span class="exam-grade-badge grade-6">Lớp 6</span>
+              <span class="exam-type-badge final">Cuối Kì 2</span>
+            </div>
+            <h3 class="exam-card-title">Đề thi Cuối Kì 2 - Toán 6</h3>
+            <p class="exam-card-desc">Trọng tâm: Số thập phân, Tỉ số phần trăm, Bài toán phân số thực tế, Phân loại góc và Xác suất thực nghiệm.</p>
+            <div class="exam-meta">
+              <span>⏱️ 60 phút</span>
+              <span>📋 8 câu hỏi</span>
+              <span>⭐ 10 điểm</span>
+            </div>
+            <div class="exam-card-actions">
+              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan6-ck2">Luyện tập (Có giải thích ngay)</button>
+              <button class="btn btn-primary btn-start-real" data-exam="exam-toan6-ck2">Thi thử bấm giờ ⏱️</button>
+            </div>
+          </div>
+
+          <!-- 5. Lớp 7 GK1 -->
+          <div class="exam-card" data-exam-id="exam-toan7-gk1" data-exam-grade="7" data-exam-type="midterm">
             <div class="exam-card-top">
               <span class="exam-grade-badge">Lớp 7</span>
               <span class="exam-type-badge midterm">Giữa Kì 1</span>
             </div>
             <h3 class="exam-card-title">Đề thi Giữa Kì 1 - Toán 7</h3>
-            <p class="exam-card-desc">Trọng tâm: Góc đối đỉnh, Hai đường thẳng song song, Tiên đề Euclid, Tổng 3 góc tam giác.</p>
+            <p class="exam-card-desc">Trọng tâm: Số hữu tỉ, Góc đối đỉnh, Hai đường thẳng song song, Tiên đề Euclid và Định lý hình học.</p>
             <div class="exam-meta">
               <span>⏱️ 45 phút</span>
               <span>📋 10 câu hỏi</span>
@@ -4210,60 +4330,60 @@ body {
             </div>
           </div>
 
-          <!-- Exam 2: Lớp 7 CK2 -->
-          <div class="exam-card" data-exam-id="exam-toan7-ck2">
+          <!-- 6. Lớp 7 CK1 -->
+          <div class="exam-card" data-exam-id="exam-toan7-ck1" data-exam-grade="7" data-exam-type="final">
+            <div class="exam-card-top">
+              <span class="exam-grade-badge">Lớp 7</span>
+              <span class="exam-type-badge final">Cuối Kì 1</span>
+            </div>
+            <h3 class="exam-card-title">Đề thi Cuối Kì 1 - Toán 7</h3>
+            <p class="exam-card-desc">Trọng tâm: Số thực, Căn bậc hai, Tổng ba góc tam giác, Ba trường hợp bằng nhau tam giác và Tam giác cân.</p>
+            <div class="exam-meta">
+              <span>⏱️ 60 phút</span>
+              <span>📋 10 câu hỏi</span>
+              <span>⭐ 10 điểm</span>
+            </div>
+            <div class="exam-card-actions">
+              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan7-ck1">Luyện tập (Có giải thích ngay)</button>
+              <button class="btn btn-primary btn-start-real" data-exam="exam-toan7-ck1">Thi thử bấm giờ ⏱️</button>
+            </div>
+          </div>
+
+          <!-- 7. Lớp 7 GK2 -->
+          <div class="exam-card" data-exam-id="exam-toan7-gk2" data-exam-grade="7" data-exam-type="midterm">
+            <div class="exam-card-top">
+              <span class="exam-grade-badge">Lớp 7</span>
+              <span class="exam-type-badge midterm">Giữa Kì 2</span>
+            </div>
+            <h3 class="exam-card-title">Đề thi Giữa Kì 2 - Toán 7</h3>
+            <p class="exam-card-desc">Trọng tâm: Tỉ lệ thức, Đại lượng tỉ lệ thuận/nghịch, Đa thức một biến, Quan hệ giữa góc và cạnh đối diện, BĐT tam giác.</p>
+            <div class="exam-meta">
+              <span>⏱️ 45 phút</span>
+              <span>📋 10 câu hỏi</span>
+              <span>⭐ 10 điểm</span>
+            </div>
+            <div class="exam-card-actions">
+              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan7-gk2">Luyện tập (Có giải thích ngay)</button>
+              <button class="btn btn-primary btn-start-real" data-exam="exam-toan7-gk2">Thi thử bấm giờ ⏱️</button>
+            </div>
+          </div>
+
+          <!-- 8. Lớp 7 CK2 -->
+          <div class="exam-card" data-exam-id="exam-toan7-ck2" data-exam-grade="7" data-exam-type="final">
             <div class="exam-card-top">
               <span class="exam-grade-badge">Lớp 7</span>
               <span class="exam-type-badge final">Cuối Kì 2</span>
             </div>
             <h3 class="exam-card-title">Đề thi Cuối Kì 2 - Toán 7</h3>
-            <p class="exam-card-desc">Trọng tâm: Dãy tỉ số bằng nhau, Quan hệ góc và cạnh đối diện, Bất đẳng thức tam giác, Trọng tâm.</p>
+            <p class="exam-card-desc">Trọng tâm: Toàn bộ Đa thức một biến, Các đường đồng quy trong tam giác, Hình không gian và Xác suất biến cố.</p>
             <div class="exam-meta">
               <span>⏱️ 60 phút</span>
-              <span>📋 8 câu hỏi</span>
+              <span>📋 10 câu hỏi</span>
               <span>⭐ 10 điểm</span>
             </div>
             <div class="exam-card-actions">
               <button class="btn btn-outline btn-start-practice" data-exam="exam-toan7-ck2">Luyện tập (Có giải thích ngay)</button>
               <button class="btn btn-primary btn-start-real" data-exam="exam-toan7-ck2">Thi thử bấm giờ ⏱️</button>
-            </div>
-          </div>
-
-          <!-- Exam 3: Lớp 6 GK1 -->
-          <div class="exam-card" data-exam-id="exam-toan6-gk1">
-            <div class="exam-card-top">
-              <span class="exam-grade-badge grade-6">Lớp 6</span>
-              <span class="exam-type-badge midterm">Giữa Kì 1</span>
-            </div>
-            <h3 class="exam-card-title">Đề thi Giữa Kì 1 - Toán 6</h3>
-            <p class="exam-card-desc">Trọng tâm: Dấu hiệu chia hết 2, 3, 5, 9, Quy tắc dấu ngoặc, Hình vuông, Tam giác đều, Hình thoi.</p>
-            <div class="exam-meta">
-              <span>⏱️ 45 phút</span>
-              <span>📋 6 câu hỏi</span>
-              <span>⭐ 10 điểm</span>
-            </div>
-            <div class="exam-card-actions">
-              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan6-gk1">Luyện tập (Có giải thích ngay)</button>
-              <button class="btn btn-primary btn-start-real" data-exam="exam-toan6-gk1">Thi thử bấm giờ ⏱️</button>
-            </div>
-          </div>
-
-          <!-- Exam 4: Lớp 6 CK2 -->
-          <div class="exam-card" data-exam-id="exam-toan6-ck2">
-            <div class="exam-card-top">
-              <span class="exam-grade-badge grade-6">Lớp 6</span>
-              <span class="exam-type-badge final">Cuối Kì 2</span>
-            </div>
-            <h3 class="exam-card-title">Đề thi Cuối Kì 2 - Toán 6</h3>
-            <p class="exam-card-desc">Trọng tâm: Tính chất phân số, rút gọn tối giản, điểm nằm giữa và trung điểm đoạn thẳng.</p>
-            <div class="exam-meta">
-              <span>⏱️ 45 phút</span>
-              <span>📋 4 câu hỏi</span>
-              <span>⭐ 10 điểm</span>
-            </div>
-            <div class="exam-card-actions">
-              <button class="btn btn-outline btn-start-practice" data-exam="exam-toan6-ck2">Luyện tập (Có giải thích ngay)</button>
-              <button class="btn btn-primary btn-start-real" data-exam="exam-toan6-ck2">Thi thử bấm giờ ⏱️</button>
             </div>
           </div>
         </div>
@@ -4819,6 +4939,28 @@ const THEOREMS_DATA = [
   // LỚP 6 - HỌC KÌ 1: SỐ HỌC & HÌNH HỌC TRỰC QUAN
   // -------------------------------------------------------------
   {
+    id: "toan6-hk1-tap-hop-luy-thua",
+    grade: 6,
+    semester: 1,
+    topic: "arithmetic",
+    topicName: "Tập hợp & Phép tính lũy thừa",
+    title: "Quy tắc lũy thừa với số mũ tự nhiên",
+    summary: "Nhân, chia hai lũy thừa cùng cơ số và lũy thừa của lũy thừa.",
+    content: "Khi nhân hai lũy thừa cùng cơ số, ta giữ nguyên cơ số và cộng các số mũ: a^m · a^n = a^(m+n).\nKhi chia hai lũy thừa cùng cơ số khác 0, ta giữ nguyên cơ số và trừ các số mũ: a^m : a^n = a^(m-n) (với a ≠ 0, m ≥ n).\nQuy ước: a^0 = 1 (với a ≠ 0); a^1 = a.",
+    hypothesis: "Cho số tự nhiên a khác 0 và m, n là các số tự nhiên",
+    conclusion: "a^m · a^n = a^(m+n); a^m : a^n = a^(m-n) (m ≥ n)",
+    formula: "a^m \\cdot a^n = a^{m+n}, \\quad a^m : a^n = a^{m-n} \\ (a \\neq 0, m \\ge n)",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="50" cy="50" r="42" fill="#eff6ff" stroke="#3b82f6" stroke-width="4"/><text x="50" y="58" font-size="26" font-weight="bold" fill="#1d4ed8" text-anchor="middle">a^m · a^n</text></svg>`,
+    fillBlank: {
+      question: "Khi nhân hai lũy thừa cùng cơ số, ta giữ nguyên cơ số và {blank1} các số mũ. Khi chia hai lũy thừa cùng cơ số, ta {blank2} các số mũ.",
+      answers: ["cộng", "trừ"],
+      hints: ["Phép cộng", "Phép trừ"]
+    },
+    aiQuestion: "Em hãy nêu quy tắc nhân và chia hai lũy thừa cùng cơ số?",
+    standardAnswer: "Khi nhân hai lũy thừa cùng cơ số, ta giữ nguyên cơ số và cộng các số mũ: a^m · a^n = a^(m+n). Khi chia hai lũy thừa cùng cơ số khác 0, ta giữ nguyên cơ số và trừ các số mũ: a^m : a^n = a^(m-n).",
+    keywords: ["giữ nguyên cơ số", "cộng các số mũ", "trừ các số mũ", "a^m · a^n = a^(m+n)"]
+  },
+  {
     id: "toan6-hk1-chia-het-2-5",
     grade: 6,
     semester: 1,
@@ -4863,17 +5005,39 @@ const THEOREMS_DATA = [
     keywords: ["tổng các chữ số", "chia hết cho 9", "chia hết cho 3", "chiều ngược lại không đúng"]
   },
   {
+    id: "toan6-hk1-uoc-va-boi",
+    grade: 6,
+    semester: 1,
+    topic: "arithmetic",
+    topicName: "Ước, Bội & Số nguyên tố",
+    title: "Ước chung lớn nhất (ƯCLN) & Bội chung nhỏ nhất (BCNN)",
+    summary: "Quy tắc tìm ƯCLN và BCNN bằng cách phân tích ra thừa số nguyên tố.",
+    content: "ƯCLN(a, b): Lấy các thừa số nguyên tố CHUNG với số mũ NHỎ NHẤT rồi nhân lại.\nBCNN(a, b): Lấy các thừa số nguyên tố CHUNG VÀ RIÊNG với số mũ LỚN NHẤT rồi nhân lại.\nSố nguyên tố là số tự nhiên lớn hơn 1 chỉ có đúng 2 ước là 1 và chính nó.",
+    hypothesis: "Cho a, b là các số tự nhiên lớn hơn 1 đã phân tích ra thừa số nguyên tố",
+    conclusion: "ƯCLN lấy thừa số chung (mũ nhỏ nhất), BCNN lấy chung & riêng (mũ lớn nhất)",
+    formula: "\\text{ƯCLN}(a,b) \\cdot \\text{BCNN}(a,b) = a \\cdot b",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="40" cy="50" r="30" fill="none" stroke="#3b82f6" stroke-width="3"/><circle cx="60" cy="50" r="30" fill="none" stroke="#ec4899" stroke-width="3"/><text x="50" y="55" font-size="14" font-weight="bold" fill="#7e22ce" text-anchor="middle">ƯCLN</text></svg>`,
+    fillBlank: {
+      question: "Để tìm ƯCLN của hai hay nhiều số, ta chọn ra các thừa số nguyên tố {blank1} với số mũ {blank2}.",
+      answers: ["chung", "nhỏ nhất"],
+      hints: ["Cùng xuất hiện ở các số", "Số mũ bé nhất"]
+    },
+    aiQuestion: "Nêu các bước tìm ƯCLN của hai hay nhiều số tự nhiên lớn hơn 1?",
+    standardAnswer: "Bước 1: Phân tích mỗi số ra thừa số nguyên tố. Bước 2: Chọn ra các thừa số nguyên tố chung. Bước 3: Lập tích các thừa số đã chọn, mỗi thừa số lấy với số mũ nhỏ nhất của nó.",
+    keywords: ["phân tích ra thừa số nguyên tố", "thừa số chung", "số mũ nhỏ nhất"]
+  },
+  {
     id: "toan6-hk1-quy-tac-dau-ngoac",
     grade: 6,
     semester: 1,
     topic: "arithmetic",
-    topicName: "Số nguyên & Đại số",
-    title: "Quy tắc dấu ngoặc trong tập số nguyên",
-    summary: "Quy tắc bỏ dấu ngoặc khi đằng trước có dấu cộng hoặc dấu trừ.",
-    content: "Khi bỏ dấu ngoặc có dấu '+' đằng trước, ta giữ nguyên dấu của các số hạng trong ngoặc: +(a - b + c) = a - b + c.\nKhi bỏ dấu ngoặc có dấu '-' đằng trước, ta phải đổi dấu tất cả các số hạng trong ngoặc: dấu '+' thành dấu '-', dấu '-' thành dấu '+': -(a - b + c) = -a + b - c.",
+    topicName: "Số nguyên & Quy tắc dấu",
+    title: "Quy tắc dấu ngoặc & Phép tính số nguyên",
+    summary: "Quy tắc bỏ dấu ngoặc và quy tắc cộng, trừ, nhân hai số nguyên.",
+    content: "Khi bỏ dấu ngoặc có dấu '+' đằng trước: giữ nguyên dấu tất cả các số hạng.\nKhi bỏ dấu ngoặc có dấu '-' đằng trước: đổi dấu tất cả các số hạng: '+' thành '-', '-' thành '+'.\nNhân hai số nguyên cùng dấu cho kết quả dương, nhân hai số nguyên khác dấu cho kết quả âm.",
     hypothesis: "Biểu thức có chứa dấu ngoặc đằng trước mang dấu '+' hoặc dấu '-'",
-    conclusion: "+(a + b) = a + b; -(a + b) = -a - b; -(a - b) = -a + b",
-    formula: "-(a - b + c) = -a + b - c",
+    conclusion: "+(a - b + c) = a - b + c; -(a - b + c) = -a + b - c",
+    formula: "-(a - b + c) = -a + b - c, \\quad (-a) \\cdot (-b) = a \\cdot b, \\quad (-a) \\cdot b = -(a \\cdot b)",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="50" cy="50" r="42" fill="#fdf2f8" stroke="#ec4899" stroke-width="4"/><text x="50" y="58" font-size="30" font-weight="bold" fill="#be185d" text-anchor="middle">-(a - b)</text></svg>`,
     fillBlank: {
       question: "Khi bỏ dấu ngoặc có dấu trừ đằng trước, ta phải {blank1} của tất cả các số hạng trong ngoặc, dấu cộng thành {blank2}.",
@@ -4930,7 +5094,7 @@ const THEOREMS_DATA = [
   },
 
   // -------------------------------------------------------------
-  // LỚP 6 - HỌC KÌ 2: PHÂN SỐ & HÌNH HỌC PHẲNG
+  // LỚP 6 - HỌC KÌ 2: PHÂN SỐ, SỐ THẬP PHÂN & HÌNH HỌC PHẲNG
   // -------------------------------------------------------------
   {
     id: "toan6-hk2-tinh-chat-phan-so",
@@ -4938,12 +5102,12 @@ const THEOREMS_DATA = [
     semester: 2,
     topic: "arithmetic",
     topicName: "Phân số & Số thập phân",
-    title: "Tính chất cơ bản của phân số",
-    summary: "Nhân hoặc chia cả tử và mẫu với cùng một số nguyên khác 0 ta được phân số bằng phân số đã cho.",
-    content: "Nếu nhân cả tử và mẫu của một phân số với cùng một số nguyên khác 0 thì ta được phân số bằng phân số đã cho.\nNếu chia cả tử và mẫu của một phân số cho cùng một ước chung của chúng thì ta được phân số bằng phân số đã cho.",
-    hypothesis: "Phân số a/b với m, n ∈ Z, m ≠ 0, n là ước chung của a và b",
+    title: "Tính chất cơ bản của phân số & Phép tính phân số",
+    summary: "Nhân/chia cả tử và mẫu với cùng một số khác 0 và quy tắc cộng trừ nhân chia phân số.",
+    content: "Nếu nhân cả tử và mẫu của một phân số với cùng một số nguyên khác 0 thì ta được phân số bằng phân số đã cho: a/b = (a·m)/(b·m).\nNếu chia cả tử và mẫu cho cùng một ước chung thì được phân số bằng phân số đã cho.\nCộng/trừ phân số cùng mẫu: a/m + b/m = (a+b)/m. Nhân phân số: (a/b) · (c/d) = (a·c)/(b·d).",
+    hypothesis: "Phân số a/b với m, n ∈ Z, m ≠ 0",
     conclusion: "a/b = (a * m)/(b * m) và a/b = (a : n)/(b : n)",
-    formula: "\\frac{a}{b} = \\frac{a \\cdot m}{b \\cdot m} \\ (m \\neq 0), \\quad \\frac{a}{b} = \\frac{a : n}{b : n} \\ (n \\in \\text{ƯC}(a,b))",
+    formula: "\\frac{a}{b} = \\frac{a \\cdot m}{b \\cdot m} \\ (m \\neq 0), \\quad \\frac{a}{b} \\cdot \\frac{c}{d} = \\frac{a \\cdot c}{b \\cdot d}",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><rect x="15" y="15" width="70" height="70" rx="12" fill="#f8fafc" stroke="#64748b" stroke-width="4"/><text x="50" y="42" font-size="24" font-weight="bold" fill="#0f172a" text-anchor="middle">a · m</text><line x1="25" y1="52" x2="75" y2="52" stroke="#0f172a" stroke-width="3"/><text x="50" y="76" font-size="24" font-weight="bold" fill="#0f172a" text-anchor="middle">b · m</text></svg>`,
     fillBlank: {
       question: "Nếu nhân cả tử và mẫu của phân số với cùng một số nguyên {blank1} thì ta được phân số {blank2} phân số đã cho.",
@@ -4953,6 +5117,28 @@ const THEOREMS_DATA = [
     aiQuestion: "Dựa vào tính chất cơ bản của phân số, em hãy giải thích cách rút gọn một phân số về tối giản?",
     standardAnswer: "Để rút gọn phân số về tối giản, ta chia cả tử và mẫu của phân số đó cho ước chung lớn nhất (ƯCLN) của chúng.",
     keywords: ["chia cả tử và mẫu", "ước chung lớn nhất", "ƯCLN", "tối giản"]
+  },
+  {
+    id: "toan6-hk2-so-thap-phan-ti-so",
+    grade: 6,
+    semester: 2,
+    topic: "arithmetic",
+    topicName: "Số thập phân & Tỉ số phần trăm",
+    title: "Số thập phân, Tỉ số và Tỉ số phần trăm",
+    summary: "Quy tắc tìm giá trị phân số của một số và tìm tỉ số phần trăm.",
+    content: "1. Muốn tìm m/n của số b cho trước, ta tính b · (m/n).\n2. Muốn tìm một số biết m/n của nó bằng a, ta tính a : (m/n).\n3. Tỉ số phần trăm của hai số a và b là (a : b) · 100%.",
+    hypothesis: "Số a, b và tỉ số m/n",
+    conclusion: "Giá trị phân số = b · (m/n); Số cần tìm = a : (m/n)",
+    formula: "\\text{Giá trị} = b \\cdot \\frac{m}{n}, \\quad \\text{Tỉ số phần trăm} = \\frac{a}{b} \\cdot 100\\%",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="50" cy="50" r="42" fill="#ecfdf5" stroke="#10b981" stroke-width="4"/><text x="50" y="58" font-size="26" font-weight="bold" fill="#059669" text-anchor="middle">% Tỉ số</text></svg>`,
+    fillBlank: {
+      question: "Muốn tìm {blank1} của số b cho trước, ta lấy số b {blank2} với phân số đó.",
+      answers: ["giá trị phân số", "nhân"],
+      hints: ["Đại lượng cần tìm", "Phép tính nhân"]
+    },
+    aiQuestion: "Em hãy nêu cách tìm m/n của số b cho trước và cho ví dụ?",
+    standardAnswer: "Muốn tìm m/n của số b cho trước, ta lấy b nhân với m/n: b · (m/n). Ví dụ: Tìm 2/3 của 30 ta lấy 30 · 2/3 = 20.",
+    keywords: ["b nhân với m/n", "b · (m/n)", "ví dụ"]
   },
   {
     id: "toan6-hk2-trung-diem-doan-thang",
@@ -4976,22 +5162,66 @@ const THEOREMS_DATA = [
     standardAnswer: "Cần thỏa mãn 2 điều kiện: 1) Điểm M phải nằm giữa hai điểm A và B; 2) Điểm M phải cách đều A và B (MA = MB = AB/2).",
     keywords: ["2 điều kiện", "nằm giữa", "cách đều", "MA = MB"]
   },
+  {
+    id: "toan6-hk2-goc-va-so-do-goc",
+    grade: 6,
+    semester: 2,
+    topic: "geometry",
+    topicName: "Góc & Số đo góc",
+    title: "Khái niệm Góc & Phân loại góc",
+    summary: "Góc nhọn, góc vuông, góc tù, góc bẹt và góc kề nhau.",
+    content: "Góc là hình gồm hai tia chung gốc.\n- Góc nhọn: số đo lớn hơn 0° và nhỏ hơn 90° (0° < α < 90°).\n- Góc vuông: số đo bằng 90°.\n- Góc tù: số đo lớn hơn 90° và nhỏ hơn 180° (90° < α < 180°).\n- Góc bẹt: số đo bằng 180°.\nNếu tia Oz nằm giữa hai tia Ox và Oy thì xOz + zOy = xOy.",
+    hypothesis: "Góc có số đo α",
+    conclusion: "α = 90°: vuông; 0° < α < 90°: nhọn; 90° < α < 180°: tù; α = 180°: bẹt",
+    formula: "0^\\circ < \\alpha_{\\text{nhọn}} < 90^\\circ, \\quad \\alpha_{\\text{vuông}} = 90^\\circ, \\quad 90^\\circ < \\alpha_{\\text{tù}} < 180^\\circ, \\quad \\alpha_{\\text{bẹt}} = 180^\\circ",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><line x1="20" y1="75" x2="85" y2="75" stroke="#6366f1" stroke-width="4"/><line x1="20" y1="75" x2="70" y2="25" stroke="#6366f1" stroke-width="4"/><path d="M 40 75 A 20 20 0 0 0 35 62" fill="none" stroke="#f43f5e" stroke-width="3"/></svg>`,
+    fillBlank: {
+      question: "Góc nhọn có số đo lớn hơn 0° và {blank1} 90°. Góc bẹt có số đo bằng {blank2}.",
+      answers: ["nhỏ hơn", "180°"],
+      hints: ["So sánh với 90 độ", "Số đo góc bẹt"]
+    },
+    aiQuestion: "Em hãy phân biệt 4 loại góc cơ bản dựa vào số đo của chúng?",
+    standardAnswer: "1) Góc nhọn: 0° < α < 90°; 2) Góc vuông: α = 90°; 3) Góc tù: 90° < α < 180°; 4) Góc bẹt: α = 180°.",
+    keywords: ["góc nhọn", "góc vuông", "góc tù", "góc bẹt", "90°", "180°"]
+  },
 
   // -------------------------------------------------------------
   // LỚP 7 - HỌC KÌ 1: ĐẠI SỐ & HÌNH HỌC PHẲNG (CỰC KỲ QUAN TRỌNG)
   // -------------------------------------------------------------
+  {
+    id: "toan7-hk1-so-huu-ti-so-thuc",
+    grade: 7,
+    semester: 1,
+    topic: "arithmetic",
+    topicName: "Số hữu tỉ & Số thực",
+    title: "Tập hợp số hữu tỉ, Số thực & Căn bậc hai số học",
+    summary: "Số hữu tỉ viết dưới dạng a/b (b ≠ 0), căn bậc hai số học và giá trị tuyệt đối.",
+    content: "Số hữu tỉ là số viết được dưới dạng phân số a/b với a, b ∈ Z, b ≠ 0. Tập hợp các số hữu tỉ kí hiệu là Q.\nCăn bậc hai số học của số a không âm là số x không âm sao cho x² = a (kí hiệu √a).\nGiá trị tuyệt đối của số thực x: |x| = x nếu x ≥ 0 và |x| = -x nếu x < 0.",
+    hypothesis: "a/b với a, b ∈ Z, b ≠ 0; a ≥ 0",
+    conclusion: "a/b ∈ Q; (√a)² = a; |x| ≥ 0",
+    formula: "\\mathbb{Q} = \\left\\{ \\frac{a}{b} \\ \\middle| \\ a, b \\in \\mathbb{Z}, b \\neq 0 \\right\\}, \\quad \\sqrt{a} = x \\ (x \\ge 0, x^2 = a)",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="50" cy="50" r="42" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="50" y="58" font-size="28" font-weight="bold" fill="#1e40af" text-anchor="middle">Q, ℝ, √a</text></svg>`,
+    fillBlank: {
+      question: "Số hữu tỉ là số viết được dưới dạng phân số a/b với a, b thuộc Z và {blank1}. Căn bậc hai số học của số a không âm là số x không âm sao cho {blank2}.",
+      answers: ["b khác 0", "x^2 = a"],
+      hints: ["Mẫu số khác 0", "Bình phương bằng a"]
+    },
+    aiQuestion: "Thế nào là số hữu tỉ và căn bậc hai số học của một số không âm?",
+    standardAnswer: "Số hữu tỉ là số viết được dưới dạng phân số a/b (a, b ∈ Z, b ≠ 0). Căn bậc hai số học của số không âm a là số x không âm sao cho x² = a.",
+    keywords: ["a/b", "b khác 0", "căn bậc hai số học", "x^2 = a"]
+  },
   {
     id: "toan7-hk1-goc-doi-dinh",
     grade: 7,
     semester: 1,
     topic: "geometry",
     topicName: "Góc & Đường thẳng song song",
-    title: "Định lý Hai góc đối đỉnh",
-    summary: "Hai góc đối đỉnh thì bằng nhau.",
-    content: "Hai góc đối đỉnh là hai góc mà mỗi cạnh của góc này là tia đối của một cạnh của góc kia.\nĐịnh lý: Hai góc đối đỉnh thì bằng nhau.",
+    title: "Định lý Hai góc đối đỉnh & Góc kề bù",
+    summary: "Hai góc đối đỉnh thì bằng nhau. Hai góc kề bù có tổng bằng 180°.",
+    content: "Hai góc đối đỉnh là hai góc mà mỗi cạnh của góc này là tia đối của một cạnh của góc kia.\nĐịnh lý: Hai góc đối đỉnh thì bằng nhau.\nHai góc kề bù là hai góc vừa kề nhau vừa bù nhau, có tổng số đo bằng 180°.",
     hypothesis: "Góc xOy và góc x'Oy' là hai góc đối đỉnh",
     conclusion: "xOy = x'Oy'",
-    formula: "\\widehat{xOy} = \\widehat{x'Oy'}",
+    formula: "\\widehat{xOy} = \\widehat{x'Oy'}, \\quad \\widehat{AOB} + \\widehat{BOC} = 180^\\circ \\text{ (kề bù)}",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><line x1="15" y1="20" x2="85" y2="80" stroke="#4f46e5" stroke-width="4"/><line x1="15" y1="80" x2="85" y2="20" stroke="#4f46e5" stroke-width="4"/><circle cx="50" cy="50" r="4" fill="#ef4444"/><path d="M 38 40 A 15 15 0 0 1 62 40" fill="none" stroke="#f59e0b" stroke-width="3"/></svg>`,
     fillBlank: {
       question: "Hai góc đối đỉnh là hai góc mà mỗi cạnh của góc này là {blank1} của một cạnh của góc kia. Định lý: Hai góc đối đỉnh thì {blank2}.",
@@ -5066,7 +5296,7 @@ const THEOREMS_DATA = [
     },
     aiQuestion: "Tại sao trong một tam giác vuông, hai góc nhọn lại luôn phụ nhau (tổng bằng 90°)?",
     standardAnswer: "Vì tổng 3 góc trong tam giác là 180°, mà góc vuông đã bằng 90°, nên tổng 2 góc nhọn còn lại phải bằng 180° - 90° = 90° (phụ nhau).",
-    keywords: ["180° - 90° = 90°", "hai góc nhọn phụ nhau", "tổng 3 góc"]
+    keywords: ["180° - 90° = 90°", "hai góc nhọn phụ nhau", "tổng 3 góc", "tổng các góc trong tam giác"]
   },
   {
     id: "toan7-hk1-tam-giac-bang-nhau-3-truong-hop",
@@ -5096,12 +5326,12 @@ const THEOREMS_DATA = [
     semester: 1,
     topic: "geometry",
     topicName: "Tam giác & Định lý hình học",
-    title: "Các trường hợp bằng nhau của tam giác vuông",
-    summary: "Cạnh huyền - góc nhọn, cạnh huyền - cạnh góc vuông và hai cạnh góc vuông.",
-    content: "Các trường hợp đặc biệt cho tam giác vuông:\n1. Hai cạnh góc vuông (c.g.c suy rộng).\n2. Cạnh góc vuông - góc nhọn kề (g.c.g suy rộng).\n3. Cạnh huyền - góc nhọn: Nếu cạnh huyền và một góc nhọn của tam giác vuông này bằng cạnh huyền và một góc nhọn của tam giác vuông kia thì hai tam giác đó bằng nhau.\n4. Cạnh huyền - cạnh góc vuông: Nếu cạnh huyền và một cạnh góc vuông của tam giác vuông này bằng cạnh huyền và một cạnh góc vuông của tam giác vuông kia thì hai tam giác đó bằng nhau.",
-    hypothesis: "ΔABC vuông tại A, ΔDEF vuông tại D",
-    conclusion: "BC=EF, Â nhọn = D̂ nhọn ⇒ ΔABC = ΔDEF",
-    formula: "\\text{Cạnh huyền - Góc nhọn}; \\quad \\text{Cạnh huyền - Cạnh góc vuông}",
+    title: "Các trường hợp bằng nhau của tam giác vuông & Tam giác cân",
+    summary: "Cạnh huyền - góc nhọn, cạnh huyền - cạnh góc vuông và tính chất tam giác cân.",
+    content: "Tam giác vuông bằng nhau: 1) Hai cạnh góc vuông; 2) Cạnh góc vuông - góc nhọn kề; 3) Cạnh huyền - góc nhọn; 4) Cạnh huyền - cạnh góc vuông.\nTam giác cân: Có hai cạnh bằng nhau ⇔ hai góc ở đáy bằng nhau. Đường phân giác góc ở đỉnh đồng thời là đường trung trực, trung tuyến và đường cao.",
+    hypothesis: "ΔABC vuông tại A, ΔDEF vuông tại D; hoặc ΔABC cân tại A",
+    conclusion: "ΔABC = ΔDEF; AB = AC ⇔ B̂ = Ĉ",
+    formula: "\\text{Cạnh huyền - Góc nhọn}; \\quad \\text{Cạnh huyền - Cạnh góc vuông}; \\quad AB = AC \\iff \\widehat{B} = \\widehat{C}",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><polygon points="20,80 80,80 20,20" fill="#ecfdf5" stroke="#10b981" stroke-width="4"/><rect x="20" y="65" width="15" height="15" fill="none" stroke="#059669" stroke-width="2"/></svg>`,
     fillBlank: {
       question: "Nếu {blank1} và một góc nhọn của tam giác vuông này bằng {blank1} và một góc nhọn của tam giác vuông kia thì hai tam giác vuông đó bằng nhau.",
@@ -5114,7 +5344,7 @@ const THEOREMS_DATA = [
   },
 
   // -------------------------------------------------------------
-  // LỚP 7 - HỌC KÌ 2: TỈ LỆ THỨC & QUAN HỆ TRONG TAM GIÁC
+  // LỚP 7 - HỌC KÌ 2: TỈ LỆ THỨC, ĐA THỨC & HÌNH HỌC KHÔNG GIAN
   // -------------------------------------------------------------
   {
     id: "toan7-hk2-ti-le-thuc-day-ti-so",
@@ -5137,6 +5367,28 @@ const THEOREMS_DATA = [
     aiQuestion: "Áp dụng tính chất dãy tỉ số bằng nhau, nếu x/2 = y/3 và x + y = 10 thì tìm x, y như thế nào?",
     standardAnswer: "Áp dụng tính chất dãy tỉ số bằng nhau: x/2 = y/3 = (x + y)/(2 + 3) = 10/5 = 2. Do đó x = 2 * 2 = 4, y = 3 * 2 = 6.",
     keywords: ["dãy tỉ số bằng nhau", "10/5 = 2", "x = 4", "y = 6"]
+  },
+  {
+    id: "toan7-hk2-bieu-thuc-da-thuc-mot-bien",
+    grade: 7,
+    semester: 2,
+    topic: "arithmetic",
+    topicName: "Biểu thức & Đa thức một biến",
+    title: "Đa thức một biến, Cộng trừ & Nghiệm của đa thức",
+    summary: "Bậc của đa thức, cộng trừ đa thức và nghiệm của đa thức một biến.",
+    content: "Đa thức một biến là tổng của những đơn thức của cùng một biến.\nBậc của đa thức một biến (khác đa thức không, đã thu gọn) là số mũ lớn nhất của biến trong đa thức đó.\nNếu tại x = a, đa thức P(x) có giá trị bằng 0 (P(a) = 0) thì a gọi là một nghiệm của đa thức P(x).",
+    hypothesis: "P(x) = a_n x^n + ... + a_1 x + a_0 (a_n ≠ 0)",
+    conclusion: "Bậc là n; P(a) = 0 ⇔ a là nghiệm của P(x)",
+    formula: "P(x) = a_n x^n + a_{n-1} x^{n-1} + \\dots + a_0, \\quad P(a) = 0 \\iff x = a \\text{ là nghiệm}",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="50" cy="50" r="42" fill="#fdf4ff" stroke="#a855f7" stroke-width="4"/><text x="50" y="58" font-size="24" font-weight="bold" fill="#7e22ce" text-anchor="middle">P(x) = 0</text></svg>`,
+    fillBlank: {
+      question: "Bậc của đa thức một biến là số mũ {blank1} của biến trong đa thức đã thu gọn. Nếu P(a) = 0 thì a được gọi là {blank2} của đa thức P(x).",
+      answers: ["lớn nhất", "nghiệm"],
+      hints: ["Số mũ cao nhất", "Giá trị làm đa thức triệt tiêu"]
+    },
+    aiQuestion: "Thế nào là nghiệm của đa thức một biến và làm sao để kiểm tra x = a có phải là nghiệm hay không?",
+    standardAnswer: "Nghiệm của đa thức P(x) là giá trị của biến làm cho đa thức có giá trị bằng 0. Để kiểm tra x = a có phải nghiệm không, ta thay x = a vào P(x), nếu P(a) = 0 thì a là nghiệm, nếu P(a) ≠ 0 thì a không phải là nghiệm.",
+    keywords: ["giá trị bằng 0", "P(a) = 0", "thay vào đa thức"]
   },
   {
     id: "toan7-hk2-quan-he-goc-va-canh-doi-dien",
@@ -5166,12 +5418,12 @@ const THEOREMS_DATA = [
     semester: 2,
     topic: "geometry",
     topicName: "Quan hệ hình học trong tam giác",
-    title: "Bất đẳng thức tam giác",
+    title: "Bất đẳng thức tam giác & Quan hệ đường vuông góc",
     summary: "Trong một tam giác, tổng độ dài hai cạnh bất kì luôn lớn hơn độ dài cạnh còn lại.",
-    content: "Định lý: Trong một tam giác, tổng độ dài hai cạnh bất kì bao giờ cũng lớn hơn độ dài cạnh còn lại.\nHệ quả: Hiệu độ dài hai cạnh bất kì bao giờ cũng nhỏ hơn độ dài cạnh còn lại.\nQuy tắc nhận biết: Ba đoạn thẳng có độ dài a, b, c lập thành tam giác khi: |b - c| < a < b + c.",
+    content: "Định lý: Trong một tam giác, tổng độ dài hai cạnh bất kì bao giờ cũng lớn hơn độ dài cạnh còn lại.\nHệ quả: Hiệu độ dài hai cạnh bất kì bao giờ cũng nhỏ hơn độ dài cạnh còn lại.\nQuy tắc nhận biết: Ba đoạn thẳng có độ dài a, b, c lập thành tam giác khi: |b - c| < a < b + c.\nQuan hệ đường vuông góc: Trong các đường nối từ điểm A ngoài d đến d, đường vuông góc là đường ngắn nhất.",
     hypothesis: "Tam giác ABC có ba cạnh a, b, c",
     conclusion: "b - c < a < b + c; a + b > c; a + c > b; b + c > a",
-    formula: "|b - c| < a < b + c",
+    formula: "|b - c| < a < b + c, \\quad AH \\le AM \\ (AH \\perp d)",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><polygon points="20,80 80,80 40,25" fill="#faf5ff" stroke="#9333ea" stroke-width="4"/><text x="50" y="60" font-size="16" font-weight="bold" fill="#6b21a8" text-anchor="middle">a + b > c</text></svg>`,
     fillBlank: {
       question: "Trong một tam giác, {blank1} độ dài hai cạnh bất kì luôn lớn hơn cạnh còn lại, và {blank2} độ dài hai cạnh luôn nhỏ hơn cạnh còn lại.",
@@ -5190,7 +5442,7 @@ const THEOREMS_DATA = [
     topicName: "Quan hệ hình học trong tam giác",
     title: "Sự đồng quy của các đường trong tam giác",
     summary: "Trọng tâm (trung tuyến), Trực tâm (đường cao), Tâm đường tròn nội tiếp (phân giác), Tâm ngoại tiếp (trung trực).",
-    content: "1. Ba đường trung tuyến đồng quy tại một điểm gọi là Trọng tâm (G). Trọng tâm cách mỗi đỉnh một khoảng bằng 2/3 độ dài đường trung tuyến đi qua đỉnh đó.\n2. Ba đường phân giác đồng quy tại một điểm, điểm này cách đều ba cạnh của tam giác.\n3. Ba đường trung trực đồng quy tại một điểm, điểm này cách đều ba đỉnh của tam giác.\n4. Ba đường cao đồng quy tại một điểm gọi là Trực tâm (H) của tam giác.",
+    content: "1. Ba đường trung tuyến đồng quy tại Trọng tâm (G). Trọng tâm cách mỗi đỉnh bằng 2/3 độ dài đường trung tuyến qua đỉnh đó.\n2. Ba đường phân giác đồng quy tại một điểm cách đều ba cạnh của tam giác (tâm đường tròn nội tiếp).\n3. Ba đường trung trực đồng quy tại một điểm cách đều ba đỉnh của tam giác (tâm đường tròn ngoại tiếp).\n4. Ba đường cao đồng quy tại một điểm gọi là Trực tâm (H) của tam giác.",
     hypothesis: "Tam giác ABC với các đường đặc biệt",
     conclusion: "Trọng tâm G (AG = 2/3 AM); Trực tâm H; Tâm cách đều 3 cạnh (phân giác); Tâm cách đều 3 đỉnh (trung trực)",
     formula: "AG = \\frac{2}{3} AM, \\quad GM = \\frac{1}{3} AM",
@@ -5213,15 +5465,378 @@ if (typeof module !== "undefined" && module.exports) {
 </script>
 <script>
 // =================================================================
-// NGÂN HÀNG ĐỀ THI GIỮA KÌ & CUỐI KÌ TOÁN 6 - 7 (KẾT NỐI TRI THỨC)
-// Thiết kế chuẩn ma trận đề kiểm tra: Trắc nghiệm + Điền khuyết/Tự luận ngắn
-// Mỗi câu hỏi đều liên kết trực tiếp với ID của định lý tương ứng!
+// NGÂN HÀNG ĐỀ THI GIỮA KÌ & CUỐI KÌ TOÁN 6 - 7 (KẾT NỐI TRI THỨC VỚI CUỘC SỐNG)
+// Chuẩn ma trận đề kiểm tra của Bộ GD&ĐT: GK1, CK1, GK2, CK2 cho cả Lớp 6 và Lớp 7 (Tổng cộng 8 đề)
+// Mỗi câu hỏi liên kết trực tiếp với Định lý tương ứng, có giải thích chi tiết & KaTeX
 // =================================================================
 
 const EXAMS_DATA = [
-  // -------------------------------------------------------------
-  // ĐỀ 1: TOÁN 7 - GIỮA HỌC KÌ 1 (HK1)
-  // -------------------------------------------------------------
+  // =============================================================
+  // 1. TOÁN 6 - GIỮA HỌC KÌ 1 (GK1)
+  // =============================================================
+  {
+    id: "exam-toan6-gk1",
+    grade: 6,
+    semester: 1,
+    type: "midterm",
+    title: "Đề thi Giữa Học Kì 1 - Toán 6 (Kết nối tri thức)",
+    timeMinutes: 45,
+    description: "Kiểm tra Dấu hiệu chia hết 2, 3, 5, 9, Phép tính lũy thừa, Số nguyên tố, Hình vuông, Tam giác đều, Hình thoi.",
+    questions: [
+      {
+        id: "q6-gk1-1",
+        question: "Số nào sau đây vừa chia hết cho 2 vừa chia hết cho 5?",
+        options: ["124", "235", "540", "312"],
+        correctIndex: 2,
+        explanation: "Một số tự nhiên vừa chia hết cho 2 vừa chia hết cho 5 khi và chỉ khi có chữ số tận cùng là 0. Số 540 có chữ số tận cùng là 0 nên thỏa mãn.",
+        relatedTheoremId: "toan6-hk1-chia-het-2-5",
+        points: 1
+      },
+      {
+        id: "q6-gk1-2",
+        question: "Số \\(34*\\) chia hết cho 9 khi dấu * được thay bằng chữ số nào?",
+        options: ["2", "5", "9", "0"],
+        correctIndex: 0,
+        explanation: "Tổng các chữ số: \\(3 + 4 + * = 7 + *\\). Để số đó chia hết cho 9 thì \\(7 + *\\) phải chia hết cho 9, suy ra \\(* = 2\\).",
+        relatedTheoremId: "toan6-hk1-chia-het-3-9",
+        points: 1
+      },
+      {
+        id: "q6-gk1-3",
+        question: "Kết quả của phép tính lũy thừa \\(2^3 \\cdot 2^2\\) là:",
+        options: ["\\(2^6\\)", "\\(2^5 = 32\\)", "\\(4^5\\)", "\\(2^1 = 2\\)"],
+        correctIndex: 1,
+        explanation: "Áp dụng quy tắc nhân hai lũy thừa cùng cơ số: \\(a^m \\cdot a^n = a^{m+n}\\). Do đó \\(2^3 \\cdot 2^2 = 2^{3+2} = 2^5 = 32\\).",
+        relatedTheoremId: "toan6-hk1-tap-hop-luy-thua",
+        points: 1
+      },
+      {
+        id: "q6-gk1-4",
+        question: "Trong các số sau: 2, 9, 15, 21, số nào là số nguyên tố?",
+        options: ["2", "9", "15", "21"],
+        correctIndex: 0,
+        explanation: "Số nguyên tố là số tự nhiên lớn hơn 1 chỉ có đúng 2 ước là 1 và chính nó. Số 2 là số nguyên tố (chẵn duy nhất). Các số 9, 15, 21 là hợp số.",
+        relatedTheoremId: "toan6-hk1-uoc-va-boi",
+        points: 1
+      },
+      {
+        id: "q6-gk1-5",
+        question: "Tam giác đều ABC có chu vi bằng 18cm. Độ dài mỗi cạnh của tam giác đó là:",
+        options: ["3cm", "6cm", "9cm", "12cm"],
+        correctIndex: 1,
+        explanation: "Tam giác đều có 3 cạnh bằng nhau nên độ dài mỗi cạnh là: \\(18 : 3 = 6\\text{cm}\\).",
+        relatedTheoremId: "toan6-hk1-hinh-vuong-tam-giac-deu",
+        points: 1
+      },
+      {
+        id: "q6-gk1-6",
+        question: "Hình vuông có cạnh bằng 6cm thì chu vi và diện tích lần lượt là:",
+        options: ["P = 24cm, S = 36cm²", "P = 36cm, S = 24cm²", "P = 12cm, S = 36cm²", "P = 24cm, S = 12cm²"],
+        correctIndex: 0,
+        explanation: "Chu vi hình vuông: \\(P = 4 \\cdot a = 4 \\cdot 6 = 24\\text{cm}\\). Diện tích hình vuông: \\(S = a^2 = 6^2 = 36\\text{cm}^2\\).",
+        relatedTheoremId: "toan6-hk1-hinh-vuong-tam-giac-deu",
+        points: 1
+      },
+      {
+        id: "q6-gk1-7",
+        question: "Một hình thoi có độ dài hai đường chéo là 8cm và 10cm. Diện tích hình thoi đó là:",
+        options: ["80cm²", "40cm²", "36cm²", "20cm²"],
+        correctIndex: 1,
+        explanation: "Diện tích hình thoi bằng nửa tích hai đường chéo: \\(S = \\frac{1}{2} \\cdot d_1 \\cdot d_2 = \\frac{1}{2} \\cdot 8 \\cdot 10 = 40\\text{cm}^2\\).",
+        relatedTheoremId: "toan6-hk1-hinh-thoi-hinh-binh-hanh",
+        points: 1
+      },
+      {
+        id: "q6-gk1-8",
+        question: "ƯCLN của hai số 12 và 18 là:",
+        options: ["3", "6", "12", "36"],
+        correctIndex: 1,
+        explanation: "Phân tích: \\(12 = 2^2 \\cdot 3\\); \\(18 = 2 \\cdot 3^2\\). Do đó \\(\\text{ƯCLN}(12, 18) = 2 \\cdot 3 = 6\\).",
+        relatedTheoremId: "toan6-hk1-uoc-va-boi",
+        points: 1
+      }
+    ]
+  },
+
+  // =============================================================
+  // 2. TOÁN 6 - CUỐI HỌC KÌ 1 (CK1)
+  // =============================================================
+  {
+    id: "exam-toan6-ck1",
+    grade: 6,
+    semester: 1,
+    type: "final",
+    title: "Đề thi Cuối Học Kì 1 - Toán 6 (Kết nối tri thức)",
+    timeMinutes: 60,
+    description: "Tổng hợp Số nguyên, Quy tắc dấu ngoặc, Bội & Ước số nguyên, Hình bình hành, Hình thoi và Thống kê trực quan.",
+    questions: [
+      {
+        id: "q6-ck1-1",
+        question: "Khẳng định nào sau đây về so sánh các số nguyên là ĐÚNG?",
+        options: ["-15 > -8", "-20 < -12", "0 < -5", "-7 > 2"],
+        correctIndex: 1,
+        explanation: "Trên trục số nằm ngang, điểm -20 nằm bên trái điểm -12 nên \\(-20 < -12\\). Với hai số nguyên âm, số có giá trị tuyệt đối lớn hơn thì nhỏ hơn.",
+        relatedTheoremId: "toan6-hk1-quy-tac-dau-ngoac",
+        points: 1
+      },
+      {
+        id: "q6-ck1-2",
+        question: "Kết quả của phép tính bỏ dấu ngoặc: \\(- (15 - 28 + 7)\\) là:",
+        options: ["-15 - 28 + 7", "-15 + 28 - 7", "15 - 28 + 7", "-15 + 28 + 7"],
+        correctIndex: 1,
+        explanation: "Khi bỏ dấu ngoặc có dấu '-' đằng trước, ta phải đổi dấu tất cả các số hạng trong ngoặc: \\(-(15 - 28 + 7) = -15 + 28 - 7\\).",
+        relatedTheoremId: "toan6-hk1-quy-tac-dau-ngoac",
+        points: 1
+      },
+      {
+        id: "q6-ck1-3",
+        question: "Kết quả của phép tính \\((-5) \\cdot (-8)\\) là:",
+        options: ["-40", "40", "-13", "13"],
+        correctIndex: 1,
+        explanation: "Tích của hai số nguyên cùng dấu là một số nguyên dương: \\((-5) \\cdot (-8) = 5 \\cdot 8 = 40\\).",
+        relatedTheoremId: "toan6-hk1-quy-tac-dau-ngoac",
+        points: 1
+      },
+      {
+        id: "q6-ck1-4",
+        question: "Tập hợp tất cả các ước nguyên của số 6 là:",
+        options: [
+          "\\(\\{1, 2, 3, 6\\}\\)",
+          "\\(\\{-6, -3, -2, -1, 1, 2, 3, 6\\}\\)",
+          "\\(\\{-3, -2, -1, 0, 1, 2, 3\\}\\)",
+          "\\(\\{1, 6\\}\\)"
+        ],
+        correctIndex: 1,
+        explanation: "Các ước nguyên của 6 bao gồm cả các ước dương và các ước âm đối xứng: \\(\\{\\pm 1, \\pm 2, \\pm 3, \\pm 6\\}\\).",
+        relatedTheoremId: "toan6-hk1-uoc-va-boi",
+        points: 1
+      },
+      {
+        id: "q6-ck1-5",
+        question: "Một mảnh vườn hình bình hành có độ dài đáy là 12m và chiều cao tương ứng là 7m. Diện tích mảnh vườn đó là:",
+        options: ["84m²", "42m²", "38m²", "19m²"],
+        correctIndex: 0,
+        explanation: "Diện tích hình bình hành bằng độ dài đáy nhân với chiều cao tương ứng: \\(S = a \\cdot h = 12 \\cdot 7 = 84\\text{m}^2\\).",
+        relatedTheoremId: "toan6-hk1-hinh-thoi-hinh-binh-hanh",
+        points: 1
+      },
+      {
+        id: "q6-ck1-6",
+        question: "Khẳng định nào sau đây là SAI đối với hình bình hành?",
+        options: [
+          "Các cạnh đối song song và bằng nhau",
+          "Các góc đối bằng nhau",
+          "Hai đường chéo vuông góc với nhau",
+          "Hai đường chéo cắt nhau tại trung điểm của mỗi đường"
+        ],
+        correctIndex: 2,
+        explanation: "Hai đường chéo vuông góc là tính chất đặc trưng của hình thoi hoặc hình vuông, hình bình hành tổng quát không có hai đường chéo vuông góc.",
+        relatedTheoremId: "toan6-hk1-hinh-thoi-hinh-binh-hanh",
+        points: 1
+      },
+      {
+        id: "q6-ck1-7",
+        question: "Nhiệt độ lúc 6 giờ sáng là -3°C, đến 12 giờ trưa nhiệt độ tăng thêm 8°C. Nhiệt độ lúc 12 giờ trưa là:",
+        options: ["-11°C", "5°C", "-5°C", "11°C"],
+        correctIndex: 1,
+        explanation: "Nhiệt độ lúc 12 giờ trưa: \\(-3 + 8 = 5^\\circ\\text{C}\\).",
+        relatedTheoremId: "toan6-hk1-quy-tac-dau-ngoac",
+        points: 1
+      },
+      {
+        id: "q6-ck1-8",
+        question: "BCNN của hai số 8 và 12 là:",
+        options: ["24", "48", "96", "4"],
+        correctIndex: 0,
+        explanation: "Phân tích: \\(8 = 2^3\\); \\(12 = 2^2 \\cdot 3\\). Do đó \\(\\text{BCNN}(8, 12) = 2^3 \\cdot 3 = 8 \\cdot 3 = 24\\).",
+        relatedTheoremId: "toan6-hk1-uoc-va-boi",
+        points: 1
+      }
+    ]
+  },
+
+  // =============================================================
+  // 3. TOÁN 6 - GIỮA HỌC KÌ 2 (GK2)
+  // =============================================================
+  {
+    id: "exam-toan6-gk2",
+    grade: 6,
+    semester: 2,
+    type: "midterm",
+    title: "Đề thi Giữa Học Kì 2 - Toán 6 (Kết nối tri thức)",
+    timeMinutes: 45,
+    description: "Kiểm tra Khái niệm phân số, Tính chất cơ bản phân số, So sánh và Phép tính phân số, Điểm nằm giữa, Trung điểm đoạn thẳng.",
+    questions: [
+      {
+        id: "q6-gk2-1",
+        question: "Cặp phân số nào sau đây bằng nhau?",
+        options: [
+          "\\(\\frac{-2}{3}\\) và \\(\\frac{4}{6}\\)",
+          "\\(\\frac{3}{4}\\) và \\(\\frac{9}{12}\\)",
+          "\\(\\frac{-1}{5}\\) và \\(\\frac{-2}{15}\\)",
+          "\\(\\frac{2}{7}\\) và \\(\\frac{7}{2}\\)"
+        ],
+        correctIndex: 1,
+        explanation: "Nhân cả tử và mẫu của \\(\\frac{3}{4}\\) với 3: \\(\\frac{3 \\cdot 3}{4 \\cdot 3} = \\frac{9}{12}\\). Hoặc tích chéo \\(3 \\cdot 12 = 4 \\cdot 9 = 36\\).",
+        relatedTheoremId: "toan6-hk2-tinh-chat-phan-so",
+        points: 1
+      },
+      {
+        id: "q6-gk2-2",
+        question: "Rút gọn phân số \\(\\frac{-18}{45}\\) về dạng phân số tối giản ta được:",
+        options: ["\\(\\frac{-2}{5}\\)", "\\(\\frac{-6}{15}\\)", "\\(\\frac{-9}{20}\\)", "\\(\\frac{2}{5}\\)"],
+        correctIndex: 0,
+        explanation: "ƯCLN(18, 45) = 9. Chia cả tử và mẫu cho 9: \\(\\frac{-18 : 9}{45 : 9} = \\frac{-2}{5}\\).",
+        relatedTheoremId: "toan6-hk2-tinh-chat-phan-so",
+        points: 1
+      },
+      {
+        id: "q6-gk2-3",
+        question: "Kết quả của phép tính \\(\\frac{3}{7} + \\frac{2}{7}\\) là:",
+        options: ["\\(\\frac{5}{14}\\)", "\\(\\frac{5}{7}\\)", "\\(\\frac{6}{7}\\)", "\\(\\frac{6}{49}\\)"],
+        correctIndex: 1,
+        explanation: "Cộng hai phân số cùng mẫu: \\(\\frac{3}{7} + \\frac{2}{7} = \\frac{3+2}{7} = \\frac{5}{7}\\).",
+        relatedTheoremId: "toan6-hk2-tinh-chat-phan-so",
+        points: 1
+      },
+      {
+        id: "q6-gk2-4",
+        question: "Kết quả của phép tính \\(\\frac{-2}{3} \\cdot \\frac{9}{4}\\) là:",
+        options: ["\\(\\frac{-3}{2}\\)", "\\(\\frac{-18}{7}\\)", "\\(\\frac{3}{2}\\)", "\\(\\frac{-6}{12}\\)"],
+        correctIndex: 0,
+        explanation: "Nhân tử với tử, mẫu với mẫu rồi rút gọn: \\(\\frac{-2 \\cdot 9}{3 \\cdot 4} = \\frac{-18}{12} = \\frac{-3}{2}\\).",
+        relatedTheoremId: "toan6-hk2-tinh-chat-phan-so",
+        points: 1
+      },
+      {
+        id: "q6-gk2-5",
+        question: "Cho điểm B nằm giữa hai điểm A và C. Biết AB = 4cm, BC = 6cm. Độ dài đoạn thẳng AC là:",
+        options: ["2cm", "8cm", "10cm", "24cm"],
+        correctIndex: 2,
+        explanation: "Vì B nằm giữa A và C nên \\(AC = AB + BC = 4 + 6 = 10\\text{cm}\\).",
+        relatedTheoremId: "toan6-hk2-trung-diem-doan-thang",
+        points: 1
+      },
+      {
+        id: "q6-gk2-6",
+        question: "Cho đoạn thẳng AB dài 12cm. Gọi M là trung điểm của AB. Độ dài đoạn thẳng AM là:",
+        options: ["4cm", "6cm", "8cm", "12cm"],
+        correctIndex: 1,
+        explanation: "M là trung điểm của AB nên \\(AM = MB = \\frac{AB}{2} = \\frac{12}{2} = 6\\text{cm}\\).",
+        relatedTheoremId: "toan6-hk2-trung-diem-doan-thang",
+        points: 1
+      },
+      {
+        id: "q6-gk2-7",
+        question: "Nghịch đảo của phân số \\(-\\frac{5}{8}\\) là:",
+        options: ["\\(\\frac{5}{8}\\)", "\\(-\\frac{8}{5}\\)", "\\(\\frac{8}{5}\\)", "\\(-\\frac{5}{8}\\)"],
+        correctIndex: 1,
+        explanation: "Phân số nghịch đảo của \\(\\frac{a}{b}\\) là \\(\\frac{b}{a}\\). Do đó nghịch đảo của \\(-\\frac{5}{8}\\) là \\(-\\frac{8}{5}\\).",
+        relatedTheoremId: "toan6-hk2-tinh-chat-phan-so",
+        points: 1
+      },
+      {
+        id: "q6-gk2-8",
+        question: "Có bao nhiêu đường thẳng đi qua hai điểm phân biệt A và B?",
+        options: ["Vô số", "Chỉ có 1 đường thẳng duy nhất", "Có 2 đường thẳng", "Không có đường thẳng nào"],
+        correctIndex: 1,
+        explanation: "Qua hai điểm phân biệt cho trước, có một và chỉ một đường thẳng đi qua hai điểm đó.",
+        relatedTheoremId: "toan6-hk2-trung-diem-doan-thang",
+        points: 1
+      }
+    ]
+  },
+
+  // =============================================================
+  // 4. TOÁN 6 - CUỐI HỌC KÌ 2 (CK2)
+  // =============================================================
+  {
+    id: "exam-toan6-ck2",
+    grade: 6,
+    semester: 2,
+    type: "final",
+    title: "Đề thi Cuối Học Kì 2 - Toán 6 (Kết nối tri thức)",
+    timeMinutes: 60,
+    description: "Tổng hợp Số thập phân, Tỉ số phần trăm, Bài toán phân số thực tế, Góc và Xác suất thực nghiệm.",
+    questions: [
+      {
+        id: "q6-ck2-1",
+        question: "Tìm \\(\\frac{3}{5}\\) của 45kg ta được kết quả là:",
+        options: ["27kg", "15kg", "75kg", "9kg"],
+        correctIndex: 0,
+        explanation: "Muốn tìm giá trị phân số của một số: \\(45 \\cdot \\frac{3}{5} = 27\\text{kg}\\).",
+        relatedTheoremId: "toan6-hk2-so-thap-phan-ti-so",
+        points: 1
+      },
+      {
+        id: "q6-ck2-2",
+        question: "Một lớp học có 40 học sinh, trong đó có 24 học sinh nữ. Tỉ số phần trăm của học sinh nữ so với cả lớp là:",
+        options: ["40%", "60%", "24%", "50%"],
+        correctIndex: 1,
+        explanation: "Tỉ số phần trăm học sinh nữ: \\(\\frac{24}{40} \\cdot 100\\% = 0{,}6 \\cdot 100\\% = 60\\%\\).",
+        relatedTheoremId: "toan6-hk2-so-thap-phan-ti-so",
+        points: 1
+      },
+      {
+        id: "q6-ck2-3",
+        question: "Kết quả của phép tính số thập phân \\(12{,}5 - (-3{,}5)\\) là:",
+        options: ["9", "16", "-16", "15"],
+        correctIndex: 1,
+        explanation: "Trừ đi một số âm là cộng với số đối: \\(12{,}5 - (-3{,}5) = 12{,}5 + 3{,}5 = 16\\).",
+        relatedTheoremId: "toan6-hk2-so-thap-phan-ti-so",
+        points: 1
+      },
+      {
+        id: "q6-ck2-4",
+        question: "Góc có số đo bằng \\(125^\\circ\\) thuộc loại góc nào?",
+        options: ["Góc nhọn", "Góc vuông", "Góc tù", "Góc bẹt"],
+        correctIndex: 2,
+        explanation: "Vì \\(90^\\circ < 125^\\circ < 180^\\circ\\) nên góc này là góc tù.",
+        relatedTheoremId: "toan6-hk2-goc-va-so-do-goc",
+        points: 1
+      },
+      {
+        id: "q6-ck2-5",
+        question: "Góc bẹt có số đo bằng bao nhiêu độ?",
+        options: ["\\(90^\\circ\\)", "\\(180^\\circ\\)", "\\(360^\\circ\\)", "\\(60^\\circ\\)"],
+        correctIndex: 1,
+        explanation: "Góc bẹt là góc tạo bởi hai tia đối nhau và có số đo luôn bằng \\(180^\\circ\\).",
+        relatedTheoremId: "toan6-hk2-goc-va-so-do-goc",
+        points: 1
+      },
+      {
+        id: "q6-ck2-6",
+        question: "Gieo một con xúc xắc 6 mặt 50 lần, thấy mặt 6 chấm xuất hiện 12 lần. Xác suất thực nghiệm xuất hiện mặt 6 chấm là:",
+        options: ["\\(\\frac{12}{50} = 24\\%\\)", "\\(\\frac{6}{50} = 12\\%\\)", "\\(\\frac{1}{6}\\)", "\\(\\frac{38}{50} = 76\\%\\)"],
+        correctIndex: 0,
+        explanation: "Xác suất thực nghiệm bằng số lần biến cố xảy ra chia cho tổng số lần thử: \\(\\frac{12}{50} = 0{,}24 = 24\\%\\).",
+        relatedTheoremId: "toan6-hk2-so-thap-phan-ti-so",
+        points: 1
+      },
+      {
+        id: "q6-ck2-7",
+        question: "Biết \\(\\frac{2}{3}\\) độ dài quãng đường AB là 60km. Độ dài toàn bộ quãng đường AB là:",
+        options: ["40km", "90km", "120km", "100km"],
+        correctIndex: 1,
+        explanation: "Tìm một số biết giá trị phân số của nó: \\(60 : \\frac{2}{3} = 60 \\cdot \\frac{3}{2} = 90\\text{km}\\).",
+        relatedTheoremId: "toan6-hk2-so-thap-phan-ti-so",
+        points: 1
+      },
+      {
+        id: "q6-ck2-8",
+        question: "Cho tia Oz nằm giữa hai tia Ox và Oy. Biết \\(\\widehat{xOz} = 40^\\circ\\) và \\(\\widehat{zOy} = 50^\\circ\\). Số đo của \\(\\widehat{xOy}\\) là:",
+        options: ["\\(10^\\circ\\)", "\\(90^\\circ\\)", "\\(100^\\circ\\)", "\\(45^\\circ\\)"],
+        correctIndex: 1,
+        explanation: "Vì Oz nằm giữa Ox và Oy nên \\(\\widehat{xOy} = \\widehat{xOz} + \\widehat{zOy} = 40^\\circ + 50^\\circ = 90^\\circ\\) (góc vuông).",
+        relatedTheoremId: "toan6-hk2-goc-va-so-do-goc",
+        points: 1
+      }
+    ]
+  },
+
+  // =============================================================
+  // 5. TOÁN 7 - GIỮA HỌC KÌ 1 (GK1)
+  // =============================================================
   {
     id: "exam-toan7-gk1",
     grade: 7,
@@ -5229,14 +5844,14 @@ const EXAMS_DATA = [
     type: "midterm",
     title: "Đề thi Giữa Học Kì 1 - Toán 7 (Kết nối tri thức)",
     timeMinutes: 45,
-    description: "Kiểm tra kiến thức Số hữu tỉ, Góc đối đỉnh, Hai đường thẳng song song và Tiên đề Euclid.",
+    description: "Kiểm tra Số hữu tỉ, Góc đối đỉnh, Hai đường thẳng song song, Tiên đề Euclid và Định lý hình học.",
     questions: [
       {
         id: "q7-gk1-1",
-        question: "Cho hình vẽ hai đường thẳng xx' và yy' cắt nhau tại O. Biết \\(\\widehat{xOy} = 50^\\circ\\). Số đo của góc \\(\\widehat{x'Oy'}\\) đối đỉnh với nó là:",
+        question: "Cho hai đường thẳng xx' và yy' cắt nhau tại O. Biết \\(\\widehat{xOy} = 50^\\circ\\). Số đo của góc đối đỉnh \\(\\widehat{x'Oy'}\\) là:",
         options: ["\\(50^\\circ\\)", "\\(130^\\circ\\)", "\\(180^\\circ\\)", "\\(40^\\circ\\)"],
         correctIndex: 0,
-        explanation: "Theo định lý: Hai góc đối đỉnh thì bằng nhau. Do \\(\\widehat{x'Oy'}\\) đối đỉnh với \\(\\widehat{xOy}\\) nên \\(\\widehat{x'Oy'} = \\widehat{xOy} = 50^\\circ\\).",
+        explanation: "Theo định lý: Hai góc đối đỉnh thì bằng nhau. Do đó \\(\\widehat{x'Oy'} = \\widehat{xOy} = 50^\\circ\\).",
         relatedTheoremId: "toan7-hk1-goc-doi-dinh",
         points: 1
       },
@@ -5268,48 +5883,135 @@ const EXAMS_DATA = [
         question: "Biết đường thẳng a // b và đường thẳng c ⊥ a. Khi đó quan hệ giữa c và b là:",
         options: ["c // b", "c ⊥ b", "c trùng với b", "c chéo b"],
         correctIndex: 1,
-        explanation: "Theo hệ quả tiên đề Euclid: Một đường thẳng vuông góc với một trong hai đường thẳng song song thì nó cũng vuông góc với đường thẳng kia (từ vuông góc đến song song).",
+        explanation: "Theo hệ quả tiên đề Euclid (từ vuông góc đến song song): Một đường thẳng vuông góc với một trong hai đường thẳng song song thì nó cũng vuông góc với đường thẳng kia.",
         relatedTheoremId: "toan7-hk1-tien-de-euclid",
         points: 1
       },
       {
         id: "q7-gk1-5",
-        question: "Cho tam giác ABC có \\(\\widehat{A} = 60^\\circ\\), \\(\\widehat{B} = 75^\\circ\\). Số đo của góc \\(\\widehat{C}\\) là:",
-        options: ["\\(35^\\circ\\)", "\\(45^\\circ\\)", "\\(55^\\circ\\)", "\\(65^\\circ\\)"],
-        correctIndex: 1,
-        explanation: "Theo định lý tổng ba góc trong tam giác: \\(\\widehat{A} + \\widehat{B} + \\widehat{C} = 180^\\circ\\). Suy ra \\(\\widehat{C} = 180^\\circ - (60^\\circ + 75^\\circ) = 45^\\circ\\).",
-        relatedTheoremId: "toan7-hk1-tong-ba-goc-tam-giac",
+        question: "Cho hai góc \\(\\widehat{xOy}\\) và \\(\\widehat{yOz}\\) kề bù nhau. Biết \\(\\widehat{xOy} = 70^\\circ\\). Số đo của \\(\\widehat{yOz}\\) là:",
+        options: ["\\(110^\\circ\\)", "\\(20^\\circ\\)", "\\(70^\\circ\\)", "\\(90^\\circ\\)"],
+        correctIndex: 0,
+        explanation: "Hai góc kề bù có tổng số đo bằng 180°: \\(\\widehat{yOz} = 180^\\circ - 70^\\circ = 110^\\circ\\).",
+        relatedTheoremId: "toan7-hk1-goc-doi-dinh",
         points: 1
       },
       {
         id: "q7-gk1-6",
-        question: "Góc ngoài tại đỉnh A của tam giác ABC có số đo bằng 120°. Biết \\(\\widehat{B} = 50^\\circ\\). Số đo góc \\(\\widehat{C}\\) là:",
-        options: ["\\(70^\\circ\\)", "\\(60^\\circ\\)", "\\(170^\\circ\\)", "\\(50^\\circ\\)"],
+        question: "Số hữu tỉ nào sau đây là số đối của phân số \\(-\\frac{4}{9}\\)?",
+        options: ["\\(\\frac{4}{9}\\)", "\\(-\\frac{9}{4}\\)", "\\(\\frac{9}{4}\\)", "\\(-\\frac{4}{-9}\\)"],
         correctIndex: 0,
-        explanation: "Theo định lý góc ngoài: Góc ngoài của tam giác bằng tổng hai góc trong không kề với nó: \\(\\widehat{A}_{ngoai} = \\widehat{B} + \\widehat{C} \\implies 120^\\circ = 50^\\circ + \\widehat{C} \\implies \\widehat{C} = 70^\\circ\\).",
-        relatedTheoremId: "toan7-hk1-tong-ba-goc-tam-giac",
+        explanation: "Số đối của \\(-a\\) là \\(a\\). Do đó số đối của \\(-\\frac{4}{9}\\) là \\(\\frac{4}{9}\\).",
+        relatedTheoremId: "toan7-hk1-so-huu-ti-so-thuc",
         points: 1
       },
       {
         id: "q7-gk1-7",
-        question: "Cho \\(\\Delta ABC = \\Delta MNP\\). Khẳng định nào sau đây là SAI?",
-        options: ["AB = MN", "BC = NP", "\\(\\widehat{A} = \\widehat{M}\\)", "AC = NP"],
-        correctIndex: 3,
-        explanation: "Vì \\(\\Delta ABC = \\Delta MNP\\), các cạnh tương ứng bằng nhau là AB = MN, BC = NP, AC = MP. Do đó khẳng định AC = NP là sai.",
-        relatedTheoremId: "toan7-hk1-tam-giac-bang-nhau-3-truong-hop",
+        question: "Kết quả của phép tính lũy thừa \\(\\left(-\\frac{1}{2}\\right)^3\\) là:",
+        options: ["\\(-\\frac{1}{6}\\)", "\\(\\frac{1}{8}\\)", "\\(-\\frac{1}{8}\\)", "\\(\\frac{1}{6}\\)"],
+        correctIndex: 2,
+        explanation: "Lũy thừa bậc lẻ của số âm là một số âm: \\(\\left(-\\frac{1}{2}\\right)^3 = \\frac{(-1)^3}{2^3} = -\\frac{1}{8}\\).",
+        relatedTheoremId: "toan7-hk1-so-huu-ti-so-thuc",
         points: 1
       },
       {
         id: "q7-gk1-8",
-        question: "Để \\(\\Delta ABC = \\Delta DEF\\) theo trường hợp Cạnh - Góc - Cạnh (c-g-c) khi đã có AB = DE, BC = EF, cần thêm điều kiện gì?",
-        options: ["\\(\\widehat{A} = \\widehat{D}\\)", "\\(\\widehat{B} = \\widehat{E}\\)", "\\(\\widehat{C} = \\widehat{F}\\)", "AC = DF"],
-        correctIndex: 1,
-        explanation: "Góc xen giữa hai cạnh AB và BC là góc B. Góc xen giữa DE và EF là góc E. Do đó cần thêm điều kiện \\(\\widehat{B} = \\widehat{E}\\).",
-        relatedTheoremId: "toan7-hk1-tam-giac-bang-nhau-3-truong-hop",
+        question: "Tia Ot là tia phân giác của góc \\(\\widehat{xOy} = 80^\\circ\\). Số đo của góc \\(\\widehat{xOt}\\) là:",
+        options: ["\\(40^\\circ\\)", "\\(160^\\circ\\)", "\\(80^\\circ\\)", "\\(20^\\circ\\)"],
+        correctIndex: 0,
+        explanation: "Tia phân giác chia góc thành hai góc bằng nhau: \\(\\widehat{xOt} = \\frac{\\widehat{xOy}}{2} = \\frac{80^\\circ}{2} = 40^\\circ\\).",
+        relatedTheoremId: "toan7-hk1-goc-doi-dinh",
         points: 1
       },
       {
         id: "q7-gk1-9",
+        question: "Hai đường thẳng phân biệt cùng song song với đường thẳng thứ ba thì:",
+        options: ["Chúng vuông góc với nhau", "Chúng cắt nhau", "Chúng song song với nhau", "Chúng trùng nhau"],
+        correctIndex: 2,
+        explanation: "Theo tiên đề Euclid và tính chất ba đường thẳng song song: Hai đường thẳng phân biệt cùng song song với đường thẳng thứ ba thì song song với nhau.",
+        relatedTheoremId: "toan7-hk1-tien-de-euclid",
+        points: 1
+      },
+      {
+        id: "q7-gk1-10",
+        question: "Tìm x biết: \\(x - \\frac{1}{3} = \\frac{2}{3}\\):",
+        options: ["x = 1", "x = 1/3", "x = -1/3", "x = 0"],
+        correctIndex: 0,
+        explanation: "Áp dụng quy tắc chuyển vế: \\(x = \\frac{2}{3} + \\frac{1}{3} = \\frac{3}{3} = 1\\).",
+        relatedTheoremId: "toan7-hk1-so-huu-ti-so-thuc",
+        points: 1
+      }
+    ]
+  },
+
+  // =============================================================
+  // 6. TOÁN 7 - CUỐI HỌC KÌ 1 (CK1)
+  // =============================================================
+  {
+    id: "exam-toan7-ck1",
+    grade: 7,
+    semester: 1,
+    type: "final",
+    title: "Đề thi Cuối Học Kì 1 - Toán 7 (Kết nối tri thức)",
+    timeMinutes: 60,
+    description: "Tổng hợp Số thực, Căn bậc hai, Tổng ba góc tam giác, Ba trường hợp bằng nhau tam giác và Tam giác cân.",
+    questions: [
+      {
+        id: "q7-ck1-1",
+        question: "Căn bậc hai số học của 49 là:",
+        options: ["7", "-7", "±7", "2401"],
+        correctIndex: 0,
+        explanation: "Căn bậc hai số học của số không âm a là số KHÔNG ÂM x sao cho x² = a. Do đó \\(\\sqrt{49} = 7\\).",
+        relatedTheoremId: "toan7-hk1-so-huu-ti-so-thuc",
+        points: 1
+      },
+      {
+        id: "q7-ck1-2",
+        question: "Giá trị của \\(|-3{,}8|\\) là:",
+        options: ["-3,8", "3,8", "±3,8", "0"],
+        correctIndex: 1,
+        explanation: "Giá trị tuyệt đối của một số luôn không âm: \\(|-3{,}8| = 3{,}8\\).",
+        relatedTheoremId: "toan7-hk1-so-huu-ti-so-thuc",
+        points: 1
+      },
+      {
+        id: "q7-ck1-3",
+        question: "Cho tam giác ABC có \\(\\widehat{A} = 60^\\circ\\), \\(\\widehat{B} = 75^\\circ\\). Số đo của góc \\(\\widehat{C}\\) là:",
+        options: ["\\(35^\\circ\\)", "\\(45^\\circ\\)", "\\(55^\\circ\\)", "\\(65^\\circ\\)"],
+        correctIndex: 1,
+        explanation: "Tổng 3 góc trong tam giác bằng 180°: \\(\\widehat{C} = 180^\\circ - (60^\\circ + 75^\\circ) = 45^\\circ\\).",
+        relatedTheoremId: "toan7-hk1-tong-ba-goc-tam-giac",
+        points: 1
+      },
+      {
+        id: "q7-ck1-4",
+        question: "Góc ngoài tại đỉnh A của tam giác ABC bằng 120°. Biết \\(\\widehat{B} = 50^\\circ\\). Số đo góc \\(\\widehat{C}\\) là:",
+        options: ["\\(70^\\circ\\)", "\\(60^\\circ\\)", "\\(170^\\circ\\)", "\\(50^\\circ\\)"],
+        correctIndex: 0,
+        explanation: "Góc ngoài của tam giác bằng tổng hai góc trong không kề: \\(\\widehat{A}_{ngoai} = \\widehat{B} + \\widehat{C} \\implies 120^\\circ = 50^\\circ + \\widehat{C} \\implies \\widehat{C} = 70^\\circ\\).",
+        relatedTheoremId: "toan7-hk1-tong-ba-goc-tam-giac",
+        points: 1
+      },
+      {
+        id: "q7-ck1-5",
+        question: "Cho \\(\\Delta ABC = \\Delta MNP\\). Khẳng định nào sau đây là SAI?",
+        options: ["AB = MN", "BC = NP", "\\(\\widehat{A} = \\widehat{M}\\)", "AC = NP"],
+        correctIndex: 3,
+        explanation: "Vì \\(\\Delta ABC = \\Delta MNP\\), các cạnh tương ứng là AB = MN, BC = NP, AC = MP. Do đó AC = NP là sai.",
+        relatedTheoremId: "toan7-hk1-tam-giac-bang-nhau-3-truong-hop",
+        points: 1
+      },
+      {
+        id: "q7-ck1-6",
+        question: "Để \\(\\Delta ABC = \\Delta DEF\\) theo trường hợp Cạnh - Góc - Cạnh (c-g-c) khi đã có AB = DE, BC = EF, cần thêm điều kiện gì?",
+        options: ["\\(\\widehat{A} = \\widehat{D}\\)", "\\(\\widehat{B} = \\widehat{E}\\)", "\\(\\widehat{C} = \\widehat{F}\\)", "AC = DF"],
+        correctIndex: 1,
+        explanation: "Góc xen giữa AB và BC là góc B; góc xen giữa DE và EF là góc E. Do đó cần \\(\\widehat{B} = \\widehat{E}\\).",
+        relatedTheoremId: "toan7-hk1-tam-giac-bang-nhau-3-truong-hop",
+        points: 1
+      },
+      {
+        id: "q7-ck1-7",
         question: "Hai tam giác vuông bằng nhau theo trường hợp 'Cạnh huyền - Cạnh góc vuông' khi:",
         options: [
           "Hai cạnh góc vuông bằng nhau",
@@ -5318,55 +6020,119 @@ const EXAMS_DATA = [
           "Ba cạnh bằng nhau"
         ],
         correctIndex: 2,
-        explanation: "Định lý trường hợp bằng nhau đặc biệt của tam giác vuông: Cạnh huyền và một cạnh góc vuông tương ứng bằng nhau.",
+        explanation: "Định lý tam giác vuông: Cạnh huyền và một cạnh góc vuông của tam giác này tương ứng bằng cạnh huyền và cạnh góc vuông của tam giác kia.",
         relatedTheoremId: "toan7-hk1-tam-giac-vuong-bang-nhau",
         points: 1
       },
       {
-        id: "q7-gk1-10",
-        question: "Trong tam giác vuông, tổng hai góc nhọn bằng bao nhiêu độ?",
+        id: "q7-ck1-8",
+        question: "Cho tam giác ABC cân tại A có \\(\\widehat{A} = 50^\\circ\\). Số đo của mỗi góc ở đáy (góc B và góc C) là:",
+        options: ["\\(65^\\circ\\)", "\\(50^\\circ\\)", "\\(130^\\circ\\)", "\\(60^\\circ\\)"],
+        correctIndex: 0,
+        explanation: "Tam giác cân có hai góc ở đáy bằng nhau: \\(\\widehat{B} = \\widehat{C} = \\frac{180^\\circ - \\widehat{A}}{2} = \\frac{180^\\circ - 50^\\circ}{2} = 65^\\circ\\).",
+        relatedTheoremId: "toan7-hk1-tam-giac-vuong-bang-nhau",
+        points: 1
+      },
+      {
+        id: "q7-ck1-9",
+        question: "Đường thẳng d là đường trung trực của đoạn thẳng AB khi:",
+        options: [
+          "d vuông góc với AB",
+          "d đi qua trung điểm của AB",
+          "d vuông góc với AB tại trung điểm của AB",
+          "d song song với AB"
+        ],
+        correctIndex: 2,
+        explanation: "Đường trung trực của đoạn thẳng là đường thẳng vuông góc với đoạn thẳng tại trung điểm của đoạn thẳng đó.",
+        relatedTheoremId: "toan7-hk1-tam-giac-vuong-bang-nhau",
+        points: 1
+      },
+      {
+        id: "q7-ck1-10",
+        question: "Trong tam giác vuông, tổng số đo của hai góc nhọn bằng bao nhiêu độ?",
         options: ["\\(180^\\circ\\)", "\\(90^\\circ\\)", "\\(60^\\circ\\)", "\\(45^\\circ\\)"],
         correctIndex: 1,
-        explanation: "Vì tổng ba góc bằng 180° mà góc vuông là 90° nên hai góc nhọn phụ nhau, có tổng bằng 90°.",
+        explanation: "Tổng ba góc là 180° mà góc vuông là 90° nên hai góc nhọn phụ nhau, có tổng bằng 90°.",
         relatedTheoremId: "toan7-hk1-tong-ba-goc-tam-giac",
         points: 1
       }
     ]
   },
 
-  // -------------------------------------------------------------
-  // ĐỀ 2: TOÁN 7 - CUỐI HỌC KÌ 2 (HK2)
-  // -------------------------------------------------------------
+  // =============================================================
+  // 7. TOÁN 7 - GIỮA HỌC KÌ 2 (GK2)
+  // =============================================================
   {
-    id: "exam-toan7-ck2",
+    id: "exam-toan7-gk2",
     grade: 7,
     semester: 2,
-    type: "final",
-    title: "Đề thi Cuối Học Kì 2 - Toán 7 (Kết nối tri thức)",
-    timeMinutes: 60,
-    description: "Tổng hợp toàn bộ Tỉ lệ thức, Quan hệ giữa góc và cạnh đối diện, Bất đẳng thức tam giác và Các đường đồng quy.",
+    type: "midterm",
+    title: "Đề thi Giữa Học Kì 2 - Toán 7 (Kết nối tri thức)",
+    timeMinutes: 45,
+    description: "Kiểm tra Tỉ lệ thức, Đại lượng tỉ lệ thuận/nghịch, Đa thức một biến, Quan hệ giữa góc và cạnh đối diện, Bất đẳng thức tam giác.",
     questions: [
       {
-        id: "q7-ck2-1",
-        question: "Từ tỉ lệ thức \\(\\frac{x}{3} = \\frac{y}{5}\\) và \\(x + y = 24\\), giá trị của x và y lần lượt là:",
-        options: ["x = 9, y = 15", "x = 10, y = 14", "x = 6, y = 18", "x = 8, y = 16"],
+        id: "q7-gk2-1",
+        question: "Tìm giá trị của x trong tỉ lệ thức \\(\\frac{x}{6} = \\frac{4}{3}\\):",
+        options: ["x = 8", "x = 2", "x = 12", "x = 6"],
         correctIndex: 0,
-        explanation: "Áp dụng tính chất dãy tỉ số bằng nhau: \\(\\frac{x}{3} = \\frac{y}{5} = \\frac{x+y}{3+5} = \\frac{24}{8} = 3\\). Suy ra x = 3 · 3 = 9; y = 3 · 5 = 15.",
+        explanation: "Tích ngoại tỉ bằng tích trung tỉ: \\(x \\cdot 3 = 6 \\cdot 4 = 24 \\implies x = 24 : 3 = 8\\).",
         relatedTheoremId: "toan7-hk2-ti-le-thuc-day-ti-so",
         points: 1
       },
       {
-        id: "q7-ck2-2",
+        id: "q7-gk2-2",
+        question: "Từ tỉ lệ thức \\(\\frac{x}{3} = \\frac{y}{5}\\) và \\(x + y = 24\\), giá trị của x và y lần lượt là:",
+        options: ["x = 9, y = 15", "x = 10, y = 14", "x = 6, y = 18", "x = 8, y = 16"],
+        correctIndex: 0,
+        explanation: "Áp dụng dãy tỉ số bằng nhau: \\(\\frac{x}{3} = \\frac{y}{5} = \\frac{x+y}{3+5} = \\frac{24}{8} = 3\\). Do đó \\(x = 3 \\cdot 3 = 9\\), \\(y = 3 \\cdot 5 = 15\\).",
+        relatedTheoremId: "toan7-hk2-ti-le-thuc-day-ti-so",
+        points: 1
+      },
+      {
+        id: "q7-gk2-3",
+        question: "Biết đại lượng y tỉ lệ thuận với đại lượng x theo hệ số tỉ lệ k = 3. Khi x = 4 thì y bằng:",
+        options: ["12", "7", "4/3", "3/4"],
+        correctIndex: 0,
+        explanation: "Công thức tỉ lệ thuận: \\(y = kx = 3 \\cdot 4 = 12\\).",
+        relatedTheoremId: "toan7-hk2-ti-le-thuc-day-ti-so",
+        points: 1
+      },
+      {
+        id: "q7-gk2-4",
+        question: "Bậc của đa thức \\(P(x) = 5x^4 - 3x^2 + 7x - 9\\) là:",
+        options: ["4", "3", "2", "9"],
+        correctIndex: 0,
+        explanation: "Bậc của đa thức một biến là số mũ cao nhất của biến trong đa thức đã thu gọn. Ở đây số mũ lớn nhất là 4.",
+        relatedTheoremId: "toan7-hk2-bieu-thuc-da-thuc-mot-bien",
+        points: 1
+      },
+      {
+        id: "q7-gk2-5",
+        question: "Số nào sau đây là nghiệm của đa thức \\(A(x) = 2x - 6\\)?",
+        options: ["x = 3", "x = -3", "x = 6", "x = 0"],
+        correctIndex: 0,
+        explanation: "Thay \\(x = 3\\) vào: \\(A(3) = 2(3) - 6 = 6 - 6 = 0\\). Do đó \\(x = 3\\) là nghiệm.",
+        relatedTheoremId: "toan7-hk2-bieu-thuc-da-thuc-mot-bien",
+        points: 1
+      },
+      {
+        id: "q7-gk2-6",
         question: "Cho tam giác ABC có AB = 5cm, BC = 8cm, AC = 7cm. Thứ tự sắp xếp các góc từ bé đến lớn là:",
-        options: ["\\(\\widehat{A} < \\widehat{B} < \\widehat{C}\\)", "\\(\\widehat{C} < \\widehat{B} < \\widehat{A}\\)", "\\(\\widehat{C} < \\widehat{A} < \\widehat{B}\\)", "\\(\\widehat{B} < \\widehat{C} < \\widehat{A}\\)"],
+        options: [
+          "\\(\\widehat{A} < \\widehat{B} < \\widehat{C}\\)",
+          "\\(\\widehat{C} < \\widehat{B} < \\widehat{A}\\)",
+          "\\(\\widehat{C} < \\widehat{A} < \\widehat{B}\\)",
+          "\\(\\widehat{B} < \\widehat{C} < \\widehat{A}\\)"
+        ],
         correctIndex: 1,
-        explanation: "Ta có AB < AC < BC (5 < 7 < 8). Theo định lý quan hệ giữa cạnh và góc đối diện: Cạnh nhỏ hơn đối diện góc nhỏ hơn, suy ra \\(\\widehat{C} < \\widehat{B} < \\widehat{A}\\).",
+        explanation: "Ta có AB < AC < BC (5 < 7 < 8). Theo định lý quan hệ giữa cạnh và góc đối diện: cạnh nhỏ hơn đối diện góc nhỏ hơn, suy ra \\(\\widehat{C} < \\widehat{B} < \\widehat{A}\\).",
         relatedTheoremId: "toan7-hk2-quan-he-goc-va-canh-doi-dien",
         points: 1
       },
       {
-        id: "q7-ck2-3",
-        question: "Bộ ba độ dài đoạn thẳng nào sau đây CÓ THỂ là độ dài ba cạnh của một tam giác?",
+        id: "q7-gk2-7",
+        question: "Bộ ba độ dài đoạn thẳng nào sau đây CÓ THỂ là ba cạnh của một tam giác?",
         options: ["2cm, 3cm, 6cm", "3cm, 4cm, 7cm", "4cm, 5cm, 8cm", "1cm, 2cm, 4cm"],
         correctIndex: 2,
         explanation: "Theo bất đẳng thức tam giác: 4 + 5 = 9 > 8 (thỏa mãn tổng hai cạnh lớn hơn cạnh thứ ba). Các trường hợp khác: 2+3=5<6 (loại), 3+4=7=7 (loại), 1+2=3<4 (loại).",
@@ -5374,168 +6140,150 @@ const EXAMS_DATA = [
         points: 1
       },
       {
-        id: "q7-ck2-4",
-        question: "Ba đường trung tuyến của tam giác đồng quy tại một điểm gọi là:",
-        options: ["Trực tâm", "Trọng tâm", "Tâm đường tròn ngoại tiếp", "Tâm đường tròn nội tiếp"],
-        correctIndex: 1,
-        explanation: "Ba đường trung tuyến đồng quy tại một điểm gọi là TRỌNG TÂM của tam giác.",
-        relatedTheoremId: "toan7-hk2-su-dong-quy-cac-duong",
-        points: 1
-      },
-      {
-        id: "q7-ck2-5",
-        question: "Gọi G là trọng tâm của tam giác ABC với trung tuyến AM. Khẳng định nào sau đây đúng?",
-        options: ["AG = 1/2 AM", "AG = 2/3 AM", "AG = 3/4 AM", "AG = 2 GM"],
-        correctIndex: 1,
-        explanation: "Theo tính chất ba đường trung tuyến: Trọng tâm cách mỗi đỉnh một khoảng bằng 2/3 độ dài đường trung tuyến đi qua đỉnh đó: AG = 2/3 AM.",
-        relatedTheoremId: "toan7-hk2-su-dong-quy-cac-duong",
-        points: 1
-      },
-      {
-        id: "q7-ck2-6",
-        question: "Giao điểm của ba đường phân giác trong tam giác có tính chất gì?",
-        options: ["Cách đều ba đỉnh", "Cách đều ba cạnh", "Là trực tâm", "Cách mỗi đỉnh 2/3 độ dài"],
-        correctIndex: 1,
-        explanation: "Giao điểm của ba đường phân giác cách đều ba cạnh của tam giác (chính là tâm đường tròn nội tiếp).",
-        relatedTheoremId: "toan7-hk2-su-dong-quy-cac-duong",
-        points: 1
-      },
-      {
-        id: "q7-ck2-7",
+        id: "q7-gk2-8",
         question: "Trong tam giác tù, cạnh có độ dài lớn nhất là:",
-        options: ["Cạnh kề với góc tù", "Cạnh đối diện với góc tù", "Không xác định được", "Cạnh nhỏ nhất"],
+        options: ["Cạnh kề góc tù", "Cạnh đối diện góc tù", "Không xác định được", "Cạnh nhỏ nhất"],
         correctIndex: 1,
-        explanation: "Vì góc tù là góc lớn nhất trong tam giác (> 90°), theo định lý góc và cạnh đối diện thì cạnh đối diện với góc tù là cạnh lớn nhất.",
+        explanation: "Vì góc tù là góc lớn nhất trong tam giác (> 90°), theo quan hệ góc - cạnh đối diện thì cạnh đối diện với góc tù luôn lớn nhất.",
         relatedTheoremId: "toan7-hk2-quan-he-goc-va-canh-doi-dien",
         points: 1
       },
       {
-        id: "q7-ck2-8",
-        question: "Tìm độ dài cạnh x (là số nguyên) của tam giác có hai cạnh là 3cm và 7cm:",
-        options: ["x có thể bằng 4cm", "4 < x < 10 (x ∈ {5, 6, 7, 8, 9})", "x có thể bằng 10cm", "x = 3cm"],
+        id: "q7-gk2-9",
+        question: "Hệ số cao nhất và hệ số tự do của đa thức \\(Q(x) = -4x^3 + 2x^2 - 5x + 7\\) lần lượt là:",
+        options: ["-4 và 7", "4 và 7", "-4 và -5", "3 và 7"],
+        correctIndex: 0,
+        explanation: "Hệ số của lũy thừa bậc cao nhất (x³) là -4. Hệ số tự do (không chứa x) là 7.",
+        relatedTheoremId: "toan7-hk2-bieu-thuc-da-thuc-mot-bien",
+        points: 1
+      },
+      {
+        id: "q7-gk2-10",
+        question: "Cho điểm A nằm ngoài đường thẳng d. Kẻ AH vuông góc với d tại H và AM là đường xiên bất kì nối A với d (M ≠ H). Khẳng định nào đúng?",
+        options: ["AH > AM", "AH < AM", "AH = AM", "AH ≥ AM"],
         correctIndex: 1,
-        explanation: "Theo hệ quả bất đẳng thức tam giác: 7 - 3 < x < 7 + 3 ⇔ 4 < x < 10. Do đó x có thể nhận các giá trị nguyên từ 5 đến 9.",
+        explanation: "Trong các đường vuông góc và đường xiên kẻ từ một điểm nằm ngoài một đường thẳng đến đường thẳng đó, đường vuông góc là đường ngắn nhất (AH < AM).",
         relatedTheoremId: "toan7-hk2-bat-dang-thuc-tam-giac",
         points: 1
       }
     ]
   },
 
-  // -------------------------------------------------------------
-  // ĐỀ 3: TOÁN 6 - GIỮA HỌC KÌ 1 (HK1)
-  // -------------------------------------------------------------
+  // =============================================================
+  // 8. TOÁN 7 - CUỐI HỌC KÌ 2 (CK2)
+  // =============================================================
   {
-    id: "exam-toan6-gk1",
-    grade: 6,
-    semester: 1,
-    type: "midterm",
-    title: "Đề thi Giữa Học Kì 1 - Toán 6 (Kết nối tri thức)",
-    timeMinutes: 45,
-    description: "Kiểm tra Dấu hiệu chia hết, Số nguyên tố, Hình vuông, Tam giác đều, Hình thoi.",
-    questions: [
-      {
-        id: "q6-gk1-1",
-        question: "Số nào sau đây vừa chia hết cho 2 vừa chia hết cho 5?",
-        options: ["124", "235", "540", "312"],
-        correctIndex: 2,
-        explanation: "Một số vừa chia hết cho 2 vừa chia hết cho 5 khi và chỉ khi có chữ số tận cùng là 0. Số 540 có tận cùng là 0.",
-        relatedTheoremId: "toan6-hk1-chia-het-2-5",
-        points: 1
-      },
-      {
-        id: "q6-gk1-2",
-        question: "Số 34* chia hết cho 9 khi dấu * được thay bằng chữ số:",
-        options: ["2", "5", "9", "0"],
-        correctIndex: 0,
-        explanation: "Tổng các chữ số: 3 + 4 + * = 7 + *. Để chia hết cho 9 thì 7 + * phải bằng 9, suy ra * = 2.",
-        relatedTheoremId: "toan6-hk1-chia-het-3-9",
-        points: 1
-      },
-      {
-        id: "q6-gk1-3",
-        question: "Kết quả của phép tính bỏ dấu ngoặc: \\(- (15 - 28 + 7)\\) là:",
-        options: ["-15 - 28 + 7", "-15 + 28 - 7", "15 - 28 + 7", "-15 + 28 + 7"],
-        correctIndex: 1,
-        explanation: "Khi bỏ dấu ngoặc có dấu trừ đằng trước, ta đổi dấu toàn bộ các số hạng bên trong: -(15 - 28 + 7) = -15 + 28 - 7.",
-        relatedTheoremId: "toan6-hk1-quy-tac-dau-ngoac",
-        points: 1
-      },
-      {
-        id: "q6-gk1-4",
-        question: "Hình vuông có cạnh bằng 6cm thì chu vi và diện tích lần lượt là:",
-        options: ["P = 24cm, S = 36cm²", "P = 36cm, S = 24cm²", "P = 12cm, S = 36cm²", "P = 24cm, S = 12cm²"],
-        correctIndex: 0,
-        explanation: "Chu vi P = 4 · 6 = 24cm; Diện tích S = 6² = 36cm².",
-        relatedTheoremId: "toan6-hk1-hinh-vuong-tam-giac-deu",
-        points: 1
-      },
-      {
-        id: "q6-gk1-5",
-        question: "Một hình thoi có độ dài hai đường chéo là 8cm và 10cm. Diện tích hình thoi đó là:",
-        options: ["80cm²", "40cm²", "36cm²", "20cm²"],
-        correctIndex: 1,
-        explanation: "Diện tích hình thoi bằng nửa tích hai đường chéo: S = 1/2 · 8 · 10 = 40cm².",
-        relatedTheoremId: "toan6-hk1-hinh-thoi-hinh-binh-hanh",
-        points: 1
-      },
-      {
-        id: "q6-gk1-6",
-        question: "Tam giác đều ABC có chu vi bằng 18cm. Độ dài mỗi cạnh của tam giác đó là:",
-        options: ["3cm", "6cm", "9cm", "12cm"],
-        correctIndex: 1,
-        explanation: "Tam giác đều có 3 cạnh bằng nhau nên độ dài mỗi cạnh là: 18 : 3 = 6cm.",
-        relatedTheoremId: "toan6-hk1-hinh-vuong-tam-giac-deu",
-        points: 1
-      }
-    ]
-  },
-
-  // -------------------------------------------------------------
-  // ĐỀ 4: TOÁN 6 - CUỐI HỌC KÌ 2 (HK2)
-  // -------------------------------------------------------------
-  {
-    id: "exam-toan6-ck2",
-    grade: 6,
+    id: "exam-toan7-ck2",
+    grade: 7,
     semester: 2,
     type: "final",
-    title: "Đề thi Cuối Học Kì 2 - Toán 6 (Kết nối tri thức)",
+    title: "Đề thi Cuối Học Kì 2 - Toán 7 (Kết nối tri thức)",
     timeMinutes: 60,
-    description: "Phân số, số thập phân, điểm nằm giữa, trung điểm đoạn thẳng và góc.",
+    description: "Tổng hợp toàn bộ Đa thức một biến, Các đường đồng quy trong tam giác, Hình hộp chữ nhật, Lăng trụ đứng và Xác suất biến cố.",
     questions: [
       {
-        id: "q6-ck2-1",
-        question: "Phân số nào sau đây bằng phân số \\(-\\frac{3}{4}\\)?",
-        options: ["\\(\\frac{6}{8}\\)", "\\(-\\frac{9}{12}\\)", "\\(\\frac{-9}{-12}\\)", "\\(-\\frac{6}{-8}\\)"],
+        id: "q7-ck2-1",
+        question: "Cho hai đa thức \\(P(x) = 3x^2 - 2x + 1\\) và \\(Q(x) = x^2 + 2x - 5\\). Đa thức \\(P(x) + Q(x)\\) là:",
+        options: ["\\(4x^2 - 4\\)", "\\(4x^2 + 4x - 4\\)", "\\(2x^2 - 4\\)", "\\(4x^2 - 6\\)"],
+        correctIndex: 0,
+        explanation: "\\(P(x) + Q(x) = (3x^2 + x^2) + (-2x + 2x) + (1 - 5) = 4x^2 + 0x - 4 = 4x^2 - 4\\).",
+        relatedTheoremId: "toan7-hk2-bieu-thuc-da-thuc-mot-bien",
+        points: 1
+      },
+      {
+        id: "q7-ck2-2",
+        question: "Ba đường trung tuyến của tam giác đồng quy tại một điểm gọi là:",
+        options: ["Trực tâm", "Trọng tâm", "Tâm đường tròn ngoại tiếp", "Tâm đường tròn nội tiếp"],
         correctIndex: 1,
-        explanation: "Nhân cả tử và mẫu với 3: (-3 · 3)/(4 · 3) = -9/12. Theo tính chất cơ bản của phân số, hai phân số này bằng nhau.",
-        relatedTheoremId: "toan6-hk2-tinh-chat-phan-so",
+        explanation: "Ba đường trung tuyến của một tam giác cùng đi qua một điểm, điểm đó gọi là TRỌNG TÂM của tam giác.",
+        relatedTheoremId: "toan7-hk2-su-dong-quy-cac-duong",
         points: 1
       },
       {
-        id: "q6-ck2-2",
-        question: "Cho đoạn thẳng AB dài 10cm. Gọi M là trung điểm của AB. Độ dài đoạn thẳng AM là:",
-        options: ["4cm", "5cm", "6cm", "10cm"],
+        id: "q7-ck2-3",
+        question: "Gọi G là trọng tâm của tam giác ABC với đường trung tuyến AM. Khẳng định nào sau đây là ĐÚNG?",
+        options: ["AG = 1/2 AM", "AG = 2/3 AM", "AG = 3/4 AM", "GM = 2/3 AM"],
         correctIndex: 1,
-        explanation: "Vì M là trung điểm của AB nên AM = MB = AB / 2 = 10 / 2 = 5cm.",
-        relatedTheoremId: "toan6-hk2-trung-diem-doan-thang",
+        explanation: "Theo tính chất ba đường trung tuyến: Trọng tâm cách mỗi đỉnh một khoảng bằng 2/3 độ dài đường trung tuyến đi qua đỉnh đó (AG = 2/3 AM).",
+        relatedTheoremId: "toan7-hk2-su-dong-quy-cac-duong",
         points: 1
       },
       {
-        id: "q6-ck2-3",
-        question: "Cho điểm B nằm giữa hai điểm A và C. Biết AB = 4cm, BC = 6cm. Độ dài đoạn AC là:",
-        options: ["2cm", "8cm", "10cm", "24cm"],
-        correctIndex: 2,
-        explanation: "Vì B nằm giữa A và C nên AC = AB + BC = 4 + 6 = 10cm.",
-        relatedTheoremId: "toan6-hk2-trung-diem-doan-thang",
+        id: "q7-ck2-4",
+        question: "Giao điểm của ba đường phân giác trong tam giác có tính chất gì?",
+        options: [
+          "Cách đều ba đỉnh của tam giác",
+          "Cách đều ba cạnh của tam giác",
+          "Là trực tâm của tam giác",
+          "Cách mỗi đỉnh 2/3 độ dài đường phân giác"
+        ],
+        correctIndex: 1,
+        explanation: "Giao điểm của ba đường phân giác cách đều ba cạnh của tam giác (chính là tâm đường tròn nội tiếp tam giác).",
+        relatedTheoremId: "toan7-hk2-su-dong-quy-cac-duong",
         points: 1
       },
       {
-        id: "q6-ck2-4",
-        question: "Rút gọn phân số \\(\\frac{24}{36}\\) về phân số tối giản ta được:",
-        options: ["\\(\\frac{12}{18}\\)", "\\(\\frac{6}{9}\\)", "\\(\\frac{2}{3}\\)", "\\(\\frac{4}{6}\\)"],
-        correctIndex: 2,
-        explanation: "Chia cả tử và mẫu cho ƯCLN(24, 36) = 12: 24:12 / 36:12 = 2/3.",
-        relatedTheoremId: "toan6-hk2-tinh-chat-phan-so",
+        id: "q7-ck2-5",
+        question: "Giao điểm của ba đường trung trực trong tam giác có tính chất gì?",
+        options: [
+          "Cách đều ba đỉnh của tam giác",
+          "Cách đều ba cạnh của tam giác",
+          "Là trọng tâm",
+          "Chia đường trung trực theo tỉ lệ 2:1"
+        ],
+        correctIndex: 0,
+        explanation: "Giao điểm của ba đường trung trực cách đều ba đỉnh của tam giác (chính là tâm đường tròn ngoại tiếp tam giác).",
+        relatedTheoremId: "toan7-hk2-su-dong-quy-cac-duong",
+        points: 1
+      },
+      {
+        id: "q7-ck2-6",
+        question: "Ba đường cao của tam giác cùng đi qua một điểm gọi là:",
+        options: ["Trực tâm", "Trọng tâm", "Tâm nội tiếp", "Tâm ngoại tiếp"],
+        correctIndex: 0,
+        explanation: "Ba đường cao của tam giác đồng quy tại một điểm, điểm đó gọi là TRỰC TÂM của tam giác.",
+        relatedTheoremId: "toan7-hk2-su-dong-quy-cac-duong",
+        points: 1
+      },
+      {
+        id: "q7-ck2-7",
+        question: "Một hình hộp chữ nhật có ba kích thước dài 6cm, rộng 4cm, cao 5cm. Thể tích hình hộp chữ nhật đó là:",
+        options: ["120cm³", "60cm³", "74cm³", "148cm³"],
+        correctIndex: 0,
+        explanation: "Thể tích hình hộp chữ nhật: \\(V = a \\cdot b \\cdot c = 6 \\cdot 4 \\cdot 5 = 120\\text{cm}^3\\).",
+        relatedTheoremId: "toan7-hk2-su-dong-quy-cac-duong",
+        points: 1
+      },
+      {
+        id: "q7-ck2-8",
+        question: "Tìm độ dài cạnh x (với x là số nguyên) của tam giác có hai cạnh là 3cm và 7cm:",
+        options: [
+          "x có thể bằng 4cm",
+          "4 < x < 10 (x ∈ {5, 6, 7, 8, 9})",
+          "x có thể bằng 10cm",
+          "x = 3cm"
+        ],
+        correctIndex: 1,
+        explanation: "Theo hệ quả bất đẳng thức tam giác: \\(7 - 3 < x < 7 + 3 \\iff 4 < x < 10\\). Vì x nguyên nên \\(x \\in \\{5, 6, 7, 8, 9\\}\\).",
+        relatedTheoremId: "toan7-hk2-bat-dang-thuc-tam-giac",
+        points: 1
+      },
+      {
+        id: "q7-ck2-9",
+        question: "Gieo một con xúc xắc cân đối 6 mặt. Xác suất để xuất hiện mặt có số chấm là số chẵn (2, 4, 6) là:",
+        options: ["\\(\\frac{1}{2}\\)", "\\(\\frac{1}{6}\\)", "\\(\\frac{1}{3}\\)", "\\(\\frac{2}{3}\\)"],
+        correctIndex: 0,
+        explanation: "Có 3 kết quả thuận lợi (2, 4, 6) trên tổng số 6 kết quả có thể xảy ra: \\(P = \\frac{3}{6} = \\frac{1}{2}\\).",
+        relatedTheoremId: "toan7-hk2-bieu-thuc-da-thuc-mot-bien",
+        points: 1
+      },
+      {
+        id: "q7-ck2-10",
+        question: "Một hình lập phương có cạnh bằng 4cm thì diện tích toàn phần của nó là:",
+        options: ["96cm²", "64cm²", "16cm²", "24cm²"],
+        correctIndex: 0,
+        explanation: "Hình lập phương có 6 mặt vuông bằng nhau: \\(S_{tp} = 6 \\cdot a^2 = 6 \\cdot 4^2 = 6 \\cdot 16 = 96\\text{cm}^2\\).",
+        relatedTheoremId: "toan7-hk2-su-dong-quy-cac-duong",
         points: 1
       }
     ]
@@ -6526,6 +7274,30 @@ ${std ? `\n📖 **Chuẩn SGK Kết nối tri thức**: *"${std}"*` : ''}
   const examSelectScreen = document.getElementById("exam-select-screen");
   const examArenaScreen = document.getElementById("exam-arena-screen");
   const examResultScreen = document.getElementById("exam-result-screen");
+
+  // Bộ lọc danh sách đề thi theo khối lớp & kì thi
+  const examFilterBtns = document.querySelectorAll(".exam-filter-btn");
+  examFilterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      examFilterBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const filter = btn.dataset.examFilter;
+      const cards = document.querySelectorAll(".exam-card");
+      cards.forEach(card => {
+        if (filter === "all") {
+          card.style.display = "flex";
+        } else if (filter === "grade-6") {
+          card.style.display = (card.dataset.examId && card.dataset.examId.includes("toan6")) ? "flex" : "none";
+        } else if (filter === "grade-7") {
+          card.style.display = (card.dataset.examId && card.dataset.examId.includes("toan7")) ? "flex" : "none";
+        } else if (filter === "midterm") {
+          card.style.display = (card.dataset.examId && card.dataset.examId.includes("gk")) ? "flex" : "none";
+        } else if (filter === "final") {
+          card.style.display = (card.dataset.examId && card.dataset.examId.includes("ck")) ? "flex" : "none";
+        }
+      });
+    });
+  });
 
   document.querySelectorAll(".btn-start-practice").forEach(btn => {
     btn.addEventListener("click", () => {

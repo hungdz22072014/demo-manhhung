@@ -989,6 +989,29 @@ ${std ? `\n📖 **Chuẩn SGK Kết nối tri thức**: *"${std}"*` : ''}
     });
   });
 
+  // Bộ lọc Phòng Luyện Thi (Tất cả 8 đề, Lớp 6, Lớp 7, Giữa Kì, Cuối Kì)
+  const examFilterBtns = document.querySelectorAll(".exam-filter-btn");
+  if (examFilterBtns.length > 0) {
+    examFilterBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        examFilterBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const filter = btn.dataset.examFilter;
+
+        document.querySelectorAll(".exam-card").forEach(card => {
+          const grade = card.dataset.examGrade;
+          const type = card.dataset.examType;
+          let show = true;
+          if (filter === "grade-6" && grade !== "6") show = false;
+          if (filter === "grade-7" && grade !== "7") show = false;
+          if (filter === "midterm" && type !== "midterm") show = false;
+          if (filter === "final" && type !== "final") show = false;
+          card.style.display = show ? "flex" : "none";
+        });
+      });
+    });
+  }
+
   // Tạo đề bù điểm yếu bằng AI
   document.getElementById("btn-create-weakness-exam").addEventListener("click", () => {
     createWeaknessExam();

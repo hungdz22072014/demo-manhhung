@@ -8,6 +8,28 @@ const THEOREMS_DATA = [
   // LỚP 6 - HỌC KÌ 1: SỐ HỌC & HÌNH HỌC TRỰC QUAN
   // -------------------------------------------------------------
   {
+    id: "toan6-hk1-tap-hop-luy-thua",
+    grade: 6,
+    semester: 1,
+    topic: "arithmetic",
+    topicName: "Tập hợp & Phép tính lũy thừa",
+    title: "Quy tắc lũy thừa với số mũ tự nhiên",
+    summary: "Nhân, chia hai lũy thừa cùng cơ số và lũy thừa của lũy thừa.",
+    content: "Khi nhân hai lũy thừa cùng cơ số, ta giữ nguyên cơ số và cộng các số mũ: a^m · a^n = a^(m+n).\nKhi chia hai lũy thừa cùng cơ số khác 0, ta giữ nguyên cơ số và trừ các số mũ: a^m : a^n = a^(m-n) (với a ≠ 0, m ≥ n).\nQuy ước: a^0 = 1 (với a ≠ 0); a^1 = a.",
+    hypothesis: "Cho số tự nhiên a khác 0 và m, n là các số tự nhiên",
+    conclusion: "a^m · a^n = a^(m+n); a^m : a^n = a^(m-n) (m ≥ n)",
+    formula: "a^m \\cdot a^n = a^{m+n}, \\quad a^m : a^n = a^{m-n} \\ (a \\neq 0, m \\ge n)",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="50" cy="50" r="42" fill="#eff6ff" stroke="#3b82f6" stroke-width="4"/><text x="50" y="58" font-size="26" font-weight="bold" fill="#1d4ed8" text-anchor="middle">a^m · a^n</text></svg>`,
+    fillBlank: {
+      question: "Khi nhân hai lũy thừa cùng cơ số, ta giữ nguyên cơ số và {blank1} các số mũ. Khi chia hai lũy thừa cùng cơ số, ta {blank2} các số mũ.",
+      answers: ["cộng", "trừ"],
+      hints: ["Phép cộng", "Phép trừ"]
+    },
+    aiQuestion: "Em hãy nêu quy tắc nhân và chia hai lũy thừa cùng cơ số?",
+    standardAnswer: "Khi nhân hai lũy thừa cùng cơ số, ta giữ nguyên cơ số và cộng các số mũ: a^m · a^n = a^(m+n). Khi chia hai lũy thừa cùng cơ số khác 0, ta giữ nguyên cơ số và trừ các số mũ: a^m : a^n = a^(m-n).",
+    keywords: ["giữ nguyên cơ số", "cộng các số mũ", "trừ các số mũ", "a^m · a^n = a^(m+n)"]
+  },
+  {
     id: "toan6-hk1-chia-het-2-5",
     grade: 6,
     semester: 1,
@@ -52,17 +74,39 @@ const THEOREMS_DATA = [
     keywords: ["tổng các chữ số", "chia hết cho 9", "chia hết cho 3", "chiều ngược lại không đúng"]
   },
   {
+    id: "toan6-hk1-uoc-va-boi",
+    grade: 6,
+    semester: 1,
+    topic: "arithmetic",
+    topicName: "Ước, Bội & Số nguyên tố",
+    title: "Ước chung lớn nhất (ƯCLN) & Bội chung nhỏ nhất (BCNN)",
+    summary: "Quy tắc tìm ƯCLN và BCNN bằng cách phân tích ra thừa số nguyên tố.",
+    content: "ƯCLN(a, b): Lấy các thừa số nguyên tố CHUNG với số mũ NHỎ NHẤT rồi nhân lại.\nBCNN(a, b): Lấy các thừa số nguyên tố CHUNG VÀ RIÊNG với số mũ LỚN NHẤT rồi nhân lại.\nSố nguyên tố là số tự nhiên lớn hơn 1 chỉ có đúng 2 ước là 1 và chính nó.",
+    hypothesis: "Cho a, b là các số tự nhiên lớn hơn 1 đã phân tích ra thừa số nguyên tố",
+    conclusion: "ƯCLN lấy thừa số chung (mũ nhỏ nhất), BCNN lấy chung & riêng (mũ lớn nhất)",
+    formula: "\\text{ƯCLN}(a,b) \\cdot \\text{BCNN}(a,b) = a \\cdot b",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="40" cy="50" r="30" fill="none" stroke="#3b82f6" stroke-width="3"/><circle cx="60" cy="50" r="30" fill="none" stroke="#ec4899" stroke-width="3"/><text x="50" y="55" font-size="14" font-weight="bold" fill="#7e22ce" text-anchor="middle">ƯCLN</text></svg>`,
+    fillBlank: {
+      question: "Để tìm ƯCLN của hai hay nhiều số, ta chọn ra các thừa số nguyên tố {blank1} với số mũ {blank2}.",
+      answers: ["chung", "nhỏ nhất"],
+      hints: ["Cùng xuất hiện ở các số", "Số mũ bé nhất"]
+    },
+    aiQuestion: "Nêu các bước tìm ƯCLN của hai hay nhiều số tự nhiên lớn hơn 1?",
+    standardAnswer: "Bước 1: Phân tích mỗi số ra thừa số nguyên tố. Bước 2: Chọn ra các thừa số nguyên tố chung. Bước 3: Lập tích các thừa số đã chọn, mỗi thừa số lấy với số mũ nhỏ nhất của nó.",
+    keywords: ["phân tích ra thừa số nguyên tố", "thừa số chung", "số mũ nhỏ nhất"]
+  },
+  {
     id: "toan6-hk1-quy-tac-dau-ngoac",
     grade: 6,
     semester: 1,
     topic: "arithmetic",
-    topicName: "Số nguyên & Đại số",
-    title: "Quy tắc dấu ngoặc trong tập số nguyên",
-    summary: "Quy tắc bỏ dấu ngoặc khi đằng trước có dấu cộng hoặc dấu trừ.",
-    content: "Khi bỏ dấu ngoặc có dấu '+' đằng trước, ta giữ nguyên dấu của các số hạng trong ngoặc: +(a - b + c) = a - b + c.\nKhi bỏ dấu ngoặc có dấu '-' đằng trước, ta phải đổi dấu tất cả các số hạng trong ngoặc: dấu '+' thành dấu '-', dấu '-' thành dấu '+': -(a - b + c) = -a + b - c.",
+    topicName: "Số nguyên & Quy tắc dấu",
+    title: "Quy tắc dấu ngoặc & Phép tính số nguyên",
+    summary: "Quy tắc bỏ dấu ngoặc và quy tắc cộng, trừ, nhân hai số nguyên.",
+    content: "Khi bỏ dấu ngoặc có dấu '+' đằng trước: giữ nguyên dấu tất cả các số hạng.\nKhi bỏ dấu ngoặc có dấu '-' đằng trước: đổi dấu tất cả các số hạng: '+' thành '-', '-' thành '+'.\nNhân hai số nguyên cùng dấu cho kết quả dương, nhân hai số nguyên khác dấu cho kết quả âm.",
     hypothesis: "Biểu thức có chứa dấu ngoặc đằng trước mang dấu '+' hoặc dấu '-'",
-    conclusion: "+(a + b) = a + b; -(a + b) = -a - b; -(a - b) = -a + b",
-    formula: "-(a - b + c) = -a + b - c",
+    conclusion: "+(a - b + c) = a - b + c; -(a - b + c) = -a + b - c",
+    formula: "-(a - b + c) = -a + b - c, \\quad (-a) \\cdot (-b) = a \\cdot b, \\quad (-a) \\cdot b = -(a \\cdot b)",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="50" cy="50" r="42" fill="#fdf2f8" stroke="#ec4899" stroke-width="4"/><text x="50" y="58" font-size="30" font-weight="bold" fill="#be185d" text-anchor="middle">-(a - b)</text></svg>`,
     fillBlank: {
       question: "Khi bỏ dấu ngoặc có dấu trừ đằng trước, ta phải {blank1} của tất cả các số hạng trong ngoặc, dấu cộng thành {blank2}.",
@@ -119,7 +163,7 @@ const THEOREMS_DATA = [
   },
 
   // -------------------------------------------------------------
-  // LỚP 6 - HỌC KÌ 2: PHÂN SỐ & HÌNH HỌC PHẲNG
+  // LỚP 6 - HỌC KÌ 2: PHÂN SỐ, SỐ THẬP PHÂN & HÌNH HỌC PHẲNG
   // -------------------------------------------------------------
   {
     id: "toan6-hk2-tinh-chat-phan-so",
@@ -127,12 +171,12 @@ const THEOREMS_DATA = [
     semester: 2,
     topic: "arithmetic",
     topicName: "Phân số & Số thập phân",
-    title: "Tính chất cơ bản của phân số",
-    summary: "Nhân hoặc chia cả tử và mẫu với cùng một số nguyên khác 0 ta được phân số bằng phân số đã cho.",
-    content: "Nếu nhân cả tử và mẫu của một phân số với cùng một số nguyên khác 0 thì ta được phân số bằng phân số đã cho.\nNếu chia cả tử và mẫu của một phân số cho cùng một ước chung của chúng thì ta được phân số bằng phân số đã cho.",
-    hypothesis: "Phân số a/b với m, n ∈ Z, m ≠ 0, n là ước chung của a và b",
+    title: "Tính chất cơ bản của phân số & Phép tính phân số",
+    summary: "Nhân/chia cả tử và mẫu với cùng một số khác 0 và quy tắc cộng trừ nhân chia phân số.",
+    content: "Nếu nhân cả tử và mẫu của một phân số với cùng một số nguyên khác 0 thì ta được phân số bằng phân số đã cho: a/b = (a·m)/(b·m).\nNếu chia cả tử và mẫu cho cùng một ước chung thì được phân số bằng phân số đã cho.\nCộng/trừ phân số cùng mẫu: a/m + b/m = (a+b)/m. Nhân phân số: (a/b) · (c/d) = (a·c)/(b·d).",
+    hypothesis: "Phân số a/b với m, n ∈ Z, m ≠ 0",
     conclusion: "a/b = (a * m)/(b * m) và a/b = (a : n)/(b : n)",
-    formula: "\\frac{a}{b} = \\frac{a \\cdot m}{b \\cdot m} \\ (m \\neq 0), \\quad \\frac{a}{b} = \\frac{a : n}{b : n} \\ (n \\in \\text{ƯC}(a,b))",
+    formula: "\\frac{a}{b} = \\frac{a \\cdot m}{b \\cdot m} \\ (m \\neq 0), \\quad \\frac{a}{b} \\cdot \\frac{c}{d} = \\frac{a \\cdot c}{b \\cdot d}",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><rect x="15" y="15" width="70" height="70" rx="12" fill="#f8fafc" stroke="#64748b" stroke-width="4"/><text x="50" y="42" font-size="24" font-weight="bold" fill="#0f172a" text-anchor="middle">a · m</text><line x1="25" y1="52" x2="75" y2="52" stroke="#0f172a" stroke-width="3"/><text x="50" y="76" font-size="24" font-weight="bold" fill="#0f172a" text-anchor="middle">b · m</text></svg>`,
     fillBlank: {
       question: "Nếu nhân cả tử và mẫu của phân số với cùng một số nguyên {blank1} thì ta được phân số {blank2} phân số đã cho.",
@@ -142,6 +186,28 @@ const THEOREMS_DATA = [
     aiQuestion: "Dựa vào tính chất cơ bản của phân số, em hãy giải thích cách rút gọn một phân số về tối giản?",
     standardAnswer: "Để rút gọn phân số về tối giản, ta chia cả tử và mẫu của phân số đó cho ước chung lớn nhất (ƯCLN) của chúng.",
     keywords: ["chia cả tử và mẫu", "ước chung lớn nhất", "ƯCLN", "tối giản"]
+  },
+  {
+    id: "toan6-hk2-so-thap-phan-ti-so",
+    grade: 6,
+    semester: 2,
+    topic: "arithmetic",
+    topicName: "Số thập phân & Tỉ số phần trăm",
+    title: "Số thập phân, Tỉ số và Tỉ số phần trăm",
+    summary: "Quy tắc tìm giá trị phân số của một số và tìm tỉ số phần trăm.",
+    content: "1. Muốn tìm m/n của số b cho trước, ta tính b · (m/n).\n2. Muốn tìm một số biết m/n của nó bằng a, ta tính a : (m/n).\n3. Tỉ số phần trăm của hai số a và b là (a : b) · 100%.",
+    hypothesis: "Số a, b và tỉ số m/n",
+    conclusion: "Giá trị phân số = b · (m/n); Số cần tìm = a : (m/n)",
+    formula: "\\text{Giá trị} = b \\cdot \\frac{m}{n}, \\quad \\text{Tỉ số phần trăm} = \\frac{a}{b} \\cdot 100\\%",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="50" cy="50" r="42" fill="#ecfdf5" stroke="#10b981" stroke-width="4"/><text x="50" y="58" font-size="26" font-weight="bold" fill="#059669" text-anchor="middle">% Tỉ số</text></svg>`,
+    fillBlank: {
+      question: "Muốn tìm {blank1} của số b cho trước, ta lấy số b {blank2} với phân số đó.",
+      answers: ["giá trị phân số", "nhân"],
+      hints: ["Đại lượng cần tìm", "Phép tính nhân"]
+    },
+    aiQuestion: "Em hãy nêu cách tìm m/n của số b cho trước và cho ví dụ?",
+    standardAnswer: "Muốn tìm m/n của số b cho trước, ta lấy b nhân với m/n: b · (m/n). Ví dụ: Tìm 2/3 của 30 ta lấy 30 · 2/3 = 20.",
+    keywords: ["b nhân với m/n", "b · (m/n)", "ví dụ"]
   },
   {
     id: "toan6-hk2-trung-diem-doan-thang",
@@ -165,22 +231,66 @@ const THEOREMS_DATA = [
     standardAnswer: "Cần thỏa mãn 2 điều kiện: 1) Điểm M phải nằm giữa hai điểm A và B; 2) Điểm M phải cách đều A và B (MA = MB = AB/2).",
     keywords: ["2 điều kiện", "nằm giữa", "cách đều", "MA = MB"]
   },
+  {
+    id: "toan6-hk2-goc-va-so-do-goc",
+    grade: 6,
+    semester: 2,
+    topic: "geometry",
+    topicName: "Góc & Số đo góc",
+    title: "Khái niệm Góc & Phân loại góc",
+    summary: "Góc nhọn, góc vuông, góc tù, góc bẹt và góc kề nhau.",
+    content: "Góc là hình gồm hai tia chung gốc.\n- Góc nhọn: số đo lớn hơn 0° và nhỏ hơn 90° (0° < α < 90°).\n- Góc vuông: số đo bằng 90°.\n- Góc tù: số đo lớn hơn 90° và nhỏ hơn 180° (90° < α < 180°).\n- Góc bẹt: số đo bằng 180°.\nNếu tia Oz nằm giữa hai tia Ox và Oy thì xOz + zOy = xOy.",
+    hypothesis: "Góc có số đo α",
+    conclusion: "α = 90°: vuông; 0° < α < 90°: nhọn; 90° < α < 180°: tù; α = 180°: bẹt",
+    formula: "0^\\circ < \\alpha_{\\text{nhọn}} < 90^\\circ, \\quad \\alpha_{\\text{vuông}} = 90^\\circ, \\quad 90^\\circ < \\alpha_{\\text{tù}} < 180^\\circ, \\quad \\alpha_{\\text{bẹt}} = 180^\\circ",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><line x1="20" y1="75" x2="85" y2="75" stroke="#6366f1" stroke-width="4"/><line x1="20" y1="75" x2="70" y2="25" stroke="#6366f1" stroke-width="4"/><path d="M 40 75 A 20 20 0 0 0 35 62" fill="none" stroke="#f43f5e" stroke-width="3"/></svg>`,
+    fillBlank: {
+      question: "Góc nhọn có số đo lớn hơn 0° và {blank1} 90°. Góc bẹt có số đo bằng {blank2}.",
+      answers: ["nhỏ hơn", "180°"],
+      hints: ["So sánh với 90 độ", "Số đo góc bẹt"]
+    },
+    aiQuestion: "Em hãy phân biệt 4 loại góc cơ bản dựa vào số đo của chúng?",
+    standardAnswer: "1) Góc nhọn: 0° < α < 90°; 2) Góc vuông: α = 90°; 3) Góc tù: 90° < α < 180°; 4) Góc bẹt: α = 180°.",
+    keywords: ["góc nhọn", "góc vuông", "góc tù", "góc bẹt", "90°", "180°"]
+  },
 
   // -------------------------------------------------------------
   // LỚP 7 - HỌC KÌ 1: ĐẠI SỐ & HÌNH HỌC PHẲNG (CỰC KỲ QUAN TRỌNG)
   // -------------------------------------------------------------
+  {
+    id: "toan7-hk1-so-huu-ti-so-thuc",
+    grade: 7,
+    semester: 1,
+    topic: "arithmetic",
+    topicName: "Số hữu tỉ & Số thực",
+    title: "Tập hợp số hữu tỉ, Số thực & Căn bậc hai số học",
+    summary: "Số hữu tỉ viết dưới dạng a/b (b ≠ 0), căn bậc hai số học và giá trị tuyệt đối.",
+    content: "Số hữu tỉ là số viết được dưới dạng phân số a/b với a, b ∈ Z, b ≠ 0. Tập hợp các số hữu tỉ kí hiệu là Q.\nCăn bậc hai số học của số a không âm là số x không âm sao cho x² = a (kí hiệu √a).\nGiá trị tuyệt đối của số thực x: |x| = x nếu x ≥ 0 và |x| = -x nếu x < 0.",
+    hypothesis: "a/b với a, b ∈ Z, b ≠ 0; a ≥ 0",
+    conclusion: "a/b ∈ Q; (√a)² = a; |x| ≥ 0",
+    formula: "\\mathbb{Q} = \\left\\{ \\frac{a}{b} \\ \\middle| \\ a, b \\in \\mathbb{Z}, b \\neq 0 \\right\\}, \\quad \\sqrt{a} = x \\ (x \\ge 0, x^2 = a)",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="50" cy="50" r="42" fill="#eff6ff" stroke="#2563eb" stroke-width="4"/><text x="50" y="58" font-size="28" font-weight="bold" fill="#1e40af" text-anchor="middle">Q, ℝ, √a</text></svg>`,
+    fillBlank: {
+      question: "Số hữu tỉ là số viết được dưới dạng phân số a/b với a, b thuộc Z và {blank1}. Căn bậc hai số học của số a không âm là số x không âm sao cho {blank2}.",
+      answers: ["b khác 0", "x^2 = a"],
+      hints: ["Mẫu số khác 0", "Bình phương bằng a"]
+    },
+    aiQuestion: "Thế nào là số hữu tỉ và căn bậc hai số học của một số không âm?",
+    standardAnswer: "Số hữu tỉ là số viết được dưới dạng phân số a/b (a, b ∈ Z, b ≠ 0). Căn bậc hai số học của số không âm a là số x không âm sao cho x² = a.",
+    keywords: ["a/b", "b khác 0", "căn bậc hai số học", "x^2 = a"]
+  },
   {
     id: "toan7-hk1-goc-doi-dinh",
     grade: 7,
     semester: 1,
     topic: "geometry",
     topicName: "Góc & Đường thẳng song song",
-    title: "Định lý Hai góc đối đỉnh",
-    summary: "Hai góc đối đỉnh thì bằng nhau.",
-    content: "Hai góc đối đỉnh là hai góc mà mỗi cạnh của góc này là tia đối của một cạnh của góc kia.\nĐịnh lý: Hai góc đối đỉnh thì bằng nhau.",
+    title: "Định lý Hai góc đối đỉnh & Góc kề bù",
+    summary: "Hai góc đối đỉnh thì bằng nhau. Hai góc kề bù có tổng bằng 180°.",
+    content: "Hai góc đối đỉnh là hai góc mà mỗi cạnh của góc này là tia đối của một cạnh của góc kia.\nĐịnh lý: Hai góc đối đỉnh thì bằng nhau.\nHai góc kề bù là hai góc vừa kề nhau vừa bù nhau, có tổng số đo bằng 180°.",
     hypothesis: "Góc xOy và góc x'Oy' là hai góc đối đỉnh",
     conclusion: "xOy = x'Oy'",
-    formula: "\\widehat{xOy} = \\widehat{x'Oy'}",
+    formula: "\\widehat{xOy} = \\widehat{x'Oy'}, \\quad \\widehat{AOB} + \\widehat{BOC} = 180^\\circ \\text{ (kề bù)}",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><line x1="15" y1="20" x2="85" y2="80" stroke="#4f46e5" stroke-width="4"/><line x1="15" y1="80" x2="85" y2="20" stroke="#4f46e5" stroke-width="4"/><circle cx="50" cy="50" r="4" fill="#ef4444"/><path d="M 38 40 A 15 15 0 0 1 62 40" fill="none" stroke="#f59e0b" stroke-width="3"/></svg>`,
     fillBlank: {
       question: "Hai góc đối đỉnh là hai góc mà mỗi cạnh của góc này là {blank1} của một cạnh của góc kia. Định lý: Hai góc đối đỉnh thì {blank2}.",
@@ -255,7 +365,7 @@ const THEOREMS_DATA = [
     },
     aiQuestion: "Tại sao trong một tam giác vuông, hai góc nhọn lại luôn phụ nhau (tổng bằng 90°)?",
     standardAnswer: "Vì tổng 3 góc trong tam giác là 180°, mà góc vuông đã bằng 90°, nên tổng 2 góc nhọn còn lại phải bằng 180° - 90° = 90° (phụ nhau).",
-    keywords: ["180° - 90° = 90°", "hai góc nhọn phụ nhau", "tổng 3 góc", "tổng các góc trong tam giác", "tổng ba góc", "tính góc trong tam giác", "góc x", "số đo góc", "tam giác abc", "180 độ", "180°", "góc ngoài", "tam giác vuông"]
+    keywords: ["180° - 90° = 90°", "hai góc nhọn phụ nhau", "tổng 3 góc", "tổng các góc trong tam giác"]
   },
   {
     id: "toan7-hk1-tam-giac-bang-nhau-3-truong-hop",
@@ -285,12 +395,12 @@ const THEOREMS_DATA = [
     semester: 1,
     topic: "geometry",
     topicName: "Tam giác & Định lý hình học",
-    title: "Các trường hợp bằng nhau của tam giác vuông",
-    summary: "Cạnh huyền - góc nhọn, cạnh huyền - cạnh góc vuông và hai cạnh góc vuông.",
-    content: "Các trường hợp đặc biệt cho tam giác vuông:\n1. Hai cạnh góc vuông (c.g.c suy rộng).\n2. Cạnh góc vuông - góc nhọn kề (g.c.g suy rộng).\n3. Cạnh huyền - góc nhọn: Nếu cạnh huyền và một góc nhọn của tam giác vuông này bằng cạnh huyền và một góc nhọn của tam giác vuông kia thì hai tam giác đó bằng nhau.\n4. Cạnh huyền - cạnh góc vuông: Nếu cạnh huyền và một cạnh góc vuông của tam giác vuông này bằng cạnh huyền và một cạnh góc vuông của tam giác vuông kia thì hai tam giác đó bằng nhau.",
-    hypothesis: "ΔABC vuông tại A, ΔDEF vuông tại D",
-    conclusion: "BC=EF, Â nhọn = D̂ nhọn ⇒ ΔABC = ΔDEF",
-    formula: "\\text{Cạnh huyền - Góc nhọn}; \\quad \\text{Cạnh huyền - Cạnh góc vuông}",
+    title: "Các trường hợp bằng nhau của tam giác vuông & Tam giác cân",
+    summary: "Cạnh huyền - góc nhọn, cạnh huyền - cạnh góc vuông và tính chất tam giác cân.",
+    content: "Tam giác vuông bằng nhau: 1) Hai cạnh góc vuông; 2) Cạnh góc vuông - góc nhọn kề; 3) Cạnh huyền - góc nhọn; 4) Cạnh huyền - cạnh góc vuông.\nTam giác cân: Có hai cạnh bằng nhau ⇔ hai góc ở đáy bằng nhau. Đường phân giác góc ở đỉnh đồng thời là đường trung trực, trung tuyến và đường cao.",
+    hypothesis: "ΔABC vuông tại A, ΔDEF vuông tại D; hoặc ΔABC cân tại A",
+    conclusion: "ΔABC = ΔDEF; AB = AC ⇔ B̂ = Ĉ",
+    formula: "\\text{Cạnh huyền - Góc nhọn}; \\quad \\text{Cạnh huyền - Cạnh góc vuông}; \\quad AB = AC \\iff \\widehat{B} = \\widehat{C}",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><polygon points="20,80 80,80 20,20" fill="#ecfdf5" stroke="#10b981" stroke-width="4"/><rect x="20" y="65" width="15" height="15" fill="none" stroke="#059669" stroke-width="2"/></svg>`,
     fillBlank: {
       question: "Nếu {blank1} và một góc nhọn của tam giác vuông này bằng {blank1} và một góc nhọn của tam giác vuông kia thì hai tam giác vuông đó bằng nhau.",
@@ -303,7 +413,7 @@ const THEOREMS_DATA = [
   },
 
   // -------------------------------------------------------------
-  // LỚP 7 - HỌC KÌ 2: TỈ LỆ THỨC & QUAN HỆ TRONG TAM GIÁC
+  // LỚP 7 - HỌC KÌ 2: TỈ LỆ THỨC, ĐA THỨC & HÌNH HỌC KHÔNG GIAN
   // -------------------------------------------------------------
   {
     id: "toan7-hk2-ti-le-thuc-day-ti-so",
@@ -326,6 +436,28 @@ const THEOREMS_DATA = [
     aiQuestion: "Áp dụng tính chất dãy tỉ số bằng nhau, nếu x/2 = y/3 và x + y = 10 thì tìm x, y như thế nào?",
     standardAnswer: "Áp dụng tính chất dãy tỉ số bằng nhau: x/2 = y/3 = (x + y)/(2 + 3) = 10/5 = 2. Do đó x = 2 * 2 = 4, y = 3 * 2 = 6.",
     keywords: ["dãy tỉ số bằng nhau", "10/5 = 2", "x = 4", "y = 6"]
+  },
+  {
+    id: "toan7-hk2-bieu-thuc-da-thuc-mot-bien",
+    grade: 7,
+    semester: 2,
+    topic: "arithmetic",
+    topicName: "Biểu thức & Đa thức một biến",
+    title: "Đa thức một biến, Cộng trừ & Nghiệm của đa thức",
+    summary: "Bậc của đa thức, cộng trừ đa thức và nghiệm của đa thức một biến.",
+    content: "Đa thức một biến là tổng của những đơn thức của cùng một biến.\nBậc của đa thức một biến (khác đa thức không, đã thu gọn) là số mũ lớn nhất của biến trong đa thức đó.\nNếu tại x = a, đa thức P(x) có giá trị bằng 0 (P(a) = 0) thì a gọi là một nghiệm của đa thức P(x).",
+    hypothesis: "P(x) = a_n x^n + ... + a_1 x + a_0 (a_n ≠ 0)",
+    conclusion: "Bậc là n; P(a) = 0 ⇔ a là nghiệm của P(x)",
+    formula: "P(x) = a_n x^n + a_{n-1} x^{n-1} + \\dots + a_0, \\quad P(a) = 0 \\iff x = a \\text{ là nghiệm}",
+    svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><circle cx="50" cy="50" r="42" fill="#fdf4ff" stroke="#a855f7" stroke-width="4"/><text x="50" y="58" font-size="24" font-weight="bold" fill="#7e22ce" text-anchor="middle">P(x) = 0</text></svg>`,
+    fillBlank: {
+      question: "Bậc của đa thức một biến là số mũ {blank1} của biến trong đa thức đã thu gọn. Nếu P(a) = 0 thì a được gọi là {blank2} của đa thức P(x).",
+      answers: ["lớn nhất", "nghiệm"],
+      hints: ["Số mũ cao nhất", "Giá trị làm đa thức triệt tiêu"]
+    },
+    aiQuestion: "Thế nào là nghiệm của đa thức một biến và làm sao để kiểm tra x = a có phải là nghiệm hay không?",
+    standardAnswer: "Nghiệm của đa thức P(x) là giá trị của biến làm cho đa thức có giá trị bằng 0. Để kiểm tra x = a có phải nghiệm không, ta thay x = a vào P(x), nếu P(a) = 0 thì a là nghiệm, nếu P(a) ≠ 0 thì a không phải là nghiệm.",
+    keywords: ["giá trị bằng 0", "P(a) = 0", "thay vào đa thức"]
   },
   {
     id: "toan7-hk2-quan-he-goc-va-canh-doi-dien",
@@ -355,12 +487,12 @@ const THEOREMS_DATA = [
     semester: 2,
     topic: "geometry",
     topicName: "Quan hệ hình học trong tam giác",
-    title: "Bất đẳng thức tam giác",
+    title: "Bất đẳng thức tam giác & Quan hệ đường vuông góc",
     summary: "Trong một tam giác, tổng độ dài hai cạnh bất kì luôn lớn hơn độ dài cạnh còn lại.",
-    content: "Định lý: Trong một tam giác, tổng độ dài hai cạnh bất kì bao giờ cũng lớn hơn độ dài cạnh còn lại.\nHệ quả: Hiệu độ dài hai cạnh bất kì bao giờ cũng nhỏ hơn độ dài cạnh còn lại.\nQuy tắc nhận biết: Ba đoạn thẳng có độ dài a, b, c lập thành tam giác khi: |b - c| < a < b + c.",
+    content: "Định lý: Trong một tam giác, tổng độ dài hai cạnh bất kì bao giờ cũng lớn hơn độ dài cạnh còn lại.\nHệ quả: Hiệu độ dài hai cạnh bất kì bao giờ cũng nhỏ hơn độ dài cạnh còn lại.\nQuy tắc nhận biết: Ba đoạn thẳng có độ dài a, b, c lập thành tam giác khi: |b - c| < a < b + c.\nQuan hệ đường vuông góc: Trong các đường nối từ điểm A ngoài d đến d, đường vuông góc là đường ngắn nhất.",
     hypothesis: "Tam giác ABC có ba cạnh a, b, c",
     conclusion: "b - c < a < b + c; a + b > c; a + c > b; b + c > a",
-    formula: "|b - c| < a < b + c",
+    formula: "|b - c| < a < b + c, \\quad AH \\le AM \\ (AH \\perp d)",
     svgIcon: `<svg viewBox="0 0 100 100" class="thm-svg"><polygon points="20,80 80,80 40,25" fill="#faf5ff" stroke="#9333ea" stroke-width="4"/><text x="50" y="60" font-size="16" font-weight="bold" fill="#6b21a8" text-anchor="middle">a + b > c</text></svg>`,
     fillBlank: {
       question: "Trong một tam giác, {blank1} độ dài hai cạnh bất kì luôn lớn hơn cạnh còn lại, và {blank2} độ dài hai cạnh luôn nhỏ hơn cạnh còn lại.",
@@ -379,7 +511,7 @@ const THEOREMS_DATA = [
     topicName: "Quan hệ hình học trong tam giác",
     title: "Sự đồng quy của các đường trong tam giác",
     summary: "Trọng tâm (trung tuyến), Trực tâm (đường cao), Tâm đường tròn nội tiếp (phân giác), Tâm ngoại tiếp (trung trực).",
-    content: "1. Ba đường trung tuyến đồng quy tại một điểm gọi là Trọng tâm (G). Trọng tâm cách mỗi đỉnh một khoảng bằng 2/3 độ dài đường trung tuyến đi qua đỉnh đó.\n2. Ba đường phân giác đồng quy tại một điểm, điểm này cách đều ba cạnh của tam giác.\n3. Ba đường trung trực đồng quy tại một điểm, điểm này cách đều ba đỉnh của tam giác.\n4. Ba đường cao đồng quy tại một điểm gọi là Trực tâm (H) của tam giác.",
+    content: "1. Ba đường trung tuyến đồng quy tại Trọng tâm (G). Trọng tâm cách mỗi đỉnh bằng 2/3 độ dài đường trung tuyến qua đỉnh đó.\n2. Ba đường phân giác đồng quy tại một điểm cách đều ba cạnh của tam giác (tâm đường tròn nội tiếp).\n3. Ba đường trung trực đồng quy tại một điểm cách đều ba đỉnh của tam giác (tâm đường tròn ngoại tiếp).\n4. Ba đường cao đồng quy tại một điểm gọi là Trực tâm (H) của tam giác.",
     hypothesis: "Tam giác ABC với các đường đặc biệt",
     conclusion: "Trọng tâm G (AG = 2/3 AM); Trực tâm H; Tâm cách đều 3 cạnh (phân giác); Tâm cách đều 3 đỉnh (trung trực)",
     formula: "AG = \\frac{2}{3} AM, \\quad GM = \\frac{1}{3} AM",
