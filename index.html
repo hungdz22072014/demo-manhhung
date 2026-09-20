@@ -6367,6 +6367,40 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------------------------------------------------
   const USERS_STORAGE_KEY = "vui_hoc_toan_users_v2";
   const CURRENT_USER_KEY = "vui_hoc_toan_current_user_v2";
+  const GRADE_STORAGE_KEY = "vui_hoc_toan_selected_grade_v2";
+
+  function getStoredGrade(fallback = 7) {
+    try {
+      const g = localStorage.getItem(GRADE_STORAGE_KEY) || localStorage.getItem("vui_hoc_toan_selected_grade");
+      if (g === "6" || g === 6 || g === 6) return 6;
+      if (g === "7" || g === 7 || g === 7) return 7;
+    } catch (e) {}
+    return fallback;
+  }
+
+  function ensureLeitnerIntegrity(targetGrade) {
+    if (!appState || !appState.leitner) {
+      if (appState) appState.leitner = { red: [], yellow: [], green: [] };
+      else return;
+    }
+    if (!Array.isArray(appState.leitner.red)) appState.leitner.red = [];
+    if (!Array.isArray(appState.leitner.yellow)) appState.leitner.yellow = [];
+    if (!Array.isArray(appState.leitner.green)) appState.leitner.green = [];
+
+    if (typeof THEOREMS_DATA !== "undefined" && Array.isArray(THEOREMS_DATA)) {
+      const gradeThms = THEOREMS_DATA.filter(thm => thm.grade === targetGrade);
+      const existing = new Set([
+        ...appState.leitner.red,
+        ...appState.leitner.yellow,
+        ...appState.leitner.green
+      ]);
+      gradeThms.forEach(thm => {
+        if (!existing.has(thm.id)) {
+          appState.leitner.red.push(thm.id);
+        }
+      });
+    }
+  }
 
   // Hàm tạo tiến độ học tập ban đầu sạch sẽ (Level 1, 0 EXP, xuất phát từ đầu)
   function createDefaultState(grade = 7) {
@@ -6435,15 +6469,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Nạp trạng thái tài khoản: BẢO MẬT & PHÂN LẬP HOÀN TOÀN
   function loadUserAndState() {
     try {
+      const activeGrade = getStoredGrade(7);
       if (currentUsername && appUsers[currentUsername]) {
         // Tài khoản chính thức đã đăng nhập -> Nạp toàn bộ tiến độ của tài khoản đó
         currentUser = appUsers[currentUsername];
         currentUser.isGuest = false;
-        const defaultState = createDefaultState(currentUser.grade || 7);
+        const userGrade = getStoredGrade(currentUser.grade || activeGrade || 7);
+        const defaultState = createDefaultState(userGrade);
         appState = currentUser.state ? { ...defaultState, ...currentUser.state } : defaultState;
+        appState.selectedGrade = userGrade;
         if (!Array.isArray(appState.clearedStages)) appState.clearedStages = [];
         if (typeof appState.activeStage !== "number") appState.activeStage = 1;
         if (!appState.quests) appState.quests = defaultState.quests;
+        ensureLeitnerIntegrity(userGrade);
       } else {
         // Chưa đăng nhập -> Vào Chế độ Khách Học Thử sạch sẽ, KHÔNG ĐỌC TIẾN ĐỘ CỦA BẤT KỲ AI
         currentUser = {
@@ -6453,17 +6491,20 @@ document.addEventListener("DOMContentLoaded", () => {
           isGuest: true
         };
         currentUsername = null;
-        appState = createDefaultState(7);
+        appState = createDefaultState(activeGrade);
+        ensureLeitnerIntegrity(activeGrade);
       }
     } catch (e) {
       console.warn("Could not load user or state, using fallback", e);
+      const activeGrade = getStoredGrade(7);
       currentUser = {
         username: "guest",
         fullname: "Khách Học Thử",
         avatar: "🎒",
         isGuest: true
       };
-      appState = createDefaultState(7);
+      appState = createDefaultState(activeGrade);
+      ensureLeitnerIntegrity(activeGrade);
     }
   }
 
@@ -7058,13 +7099,37 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   // 5. CHUYỂN ĐỔI TAB & BỘ LỌC KHỐI LỚP
   // ---------------------------------------------------------------
   const gradeBtns = document.querySelectorAll(".grade-btn");
+  function syncGradeHeaderUI() {
+    const curGrade = appState ? appState.selectedGrade : getStoredGrade(7);
+    gradeBtns.forEach(b => {
+      if (parseInt(b.dataset.grade) === curGrade) {
+        b.classList.add("active");
+      } else {
+        b.classList.remove("active");
+      }
+    });
+    const brandBadge = document.querySelector(".brand-badge");
+    if (brandBadge) {
+      brandBadge.textContent = `SÁCH KẾT NỐI TRI THỨC VỚI CUỘC SỐNG • TOÁN LỚP ${curGrade}`;
+    }
+  }
+
   gradeBtns.forEach(btn => {
     btn.addEventListener("click", () => {
-      gradeBtns.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      appState.selectedGrade = parseInt(btn.dataset.grade);
-      saveState();
-      refreshCurrentView();
+      const grade = parseInt(btn.dataset.grade);
+      try {
+        localStorage.setItem(GRADE_STORAGE_KEY, grade);
+        localStorage.setItem("vui_hoc_toan_selected_grade", grade);
+        if (currentUser && !currentUser.isGuest && appUsers[currentUser.username]) {
+          appUsers[currentUser.username].grade = grade;
+          if (appUsers[currentUser.username].state) {
+            appUsers[currentUser.username].state.selectedGrade = grade;
+          }
+          saveUsers();
+        }
+      } catch (e) {}
+      // Tự động tải lại trang theo yêu cầu của người dùng để nạp lại toàn bộ nội dung sách KNTT lớp 6 hoặc 7
+      window.location.reload();
     });
   });
 
@@ -7156,9 +7221,18 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   }
 
   function updateLeitnerCounts() {
-    document.getElementById("count-box-red").textContent = appState.leitner.red.length;
-    document.getElementById("count-box-yellow").textContent = appState.leitner.yellow.length;
-    document.getElementById("count-box-green").textContent = appState.leitner.green.length;
+    if (!appState || !appState.leitner) return;
+    const currentGradeThmIds = new Set(THEOREMS_DATA.filter(t => t.grade === appState.selectedGrade).map(t => t.id));
+    const redCount = (appState.leitner.red || []).filter(id => currentGradeThmIds.has(id)).length;
+    const yellowCount = (appState.leitner.yellow || []).filter(id => currentGradeThmIds.has(id)).length;
+    const greenCount = (appState.leitner.green || []).filter(id => currentGradeThmIds.has(id)).length;
+
+    const elRed = document.getElementById("count-box-red");
+    const elYellow = document.getElementById("count-box-yellow");
+    const elGreen = document.getElementById("count-box-green");
+    if (elRed) elRed.textContent = redCount;
+    if (elYellow) elYellow.textContent = yellowCount;
+    if (elGreen) elGreen.textContent = greenCount;
   }
 
   // --- HỆ THỐNG THEO DÕI TIẾN ĐỘ NHIỆM VỤ HÀNG NGÀY ---
@@ -7609,30 +7683,6 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   const examArenaScreen = document.getElementById("exam-arena-screen");
   const examResultScreen = document.getElementById("exam-result-screen");
 
-  // Bộ lọc danh sách đề thi theo khối lớp & kì thi
-  const examFilterBtns = document.querySelectorAll(".exam-filter-btn");
-  examFilterBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      examFilterBtns.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      const filter = btn.dataset.examFilter;
-      const cards = document.querySelectorAll(".exam-card");
-      cards.forEach(card => {
-        if (filter === "all") {
-          card.style.display = "flex";
-        } else if (filter === "grade-6") {
-          card.style.display = (card.dataset.examId && card.dataset.examId.includes("toan6")) ? "flex" : "none";
-        } else if (filter === "grade-7") {
-          card.style.display = (card.dataset.examId && card.dataset.examId.includes("toan7")) ? "flex" : "none";
-        } else if (filter === "midterm") {
-          card.style.display = (card.dataset.examId && card.dataset.examId.includes("gk")) ? "flex" : "none";
-        } else if (filter === "final") {
-          card.style.display = (card.dataset.examId && card.dataset.examId.includes("ck")) ? "flex" : "none";
-        }
-      });
-    });
-  });
-
   document.querySelectorAll(".btn-start-practice").forEach(btn => {
     btn.addEventListener("click", () => {
       startExam(btn.dataset.exam, true);
@@ -7644,6 +7694,46 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       startExam(btn.dataset.exam, false);
     });
   });
+
+  // Bộ lọc Phòng Luyện Thi (Tất cả 8 đề, Lớp 6, Lớp 7, Giữa Kì, Cuối Kì)
+  const examFilterBtns = document.querySelectorAll(".exam-filter-btn");
+  function applyGradeExamFilter() {
+    const targetGradeStr = String(appState.selectedGrade || 7);
+    if (examFilterBtns && examFilterBtns.length > 0) {
+      examFilterBtns.forEach(b => {
+        if (b.dataset.examFilter === `grade-${targetGradeStr}`) {
+          b.classList.add("active");
+        } else {
+          b.classList.remove("active");
+        }
+      });
+    }
+    document.querySelectorAll(".exam-card").forEach(card => {
+      const grade = card.dataset.examGrade;
+      card.style.display = (grade === targetGradeStr) ? "flex" : "none";
+    });
+  }
+
+  if (examFilterBtns.length > 0) {
+    examFilterBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        examFilterBtns.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        const filter = btn.dataset.examFilter;
+
+        document.querySelectorAll(".exam-card").forEach(card => {
+          const grade = card.dataset.examGrade;
+          const type = card.dataset.examType;
+          let show = true;
+          if (filter === "grade-6" && grade !== "6") show = false;
+          if (filter === "grade-7" && grade !== "7") show = false;
+          if (filter === "midterm" && type !== "midterm") show = false;
+          if (filter === "final" && type !== "final") show = false;
+          card.style.display = show ? "flex" : "none";
+        });
+      });
+    });
+  }
 
   // Tạo đề bù điểm yếu bằng AI
   document.getElementById("btn-create-weakness-exam").addEventListener("click", () => {
@@ -8065,27 +8155,42 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   // 9. PHÂN HỆ 4: BẢNG ĐIỀU KHIỂN & BẢN ĐỒ TIẾN BỘ (DASHBOARD)
   // ---------------------------------------------------------------
   function updateDashboardStats() {
-    document.getElementById("dash-mastered-count").textContent = appState.leitner.green.length;
-    document.getElementById("dash-learning-count").textContent = appState.leitner.yellow.length + appState.leitner.red.length;
-    document.getElementById("dash-exams-count").textContent = appState.examHistory.length;
-    document.getElementById("dash-streak-count").textContent = appState.streak;
-    document.getElementById("header-streak-count").textContent = `${appState.streak} ngày`;
+    if (!appState || !appState.leitner) return;
+    const currentGradeThmIds = new Set(THEOREMS_DATA.filter(t => t.grade === appState.selectedGrade).map(t => t.id));
+    const greenCount = (appState.leitner.green || []).filter(id => currentGradeThmIds.has(id)).length;
+    const learningCount = (appState.leitner.yellow || []).filter(id => currentGradeThmIds.has(id)).length + (appState.leitner.red || []).filter(id => currentGradeThmIds.has(id)).length;
+
+    const elMastered = document.getElementById("dash-mastered-count");
+    const elLearning = document.getElementById("dash-learning-count");
+    const elExams = document.getElementById("dash-exams-count");
+    const elStreak = document.getElementById("dash-streak-count");
+    const elHeaderStreak = document.getElementById("header-streak-count");
+
+    if (elMastered) elMastered.textContent = greenCount;
+    if (elLearning) elLearning.textContent = learningCount;
+    if (elExams) elExams.textContent = appState.examHistory ? appState.examHistory.length : 0;
+    if (elStreak) elStreak.textContent = appState.streak;
+    if (elHeaderStreak) elHeaderStreak.textContent = `${appState.streak} ngày`;
 
     // Cập nhật huy hiệu
-    Object.keys(appState.badges).forEach(bId => {
-      const el = document.getElementById(bId);
-      if (el) {
-        if (appState.badges[bId]) el.classList.add("unlocked");
-        else el.classList.remove("unlocked");
-      }
-    });
+    if (appState.badges) {
+      Object.keys(appState.badges).forEach(bId => {
+        const el = document.getElementById(bId);
+        if (el) {
+          if (appState.badges[bId]) el.classList.add("unlocked");
+          else el.classList.remove("unlocked");
+        }
+      });
+    }
   }
 
   function renderKnowledgeMap() {
     const container = document.getElementById("knowledge-tiles-grid");
+    if (!container) return;
     container.innerHTML = "";
 
-    THEOREMS_DATA.forEach(thm => {
+    const currentGradeTheorems = THEOREMS_DATA.filter(thm => thm.grade === appState.selectedGrade);
+    currentGradeTheorems.forEach(thm => {
       const box = getLeitnerBox(thm.id);
       const tile = document.createElement("div");
       tile.className = `knowledge-tile box-${box}`;
@@ -8212,12 +8317,30 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   // ---------------------------------------------------------------
   // 10. HỆ THỐNG CÁ NHÂN HÓA 7 ẢI TOÁN HỌC & NHIỆM VỤ HÀNG NGÀY
   // ---------------------------------------------------------------
-  const STAGES_DATA = [
+    const STAGES_DATA_GRADE_6 = [
     {
       id: 1,
       realm: "ẢI 1 • SỐ HỌC (LỚP 6)",
-      name: "Thung Lũng Chia Hết & Số Nguyên",
-      summary: "Dấu hiệu chia hết cho 2, 5, 3, 9 & Quy tắc bỏ dấu ngoặc",
+      name: "Thung Lũng Lũy Thừa & Tập Hợp",
+      summary: "Tập hợp số tự nhiên & Quy tắc nhân chia hai lũy thừa cùng cơ số",
+      thmTarget: "toan6-hk1-tap-hop-luy-thua",
+      challenge: {
+        question: "Giá trị của biểu thức $2^3 \\cdot 2^2$ bằng:",
+        options: [
+          "A. $2^5 = 32$",
+          "B. $2^6 = 64$",
+          "C. $4^5 = 1024$",
+          "D. $2^1 = 2$"
+        ],
+        correctIndex: 0,
+        explanation: "Theo quy tắc nhân hai lũy thừa cùng cơ số: $a^m \\cdot a^n = a^{m+n}$, ta có $2^3 \\cdot 2^2 = 2^{3+2} = 2^5 = 32$."
+      }
+    },
+    {
+      id: 2,
+      realm: "ẢI 2 • TÍNH CHIA HẾT (LỚP 6)",
+      name: "Vùng Đất Chia Hết & Ước Bội",
+      summary: "Dấu hiệu chia hết cho 2, 5, 3, 9 & Ước chung lớn nhất (ƯCLN)",
       thmTarget: "toan6-hk1-chia-het-2-5",
       challenge: {
         question: "Số tự nhiên nào sau đây vừa chia hết cho 2, vừa chia hết cho 5?",
@@ -8232,8 +8355,26 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       }
     },
     {
-      id: 2,
-      realm: "ẢI 2 • HÌNH HỌC TRỰC QUAN (LỚP 6)",
+      id: 3,
+      realm: "ẢI 3 • SỐ NGUYÊN (LỚP 6)",
+      name: "Mê Cung Số Nguyên & Quy Tắc Dấu Ngoặc",
+      summary: "Các phép tính với số nguyên âm và quy tắc đổi dấu khi bỏ ngoặc",
+      thmTarget: "toan6-hk1-quy-tac-dau-ngoac",
+      challenge: {
+        question: "Khi bỏ dấu ngoặc có dấu trừ đằng trước: $-(a - b + c)$, ta được kết quả là:",
+        options: [
+          "A. $-a - b + c$",
+          "B. $-a + b - c$",
+          "C. $-a - b - c$",
+          "D. $a + b - c$"
+        ],
+        correctIndex: 1,
+        explanation: "Quy tắc dấu ngoặc: Khi bỏ dấu ngoặc có dấu '-' đằng trước, ta phải đổi dấu tất cả các số hạng trong ngoặc: $-(a - b + c) = -a + b - c$."
+      }
+    },
+    {
+      id: 4,
+      realm: "ẢI 4 • HÌNH HỌC TRỰC QUAN (LỚP 6)",
       name: "Khu Rừng Đa Giác Đều & Hình Thoi",
       summary: "Tính chất cạnh, góc, đường chéo hình vuông, tam giác đều, hình thoi",
       thmTarget: "toan6-hk1-hinh-vuong-tam-giac-deu",
@@ -8246,14 +8387,89 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
           "D. 36 cm"
         ],
         correctIndex: 2,
-        explanation: "Tam giác đều có 3 cạnh bằng nhau. Chu vi = 3 × 6 = 18 cm."
+        explanation: "Tam giác đều có 3 cạnh bằng nhau nên chu vi = $3 \\times 6 = 18\\text{ cm}$."
       }
     },
     {
-      id: 3,
-      realm: "ẢI 3 • GÓC & ĐƯỜNG THẲNG (LỚP 7)",
-      name: "Vực Sâu Đường Thẳng Song Song",
-      summary: "Định lý hai góc đối đỉnh, so le trong, đồng vị và Tiên đề Euclid",
+      id: 5,
+      realm: "ẢI 5 • PHÂN SỐ TOÁN 6 (LỚP 6)",
+      name: "Thác Nước Phân Số & Quy Đồng",
+      summary: "Tính chất cơ bản của phân số, so sánh và các phép tính cộng trừ nhân chia",
+      thmTarget: "toan6-hk2-tinh-chat-phan-so",
+      challenge: {
+        question: "Phân số nào sau đây bằng phân số $\\frac{3}{5}$?",
+        options: [
+          "A. $\\frac{6}{15}$",
+          "B. $\\frac{9}{15}$",
+          "C. $\\frac{9}{20}$",
+          "D. $\\frac{7}{10}$"
+        ],
+        correctIndex: 1,
+        explanation: "Nhân cả tử và mẫu của $\\frac{3}{5}$ với 3 ta được $\\frac{3 \\cdot 3}{5 \\cdot 3} = \\frac{9}{15}$."
+      }
+    },
+    {
+      id: 6,
+      realm: "ẢI 6 • SỐ THẬP PHÂN & TỈ SỐ (LỚP 6)",
+      name: "Đồng Cỏ Số Thập Phân & Tỉ Số %",
+      summary: "Làm tròn số thập phân, tính tỉ số phần trăm và hai bài toán về phân số",
+      thmTarget: "toan6-hk2-so-thap-phan-ti-so",
+      challenge: {
+        question: "Tìm $25\\%$ của số $120$:",
+        options: [
+          "A. 20",
+          "B. 25",
+          "C. 30",
+          "D. 40"
+        ],
+        correctIndex: 2,
+        explanation: "Giá trị $25\\%$ của 120 là: $120 \\cdot \\frac{25}{100} = 120 \\cdot 0{,}25 = 30$."
+      }
+    },
+    {
+      id: 7,
+      realm: "ẢI 7 • HÌNH HỌC PHẲNG (LỚP 6)",
+      name: "Đỉnh Núi Đoạn Thẳng & Trung Điểm",
+      summary: "Điểm, đường thẳng, tia, trung điểm đoạn thẳng và số đo góc",
+      thmTarget: "toan6-hk2-trung-diem-doan-thang",
+      challenge: {
+        question: "Cho đoạn thẳng $AB = 8\\text{ cm}$, điểm $M$ là trung điểm của $AB$. Độ dài đoạn thẳng $AM$ là:",
+        options: [
+          "A. 2 cm",
+          "B. 4 cm",
+          "C. 6 cm",
+          "D. 8 cm"
+        ],
+        correctIndex: 1,
+        explanation: "Vì $M$ là trung điểm của $AB$ nên $AM = MB = \\frac{AB}{2} = \\frac{8}{2} = 4\\text{ cm}$."
+      }
+    }
+  ];
+
+  const STAGES_DATA_GRADE_7 = [
+    {
+      id: 1,
+      realm: "ẢI 1 • SỐ HỮU TỈ (LỚP 7)",
+      name: "Thung Lũng Số Hữu Tỉ & Số Thực",
+      summary: "Các phép tính số hữu tỉ, quy tắc chuyển vế và căn bậc hai số học",
+      thmTarget: "toan7-hk1-so-huu-ti-so-thuc",
+      challenge: {
+        question: "Kết quả của phép tính $\\left(-\\frac{2}{3}\\right)^2$ bằng:",
+        options: [
+          "A. $-\\frac{4}{9}$",
+          "B. $\\frac{4}{9}$",
+          "C. $-\\frac{4}{6}$",
+          "D. $\\frac{4}{6}$"
+        ],
+        correctIndex: 1,
+        explanation: "Lũy thừa bậc chẵn của một số âm luôn là số dương: $\\left(-\\frac{2}{3}\\right)^2 = \\frac{(-2)^2}{3^2} = \\frac{4}{9}$."
+      }
+    },
+    {
+      id: 2,
+      realm: "ẢI 2 • GÓC & ĐƯỜNG THẲNG (LỚP 7)",
+      name: "Vực Sâu Góc Đối Đỉnh & Tiên Đề Euclid",
+      summary: "Định lý hai góc đối đỉnh, kề bù và Tiên đề Euclid về đường thẳng song song",
       thmTarget: "toan7-hk1-goc-doi-dinh",
       challenge: {
         question: "Cho hai đường thẳng cắt nhau tạo thành góc $\\widehat{O}_1 = 60^\\circ$. Số đo của góc đối đỉnh với góc $\\widehat{O}_1$ là:",
@@ -8264,15 +8480,33 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
           "D. 180°"
         ],
         correctIndex: 1,
-        explanation: "Định lý: Hai góc đối đỉnh thì bằng nhau. Do đó góc đối đỉnh với $\\widehat{O}_1$ cũng có số đo bằng 60°."
+        explanation: "Hai góc đối đỉnh thì bằng nhau, do đó góc đối đỉnh với $\\widehat{O}_1$ cũng có số đo bằng 60°."
+      }
+    },
+    {
+      id: 3,
+      realm: "ẢI 3 • ĐƯỜNG THẲNG SONG SONG (LỚP 7)",
+      name: "Đại Lộ Song Song & Từ Vuông Góc Đến Song Song",
+      summary: "Dấu hiệu nhận biết hai đường thẳng song song qua góc so le trong, đồng vị",
+      thmTarget: "toan7-hk1-song-song-dau-hieu",
+      challenge: {
+        question: "Nếu đường thẳng $c$ cắt hai đường thẳng $a, b$ và trong các góc tạo thành có một cặp góc so le trong bằng nhau thì:",
+        options: [
+          "A. $a \\perp b$",
+          "B. $a$ trùng $b$",
+          "C. $a \\parallel b$ (song song)",
+          "D. $a$ cắt $b$"
+        ],
+        correctIndex: 2,
+        explanation: "Dấu hiệu nhận biết: Một đường thẳng cắt hai đường thẳng tạo thành một cặp góc so le trong bằng nhau thì hai đường thẳng đó song song ($a \\parallel b$)."
       }
     },
     {
       id: 4,
-      realm: "ẢI 4 • ĐỊNH LÝ HÌNH HỌC (LỚP 7)",
-      name: "Đỉnh Núi Tam Giác Huyền Bí",
+      realm: "ẢI 4 • TAM GIÁC BẰNG NHAU (LỚP 7)",
+      name: "Đỉnh Núi Tam Giác Bằng Nhau & Tam Giác Cân",
       summary: "Tổng 3 góc tam giác (180°) & Các trường hợp bằng nhau (c-c-c, c-g-c, g-c-g)",
-      thmTarget: "toan7-hk1-tong-ba-goc-tam-giac",
+      thmTarget: "toan7-hk1-tam-giac-bang-nhau-3-truong-hop",
       challenge: {
         question: "Tam giác $ABC$ có $\\widehat{A} = 70^\\circ$ và $\\widehat{B} = 60^\\circ$. Số đo của góc $\\widehat{C}$ là:",
         options: [
@@ -8282,64 +8516,68 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
           "D. 80°"
         ],
         correctIndex: 0,
-        explanation: "Tổng ba góc của tam giác luôn bằng 180°. Ta có: $\\widehat{C} = 180^\\circ - (70^\\circ + 60^\\circ) = 50^\\circ$."
+        explanation: "Tổng ba góc của tam giác luôn bằng 180°: $\\widehat{C} = 180^\\circ - (70^\\circ + 60^\\circ) = 50^\\circ$."
       }
     },
     {
       id: 5,
-      realm: "ẢI 5 • ĐẠI SỐ 7 (LỚP 7)",
-      name: "Vương Quốc Tỉ Lệ Thức & Đại Lượng",
-      summary: "Tích ngoại tỉ bằng tích trung tỉ, tính chất dãy tỉ số bằng nhau",
+      realm: "ẢI 5 • TỈ LỆ THỨC & DÃY TỈ SỐ (LỚP 7)",
+      name: "Hẻm Núi Tỉ Lệ Thức & Dãy Tỉ Số Bằng Nhau",
+      summary: "Tích ngoại tỉ bằng tích trung tỉ, tính chất dãy tỉ số bằng nhau & Đại lượng tỉ lệ",
       thmTarget: "toan7-hk2-ti-le-thuc-day-ti-so",
       challenge: {
-        question: "Tìm giá trị của $x$ trong tỉ lệ thức: $\\frac{x}{6} = \\frac{10}{3}$",
+        question: "Từ tỉ lệ thức $\\frac{x}{3} = \\frac{y}{5}$ và $x + y = 16$, giá trị của $x$ và $y$ là:",
         options: [
-          "A. x = 5",
-          "B. x = 15",
-          "C. x = 20",
-          "D. x = 30"
+          "A. $x = 6, y = 10$",
+          "B. $x = 5, y = 11$",
+          "C. $x = 8, y = 8$",
+          "D. $x = 3, y = 5$"
         ],
-        correctIndex: 2,
-        explanation: "Theo tính chất tỉ lệ thức: $x \\cdot 3 = 6 \\cdot 10 \\Rightarrow 3x = 60 \\Rightarrow x = 20$."
+        correctIndex: 0,
+        explanation: "Theo dãy tỉ số bằng nhau: $\\frac{x}{3} = \\frac{y}{5} = \\frac{x+y}{3+5} = \\frac{16}{8} = 2 \\Rightarrow x = 6, y = 10$."
       }
     },
     {
       id: 6,
-      realm: "ẢI 6 • QUAN HỆ HÌNH HỌC (LỚP 7)",
-      name: "Đền Thờ Các Đường Đồng Quy",
-      summary: "Trọng tâm 2/3, Trực tâm, Tâm đường tròn nội tiếp & Bất đẳng thức tam giác",
-      thmTarget: "toan7-hk2-su-dong-quy-cac-duong",
+      realm: "ẢI 6 • BIỂU THỨC ĐẠI SỐ (LỚP 7)",
+      name: "Vương Quốc Đa Thức Một Biến & Nghiệm",
+      summary: "Cộng trừ nhân chia đa thức một biến, xác định bậc và tìm nghiệm của đa thức",
+      thmTarget: "toan7-hk2-bieu-thuc-da-thuc-mot-bien",
       challenge: {
-        question: "Gọi $G$ là trọng tâm của tam giác $ABC$ với đường trung tuyến $AM$. Khẳng định nào sau đây là đúng?",
+        question: "Bậc của đa thức $P(x) = 4x^3 - 2x^2 + 5x - 7$ là:",
         options: [
-          "A. AG = 1/2 AM",
-          "B. AG = 2/3 AM",
-          "C. AG = 3/4 AM",
-          "D. GM = 2/3 AM"
+          "A. 1",
+          "B. 2",
+          "C. 3",
+          "D. 4"
         ],
-        correctIndex: 1,
-        explanation: "Trọng tâm của tam giác cách mỗi đỉnh một khoảng bằng 2/3 độ dài đường trung tuyến đi qua đỉnh đó ($AG = \\frac{2}{3}AM$)."
+        correctIndex: 2,
+        explanation: "Bậc của đa thức một biến (thu gọn, khác đa thức 0) là số mũ lớn nhất của biến trong đa thức. Ở đây số mũ cao nhất là 3."
       }
     },
     {
       id: 7,
-      realm: "ẢI 7 • THỐNG KÊ & XÁC SUẤT (LỚP 7)",
-      name: "Ốc Đảo Dữ Liệu & Xác Suất",
-      summary: "Thu thập dữ liệu, phân loại bảng thống kê và Xác suất thực nghiệm",
-      thmTarget: "toan7-hk2-ti-le-thuc-day-ti-so",
+      realm: "ẢI 7 • QUAN HỆ HÌNH HỌC (LỚP 7)",
+      name: "Thánh Địa Bất Đẳng Thức & Các Đường Đồng Quy",
+      summary: "Bất đẳng thức tam giác, quan hệ góc - cạnh đối diện và 4 điểm đồng quy",
+      thmTarget: "toan7-hk2-bat-dang-thuc-tam-giac",
       challenge: {
-        question: "Gieo một con xúc xắc 20 lần, thấy xuất hiện mặt 6 chấm 4 lần. Xác suất thực nghiệm của biến cố 'Mặt xuất hiện là 6 chấm' là:",
+        question: "Bộ ba độ dài đoạn thẳng nào sau đây có thể là độ dài ba cạnh của một tam giác?",
         options: [
-          "A. 1/6",
-          "B. 1/5",
-          "C. 1/4",
-          "D. 6/20 = 3/10"
+          "A. 2 cm, 3 cm, 6 cm",
+          "B. 3 cm, 4 cm, 5 cm",
+          "C. 1 cm, 2 cm, 3 cm",
+          "D. 4 cm, 4 cm, 9 cm"
         ],
         correctIndex: 1,
-        explanation: "Xác suất thực nghiệm = (Số lần xuất hiện mặt 6 chấm) / (Tổng số lần gieo) = 4 / 20 = 1/5 = 0,2."
+        explanation: "Bất đẳng thức tam giác: Tổng độ dài hai cạnh bất kì luôn lớn hơn độ dài cạnh còn lại ($3 + 4 = 7 > 5$)."
       }
     }
   ];
+
+  function getStagesData() {
+    return (appState && appState.selectedGrade === 6) ? STAGES_DATA_GRADE_6 : STAGES_DATA_GRADE_7;
+  }
 
   // Render Bản Đồ Hành Trình Cá Nhân Hóa (100% Theo Tiến Độ Người Dùng)
   function renderJourneyMap() {
@@ -8355,7 +8593,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }
 
     let html = "";
-    STAGES_DATA.forEach(stage => {
+    getStagesData().forEach(stage => {
       const isCleared = cleared.includes(stage.id);
       const isActive = !isCleared && stage.id === active;
       const isLocked = !isCleared && !isActive;
@@ -8438,7 +8676,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         if (action === "challenge") {
           openStageChallenge(idNum);
         } else if (action === "review") {
-          const st = STAGES_DATA.find(s => s.id === idNum);
+          const st = getStagesData().find(s => s.id === idNum);
           if (st) {
             const conf = confirm(`📖 Em muốn:\n- Bấm OK để thử thách lại câu hỏi Ải ${idNum} rèn luyện phản xạ\n- Bấm Cancel để xem lý thuyết chi tiết của ải`);
             if (conf) {
@@ -8458,7 +8696,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
 
   // Modal Thử Thách Khiêu Chiến Vượt Ải Toán Học
   function openStageChallenge(stageId) {
-    const stage = STAGES_DATA.find(s => s.id === stageId);
+    const stage = getStagesData().find(s => s.id === stageId);
     if (!stage) return;
 
     const modal = document.getElementById("stage-challenge-modal");
@@ -9227,11 +9465,14 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   // Khởi chạy toàn bộ hệ thống
   setupGamification();
   setupAuthSystem();
+  syncGradeHeaderUI();
+  applyGradeExamFilter();
   refreshCurrentView();
   updateLeitnerCounts();
   updateDashboardStats();
   renderAllMath();
 });
+
 
 </script>
 </body>
