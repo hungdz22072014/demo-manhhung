@@ -4418,6 +4418,220 @@ body {
   .battle-options-grid {
     grid-template-columns: 1fr;
   }
+  .battle-items-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =================================================================
+   HỆ THỐNG VẬT PHẨM TRỢ CHIẾN ĐẤU BOSS (SHOP & QUICK ITEMS)
+   ================================================================= */
+.boss-supplies-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 1.5px solid #3b82f6;
+  border-radius: var(--radius-xl);
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+}
+
+.boss-supplies-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.boss-supplies-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #60a5fa;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.boss-supplies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.boss-supply-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.boss-supply-item:hover {
+  border-color: #f59e0b;
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.boss-supply-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.boss-supply-icon {
+  font-size: 28px;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.boss-supply-info h4 {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 2px;
+}
+
+.boss-supply-info p {
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+.btn-buy-supply {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.15s ease;
+}
+
+.btn-buy-supply:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+/* Quick Battle Items Bar */
+.battle-items-toolbar {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-xl);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.battle-items-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.battle-items-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.btn-battle-item {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border: 1.5px solid #475569;
+  border-radius: var(--radius-lg);
+  padding: 10px 8px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.btn-battle-item:hover:not(:disabled) {
+  border-color: #f59e0b;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+}
+
+.btn-battle-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}
+
+.btn-battle-item.buff-active {
+  border-color: #e11d48;
+  background: linear-gradient(180deg, #4c0519 0%, #1e1b4b 100%);
+  box-shadow: 0 0 16px rgba(225, 29, 72, 0.6);
+  animation: double-dmg-glow 1.5s infinite alternate;
+}
+
+@keyframes double-dmg-glow {
+  0% { box-shadow: 0 0 10px rgba(225, 29, 72, 0.5); }
+  100% { box-shadow: 0 0 22px rgba(244, 63, 94, 0.9); }
+}
+
+.battle-item-icon {
+  font-size: 22px;
+}
+
+.battle-item-name {
+  font-size: 11.5px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.battle-item-cost {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.battle-item-stock-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #10b981;
+  color: white;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 1px solid white;
+}
+
+.battle-opt-btn.eliminated {
+  opacity: 0.25 !important;
+  text-decoration: line-through !important;
+  pointer-events: none !important;
+  background: #1e293b !important;
+  border-color: #334155 !important;
 }
 
 

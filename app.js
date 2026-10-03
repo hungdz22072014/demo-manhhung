@@ -74,6 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
         lastBattleTime: 0, // Timestamp lần cuối đánh
         lastBattleDate: new Date().toISOString().split("T")[0] // YYYY-MM-DD
       },
+      bossInventory: {
+        hint: 0, // Gợi ý chiêu thức 50:50 (100 Xu)
+        double: 0, // Bùa x2 sát thương 3 phút (200 Xu)
+        heal: 0 // Thánh dược hồi sinh +1 Tim (1000 Xu)
+      },
       playerLevel: 1,
       playerExp: 0,
       playerMaxExp: 100,
@@ -235,6 +240,13 @@ document.addEventListener("DOMContentLoaded", () => {
             todayBattlesCount: 0,
             lastBattleTime: 0,
             lastBattleDate: new Date().toISOString().split("T")[0]
+          };
+        }
+        if (!appState.bossInventory) {
+          appState.bossInventory = {
+            hint: 0,
+            double: 0,
+            heal: 0
           };
         }
         const todayStr = new Date().toISOString().split("T")[0];
@@ -2744,6 +2756,30 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       price: 50
     },
     {
+      id: "item-boss-hint",
+      name: "Gợi Ý Chiêu Thức 50:50 💡",
+      type: "boss_hint",
+      value: "boss_hint",
+      desc: "Loại trừ ngay 2 phương án sai & gợi ý suy luận tư duy trong trận Đấu Boss",
+      price: 100
+    },
+    {
+      id: "item-boss-double",
+      name: "Bùa x2 Sát Thương Boss (3 Phút) ⚡",
+      type: "boss_double",
+      value: "boss_double",
+      desc: "Chém Boss mất 2 Tim ❤️ mỗi khi giải đúng câu hỏi nâng cao trong suốt 3 phút",
+      price: 200
+    },
+    {
+      id: "item-boss-heal",
+      name: "Thánh Dược Hồi Sinh (+1 Tim) 💖",
+      type: "boss_heal",
+      value: "boss_heal",
+      desc: "Hồi phục ngay 1 Tim (💔 ➔ ❤️) khi bị Boss tấn công trong Đấu Trường",
+      price: 1000
+    },
+    {
       id: "item-lucky-chest",
       name: "Túi May Mắn Toán Học 🎁",
       type: "lucky_chest",
@@ -2842,6 +2878,12 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         badgeHtml = `<div class="shop-item-badge">Đang có: ${currentExpPotions}/3 🧪</div>`;
       } else if (item.type === "vip") {
         badgeHtml = `<div class="shop-item-badge">Đang có: ${appState.socraticVipTokens || 0} lượt 💡</div>`;
+      } else if (item.type === "boss_hint") {
+        badgeHtml = `<div class="shop-item-badge">Đang có: ${appState.bossInventory?.hint || 0} 💡</div>`;
+      } else if (item.type === "boss_double") {
+        badgeHtml = `<div class="shop-item-badge">Đang có: ${appState.bossInventory?.double || 0} ⚡</div>`;
+      } else if (item.type === "boss_heal") {
+        badgeHtml = `<div class="shop-item-badge">Đang có: ${appState.bossInventory?.heal || 0} 💖</div>`;
       }
 
       let btnLabel = `Mua (${item.price} 🪙)`;
@@ -2873,6 +2915,9 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       else if (isShield) avatarDisplay = "🛡️";
       else if (isDoubleExp) avatarDisplay = "🧪";
       else if (item.type === "vip") avatarDisplay = "💡";
+      else if (item.type === "boss_hint") avatarDisplay = "💡";
+      else if (item.type === "boss_double") avatarDisplay = "⚡";
+      else if (item.type === "boss_heal") avatarDisplay = "💖";
       else if (item.type === "lucky_chest") avatarDisplay = "🎁";
 
       card.innerHTML = `
@@ -2913,6 +2958,8 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         }
 
         appState.playerCoins -= item.price;
+        if (!appState.bossInventory) appState.bossInventory = { hint: 0, double: 0, heal: 0 };
+
         if (isAvatar) {
           if (!appState.unlockedAvatars.includes(item.value)) {
             appState.unlockedAvatars.push(item.value);
@@ -2930,6 +2977,15 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         } else if (item.type === "vip") {
           appState.socraticVipTokens = (appState.socraticVipTokens || 0) + 3;
           alert(`💡 Chúc mừng em đã nhận 3 Vé Gợi Ý Socratic VIP! (Hiện có: ${appState.socraticVipTokens} lượt)`);
+        } else if (item.type === "boss_hint") {
+          appState.bossInventory.hint = (appState.bossInventory.hint || 0) + 1;
+          alert(`💡 Chúc mừng em đã nhận 1x Gợi Ý Chiêu Thức (50:50)! (Hiện có: ${appState.bossInventory.hint})`);
+        } else if (item.type === "boss_double") {
+          appState.bossInventory.double = (appState.bossInventory.double || 0) + 1;
+          alert(`⚡ Chúc mừng em đã nhận 1x Bùa x2 Sát Thương Boss 3 Phút! (Hiện có: ${appState.bossInventory.double})`);
+        } else if (item.type === "boss_heal") {
+          appState.bossInventory.heal = (appState.bossInventory.heal || 0) + 1;
+          alert(`💖 Chúc mừng em đã nhận 1x Thánh Dược Hồi Sinh (+1 Tim)! (Hiện có: ${appState.bossInventory.heal})`);
         } else if (item.type === "lucky_chest") {
           const rewards = [
             { exp: 100, coins: 50, msg: "Nhận được +100 EXP và +50 Xu May Mắn! 🪙" },
@@ -2943,6 +2999,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
 
         saveState();
         renderPlayerHUD();
+        updateBossSuppliesUI();
         playCelebration();
         openKnightShopModal();
       });
@@ -3387,11 +3444,253 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }
   }
 
+  function updateBossSuppliesUI() {
+    if (!appState.bossInventory) {
+      appState.bossInventory = { hint: 0, double: 0, heal: 0 };
+    }
+    const hintCountEl = document.getElementById("supply-count-hint");
+    const doubleCountEl = document.getElementById("supply-count-double");
+    const healCountEl = document.getElementById("supply-count-heal");
+
+    if (hintCountEl) hintCountEl.textContent = `Đang có: ${appState.bossInventory.hint || 0}`;
+    if (doubleCountEl) doubleCountEl.textContent = `Đang có: ${appState.bossInventory.double || 0}`;
+    if (healCountEl) healCountEl.textContent = `Đang có: ${appState.bossInventory.heal || 0}`;
+
+    // Cập nhật số dư xu ở header tiếp tế
+    document.querySelectorAll(".header-coins-val").forEach(el => {
+      el.textContent = appState.playerCoins;
+    });
+  }
+
+  function buyBossSupplyItem(itemType) {
+    const prices = { hint: 100, double: 200, heal: 1000 };
+    const names = {
+      hint: "Gợi Ý Chiêu Thức (50:50) 💡",
+      double: "Bùa x2 Sát Thương (3 Phút) ⚡",
+      heal: "Thánh Dược Hồi Sinh (+1 Tim) 💖"
+    };
+    const price = prices[itemType];
+    if (!price) return;
+
+    if (appState.playerCoins < price) {
+      alert(`🪙 Em cần có ít nhất ${price} Xu để mua ${names[itemType]}.\nSố dư hiện tại: ${appState.playerCoins} Xu.\nHãy hoàn thành Nhiệm vụ ngày hoặc Luyện thi để tích lũy thêm Xu nhé!`);
+      return;
+    }
+
+    appState.playerCoins -= price;
+    if (!appState.bossInventory) appState.bossInventory = { hint: 0, double: 0, heal: 0 };
+    appState.bossInventory[itemType] = (appState.bossInventory[itemType] || 0) + 1;
+    saveState();
+    renderPlayerHUD();
+    updateBossSuppliesUI();
+    playSuccessSound();
+    alert(`✨ MUA THÀNH CÔNG!\n\nEm đã nhận 1x ${names[itemType]}!\n(Hiện có: ${appState.bossInventory[itemType]})\n\n💡 Vật phẩm đã sẵn sàng trong túi đồ trận đấu để em kích hoạt bất cứ lúc nào!`);
+  }
+
+  function updateBattleItemsToolbar() {
+    if (!appState.bossInventory) appState.bossInventory = { hint: 0, double: 0, heal: 0 };
+
+    const hintBadge = document.getElementById("badge-stock-hint");
+    const doubleBadge = document.getElementById("badge-stock-double");
+    const healBadge = document.getElementById("badge-stock-heal");
+
+    const costHint = document.getElementById("cost-hint-text");
+    const costDouble = document.getElementById("cost-double-text");
+    const costHeal = document.getElementById("cost-heal-text");
+
+    const hintStock = appState.bossInventory.hint || 0;
+    const doubleStock = appState.bossInventory.double || 0;
+    const healStock = appState.bossInventory.heal || 0;
+
+    if (hintBadge) {
+      if (hintStock > 0) {
+        hintBadge.style.display = "inline-block";
+        hintBadge.textContent = `x${hintStock}`;
+      } else {
+        hintBadge.style.display = "none";
+      }
+    }
+    if (costHint) costHint.textContent = hintStock > 0 ? "Dùng túi" : "100 🪙";
+
+    if (doubleBadge) {
+      if (doubleStock > 0) {
+        doubleBadge.style.display = "inline-block";
+        doubleBadge.textContent = `x${doubleStock}`;
+      } else {
+        doubleBadge.style.display = "none";
+      }
+    }
+    if (costDouble) costDouble.textContent = doubleStock > 0 ? "Dùng túi" : "200 🪙";
+
+    if (healBadge) {
+      if (healStock > 0) {
+        healBadge.style.display = "inline-block";
+        healBadge.textContent = `x${healStock}`;
+      } else {
+        healBadge.style.display = "none";
+      }
+    }
+    if (costHeal) costHeal.textContent = healStock > 0 ? "Dùng túi" : "1000 🪙";
+
+    // Cập nhật trạng thái buff x2
+    const buffInd = document.getElementById("battle-active-buff-indicator");
+    const buffTimer = document.getElementById("buff-timer-text");
+    const btnDouble = document.getElementById("btn-use-item-double");
+
+    if (currentBossBattle.doubleDamageEndTime && Date.now() < currentBossBattle.doubleDamageEndTime) {
+      const remSec = Math.ceil((currentBossBattle.doubleDamageEndTime - Date.now()) / 1000);
+      const m = Math.floor(remSec / 60);
+      const s = remSec % 60;
+      if (buffInd) {
+        buffInd.style.display = "inline-block";
+        if (buffTimer) buffTimer.textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+      }
+      btnDouble?.classList.add("buff-active");
+    } else {
+      if (buffInd) buffInd.style.display = "none";
+      btnDouble?.classList.remove("buff-active");
+    }
+  }
+
+  function useBattleItem(itemType) {
+    if (!currentBossBattle.active || currentBossBattle.isAnswering) return;
+    if (!appState.bossInventory) appState.bossInventory = { hint: 0, double: 0, heal: 0 };
+
+    const prices = { hint: 100, double: 200, heal: 1000 };
+    const stock = appState.bossInventory[itemType] || 0;
+    const price = prices[itemType];
+
+    // 1. DÙNG GỢI Ý 50:50 (100 Xu)
+    if (itemType === "hint") {
+      if (currentBossBattle.usedHintForQ) {
+        alert("💡 Em đã sử dụng Gợi ý cho câu hỏi này rồi!");
+        return;
+      }
+
+      if (stock <= 0 && appState.playerCoins < price) {
+        alert(`🪙 Em cần có ít nhất 100 Xu hoặc 1x Gợi Ý trong túi đồ để sử dụng chiêu thức này! (Số dư: ${appState.playerCoins} Xu)`);
+        return;
+      }
+
+      if (stock > 0) {
+        appState.bossInventory.hint--;
+      } else {
+        appState.playerCoins -= price;
+      }
+
+      currentBossBattle.usedHintForQ = true;
+      const q = currentBossBattle.questions[currentBossBattle.currentQIndex];
+      if (q) {
+        const wrongIndices = [0, 1, 2, 3].filter(idx => idx !== q.correctIndex);
+        // Chọn ngẫu nhiên 2 index sai để loại trừ
+        wrongIndices.sort(() => Math.random() - 0.5);
+        const toEliminate = wrongIndices.slice(0, 2);
+
+        const allBtns = document.querySelectorAll(".battle-opt-btn");
+        toEliminate.forEach(wIdx => {
+          if (allBtns[wIdx]) {
+            allBtns[wIdx].classList.add("eliminated");
+            allBtns[wIdx].disabled = true;
+          }
+        });
+
+        const alertEl = document.getElementById("battle-feedback-alert");
+        if (alertEl) {
+          alertEl.className = "battle-feedback-alert hit-boss";
+          alertEl.innerHTML = `💡 <strong>ĐÃ KÍCH HOẠT GỢI Ý 50:50!</strong><br>Hệ thống đã loại bỏ 2 phương án sai! Hãy tập trung suy luận giữa 2 phương án còn lại!`;
+          alertEl.style.display = "block";
+        }
+      }
+
+      playSuccessSound();
+      saveState();
+      renderPlayerHUD();
+      updateBossSuppliesUI();
+      updateBattleItemsToolbar();
+    }
+
+    // 2. DÙNG BÙA X2 SÁT THƯƠNG 3 PHÚT (200 Xu)
+    else if (itemType === "double") {
+      if (stock <= 0 && appState.playerCoins < price) {
+        alert(`🪙 Em cần có ít nhất 200 Xu hoặc 1x Bùa x2 Sát Thương trong túi đồ để sử dụng! (Số dư: ${appState.playerCoins} Xu)`);
+        return;
+      }
+
+      if (stock > 0) {
+        appState.bossInventory.double--;
+      } else {
+        appState.playerCoins -= price;
+      }
+
+      // Kích hoạt buff x2 trong 3 phút (180 giây)
+      currentBossBattle.doubleDamageEndTime = Date.now() + 3 * 60 * 1000;
+
+      // Hiệu ứng Visual bạo kích
+      const heroSprite = document.getElementById("hero-sprite-el");
+      if (heroSprite) {
+        heroSprite.style.filter = "drop-shadow(0 0 20px #f43f5e) drop-shadow(0 0 35px #f59e0b)";
+      }
+
+      const alertEl = document.getElementById("battle-feedback-alert");
+      if (alertEl) {
+        alertEl.className = "battle-feedback-alert hit-boss";
+        alertEl.innerHTML = `⚡ <strong>BÙA X2 SÁT THƯƠNG ĐÃ ĐƯỢC KÍCH HOẠT (3 PHÚT)!</strong><br>Mỗi câu trả lời đúng sẽ khiến Boss mất <strong>2 Tim ❤️❤️</strong>! Hãy tận dụng thời gian!`;
+        alertEl.style.display = "block";
+      }
+
+      playSuccessSound();
+      saveState();
+      renderPlayerHUD();
+      updateBossSuppliesUI();
+      updateBattleItemsToolbar();
+    }
+
+    // 3. DÙNG THÁNH DƯỢC HỒI SINH +1 TIM (1000 Xu)
+    else if (itemType === "heal") {
+      if (currentBossBattle.playerHp >= 4) {
+        alert("❤️ Máu của Hiệp Sĩ đã đạt mức siêu cấp tối đa (4 Tim)! Hãy tiếp tục chiến đấu nhé!");
+        return;
+      }
+
+      if (stock <= 0 && appState.playerCoins < price) {
+        alert(`🪙 Em cần có ít nhất 1000 Xu hoặc 1x Thánh Dược Hồi Sinh trong túi đồ để hồi máu! (Số dư: ${appState.playerCoins} Xu)`);
+        return;
+      }
+
+      if (stock > 0) {
+        appState.bossInventory.heal--;
+      } else {
+        appState.playerCoins -= price;
+      }
+
+      // Tăng 1 tim (tối đa 4 tim)
+      currentBossBattle.playerHp = Math.min(4, currentBossBattle.playerHp + 1);
+      if (currentBossBattle.playerHp > currentBossBattle.playerMaxHp) {
+        currentBossBattle.playerMaxHp = currentBossBattle.playerHp;
+      }
+      updateBattleHUD();
+
+      const alertEl = document.getElementById("battle-feedback-alert");
+      if (alertEl) {
+        alertEl.className = "battle-feedback-alert hit-boss";
+        alertEl.innerHTML = `💖 <strong>HỒI PHỤC THÀNH CÔNG!</strong><br>Hiệp Sĩ đã được hồi phục thêm <strong>+1 Tim Máu ❤️</strong>! Tiếp tục tiêu diệt Boss nào!`;
+        alertEl.style.display = "block";
+      }
+
+      playSuccessSound();
+      saveState();
+      renderPlayerHUD();
+      updateBossSuppliesUI();
+      updateBattleItemsToolbar();
+    }
+  }
+
   function renderBossTiersGrid() {
     const grid = document.getElementById("boss-tiers-grid");
     if (!grid) return;
 
     updateBossCooldownUI();
+    updateBossSuppliesUI();
 
     const elapsed = Date.now() - (appState.bossRaid.lastBattleTime || 0);
     const isCoolingDown = elapsed < 30 * 60 * 1000;
@@ -3514,7 +3813,9 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       bossMaxHp: 20,
       timeLeft: 60,
       timerInterval: null,
-      isAnswering: false
+      isAnswering: false,
+      doubleDamageEndTime: 0,
+      usedHintForQ: false
     };
 
     // Chuyển view sang màn hình đánh Boss
@@ -3537,18 +3838,22 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
 
     if (pAvatarEl) pAvatarEl.textContent = playerAvatar;
     if (pNameEl) pNameEl.textContent = playerName;
-    if (heroSpriteEl) heroSpriteEl.textContent = playerAvatar;
+    if (heroSpriteEl) {
+      heroSpriteEl.textContent = playerAvatar;
+      heroSpriteEl.style.filter = "";
+    }
 
     if (bAvatarEl) bAvatarEl.textContent = tier.avatar;
     if (bNameEl) bNameEl.textContent = `${tier.name} (Cấp ${tier.level})`;
     if (bossSpriteEl) bossSpriteEl.textContent = tier.avatar;
 
     updateBattleHUD();
+    updateBattleItemsToolbar();
     loadBossQuestion(0);
   }
 
   function updateBattleHUD() {
-    // Player Hearts (3 Tim)
+    // Player Hearts
     const heartsEl = document.getElementById("battle-player-hearts");
     if (heartsEl) {
       let hHtml = "";
@@ -3562,7 +3867,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       heartsEl.innerHTML = hHtml;
     }
 
-    // Boss 20 HP
+    // Boss HP
     const fillEl = document.getElementById("battle-boss-hp-fill");
     const textEl = document.getElementById("battle-boss-hp-text");
     if (fillEl) {
@@ -3581,6 +3886,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }
     currentBossBattle.currentQIndex = qIdx;
     currentBossBattle.isAnswering = false;
+    currentBossBattle.usedHintForQ = false;
 
     const q = currentBossBattle.questions[qIdx];
     const qCounterEl = document.getElementById("battle-q-counter-text");
@@ -3620,6 +3926,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }
 
     renderAllMath(document.getElementById("boss-battle-active-view"));
+    updateBattleItemsToolbar();
 
     // Reset & Start 60s Countdown
     currentBossBattle.timeLeft = 60;
@@ -3629,6 +3936,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     currentBossBattle.timerInterval = setInterval(() => {
       currentBossBattle.timeLeft--;
       updateTimerUI();
+      updateBattleItemsToolbar();
 
       if (currentBossBattle.timeLeft <= 0) {
         clearInterval(currentBossBattle.timerInterval);
@@ -3670,23 +3978,29 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     allBtns.forEach(b => b.disabled = true);
 
     if (isCorrect) {
-      // TRẢ LỜI ĐÚNG -> TẤN CÔNG BOSS (-1 TIM BOSS)
+      // TRẢ LỜI ĐÚNG -> TẤN CÔNG BOSS
+      const isDoubleDmg = currentBossBattle.doubleDamageEndTime && Date.now() < currentBossBattle.doubleDamageEndTime;
+      const dmg = isDoubleDmg ? 2 : 1;
+
       clickedBtn?.classList.add("correct-strike");
-      currentBossBattle.bossHp--;
+      currentBossBattle.bossHp = Math.max(0, currentBossBattle.bossHp - dmg);
       updateBattleHUD();
 
       // Hiệu ứng Visual
       heroSprite?.classList.add("attack");
       bossSprite?.classList.add("hit");
       if (fxEl) {
-        fxEl.textContent = "⚔️💥";
+        fxEl.textContent = isDoubleDmg ? "⚡💥⚔️" : "⚔️💥";
         fxEl.classList.add("show-fx");
       }
       playSuccessSound();
 
       if (alertEl) {
         alertEl.className = "battle-feedback-alert hit-boss";
-        alertEl.innerHTML = `⚔️ <strong>CHÍNH XÁC! XUẤT SẮC!</strong><br>Bạn tung chiêu tuyệt kỹ chém trúng ${currentBossBattle.tier.name}! <strong>Boss mất 1 Tim ❤️</strong><br><em>Giải thích:</em> ${q.explanation}`;
+        const dmgText = isDoubleDmg 
+          ? `⚡💥 <strong>BẠO KÍCH X2 SÁT THƯƠNG!</strong><br>Bạn tung chiêu sấm sét chém trúng ${currentBossBattle.tier.name}! <strong>Boss mất 2 Tim ❤️❤️</strong>`
+          : `⚔️ <strong>CHÍNH XÁC! XUẤT SẮC!</strong><br>Bạn tung chiêu tuyệt kỹ chém trúng ${currentBossBattle.tier.name}! <strong>Boss mất 1 Tim ❤️</strong>`;
+        alertEl.innerHTML = `${dmgText}<br><em>Giải thích:</em> ${q.explanation}`;
         alertEl.style.display = "block";
       }
 
@@ -3792,7 +4106,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     const tier = currentBossBattle.tier;
     saveState();
 
-    alert(`💔 BẠN ĐÃ THẤT BẠI!\n\nHiệp Sĩ đã mất hết 3 Tim trước sức mạnh của ${tier.name}.\n\n💡 Đừng nản lòng! Hãy ôn lại các định lý trong Sách giáo khoa và trở lại phục thù sau 30 phút nhé!`);
+    alert(`💔 BẠN ĐÃ THẤT BẠI!\n\nHiệp Sĩ đã mất hết Tim trước sức mạnh của ${tier.name}.\n\n💡 Đừng nản lòng! Hãy trang bị thêm Bùa x2 Sát Thương & Thánh Dược Hồi Sinh để trở lại phục thù sau 30 phút nhé!`);
 
     exitBossBattleView();
   }
@@ -3807,12 +4121,27 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     if (battleView) battleView.style.display = "none";
 
     renderBossTiersGrid();
+    updateBossSuppliesUI();
     renderPlayerHUD();
   }
 
   function setupBossBattleSystem() {
     renderBossTiersGrid();
     updateBossCooldownUI();
+    updateBossSuppliesUI();
+
+    // Nút mua tiếp tế
+    document.querySelectorAll(".btn-buy-supply").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const itemType = btn.dataset.item;
+        if (itemType) buyBossSupplyItem(itemType);
+      });
+    });
+
+    // Nút dùng đạo cụ nhanh trong trận
+    document.getElementById("btn-use-item-hint")?.addEventListener("click", () => useBattleItem("hint"));
+    document.getElementById("btn-use-item-double")?.addEventListener("click", () => useBattleItem("double"));
+    document.getElementById("btn-use-item-heal")?.addEventListener("click", () => useBattleItem("heal"));
 
     // Nút rút lui trong trận đấu
     document.getElementById("btn-flee-battle")?.addEventListener("click", () => {
