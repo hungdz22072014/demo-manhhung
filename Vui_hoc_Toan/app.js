@@ -63,6 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
       currentFilter: "all",
       searchTerm: "",
       streak: 1,
+      streakShield: 0, // Khiên bảo vệ chuỗi ngày học (Tối đa dự trữ 2 khiên, 100 Xu/chiếc)
+      doubleExpTokens: 0, // Bình nhân đôi EXP (Tối đa 3 bình)
+      socraticVipTokens: 0, // Vé gợi ý Socratic VIP
+      lastActiveDate: new Date().toISOString().split("T")[0],
+      unlockedAvatars: ["🧙‍♂️", "🎒"],
       playerLevel: 1,
       playerExp: 0,
       playerMaxExp: 100,
@@ -108,6 +113,98 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUser = null;
   let appState = null;
 
+  // Kiểm tra và cập nhật chuỗi ngày học (Tự động kích hoạt Khiên Đóng Băng nếu lỡ 1 ngày)
+  function checkAndUpdateDailyStreak() {
+    if (!appState) return;
+    const todayStr = new Date().toISOString().split("T")[0];
+    if (!appState.lastActiveDate) {
+      appState.lastActiveDate = todayStr;
+      if (typeof appState.streak !== "number") appState.streak = 1;
+      if (typeof appState.streakShield !== "number") appState.streakShield = 0;
+      return;
+    }
+
+    if (appState.lastActiveDate === todayStr) {
+      return;
+    }
+
+    const lastDate = new Date(appState.lastActiveDate);
+    const currDate = new Date(todayStr);
+    const diffTime = Math.abs(currDate - lastDate);
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      // Học liên tiếp ngày hôm qua
+      appState.streak = (appState.streak || 1) + 1;
+      appState.lastActiveDate = todayStr;
+      appState.openedChestToday = false;
+      if (appState.quests) {
+        Object.keys(appState.quests).forEach(k => {
+          appState.quests[k].current = 0;
+          appState.quests[k].claimed = false;
+        });
+      }
+      playCelebration();
+    } else if (diffDays === 2) {
+      // Bỏ lỡ đúng 1 ngày hôm qua
+      if ((appState.streakShield || 0) > 0) {
+        appState.streakShield--;
+        appState.streak = (appState.streak || 1) + 1;
+        appState.lastActiveDate = todayStr;
+        appState.openedChestToday = false;
+        if (appState.quests) {
+          Object.keys(appState.quests).forEach(k => {
+            appState.quests[k].current = 0;
+            appState.quests[k].claimed = false;
+          });
+        }
+        playCelebration();
+        setTimeout(() => {
+          alert(`🛡️ KHIÊN BẢO VỆ CHUỖI ĐÃ TỰ ĐỘNG KÍCH HOẠT!\n\nEm đã bỏ lỡ 1 ngày học hôm qua nhưng Khiên Đóng Băng đã bảo vệ thành công chuỗi ${appState.streak} ngày học liên tiếp của em!\n(Số khiên dự trữ còn lại: ${appState.streakShield}/2 🛡️)`);
+        }, 1000);
+      } else {
+        appState.streak = 1;
+        appState.lastActiveDate = todayStr;
+        appState.openedChestToday = false;
+        if (appState.quests) {
+          Object.keys(appState.quests).forEach(k => {
+            appState.quests[k].current = 0;
+            appState.quests[k].claimed = false;
+          });
+        }
+      }
+    } else if (diffDays > 2) {
+      const missedDays = diffDays - 1;
+      const shieldsToUse = Math.min(appState.streakShield || 0, missedDays);
+      if (shieldsToUse >= missedDays) {
+        appState.streakShield -= shieldsToUse;
+        appState.streak = (appState.streak || 1) + 1;
+        appState.lastActiveDate = todayStr;
+        appState.openedChestToday = false;
+        if (appState.quests) {
+          Object.keys(appState.quests).forEach(k => {
+            appState.quests[k].current = 0;
+            appState.quests[k].claimed = false;
+          });
+        }
+        playCelebration();
+        setTimeout(() => {
+          alert(`🛡️ KHIÊN BẢO VỆ CHUỖI ĐÃ KÍCH HOẠT!\n\nĐã sử dụng ${shieldsToUse} Khiên để bảo toàn chuỗi ${appState.streak} ngày học của em!\n(Số khiên còn lại: ${appState.streakShield}/2 🛡️)`);
+        }, 1000);
+      } else {
+        appState.streak = 1;
+        appState.lastActiveDate = todayStr;
+        appState.openedChestToday = false;
+        if (appState.quests) {
+          Object.keys(appState.quests).forEach(k => {
+            appState.quests[k].current = 0;
+            appState.quests[k].claimed = false;
+          });
+        }
+      }
+    }
+  }
+
   // Nạp trạng thái tài khoản: BẢO MẬT & PHÂN LẬP HOÀN TOÀN
   function loadUserAndState() {
     try {
@@ -122,6 +219,9 @@ document.addEventListener("DOMContentLoaded", () => {
         appState.selectedGrade = userGrade;
         if (!Array.isArray(appState.clearedStages)) appState.clearedStages = [];
         if (typeof appState.activeStage !== "number") appState.activeStage = 1;
+        if (typeof appState.streakShield !== "number") appState.streakShield = 0;
+        if (typeof appState.doubleExpTokens !== "number") appState.doubleExpTokens = 0;
+        if (typeof appState.socraticVipTokens !== "number") appState.socraticVipTokens = 0;
         if (!appState.quests) appState.quests = defaultState.quests;
         ensureLeitnerIntegrity(userGrade);
       } else {
@@ -148,6 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
       appState = createDefaultState(activeGrade);
       ensureLeitnerIntegrity(activeGrade);
     }
+    checkAndUpdateDailyStreak();
   }
 
   function saveUsers() {
@@ -1926,8 +2027,9 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       expText.textContent = `${appState.playerExp} / ${appState.playerMaxExp} EXP`;
     }
     if (coinsNum) coinsNum.textContent = appState.playerCoins;
-    if (streakNum) streakNum.textContent = `${appState.streak} ngày`;
-    if (headerStreak) headerStreak.textContent = `${appState.streak} ngày`;
+    const shieldTag = (appState.streakShield && appState.streakShield > 0) ? ` (🛡️x${appState.streakShield})` : "";
+    if (streakNum) streakNum.textContent = `${appState.streak} ngày${shieldTag}`;
+    if (headerStreak) headerStreak.textContent = `${appState.streak} ngày${shieldTag}`;
   }
 
   function addExpAndCoins(exp, coins) {
@@ -2584,12 +2686,47 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   // ---------------------------------------------------------------
   const KNIGHT_SHOP_ITEMS = [
     {
+      id: "item-streak-shield",
+      name: "Khiên Bảo Vệ Chuỗi Ngày 🛡️",
+      type: "shield",
+      value: "shield",
+      max: 2,
+      desc: "Tự động đóng băng & bảo toàn chuỗi ngày học nếu lỡ quên học 1 ngày (Dự trữ tối đa: 2 khiên)",
+      price: 100
+    },
+    {
+      id: "item-double-exp",
+      name: "Bình Nhân Đôi EXP 🧪",
+      type: "double_exp",
+      value: "double_exp",
+      max: 3,
+      desc: "Tăng gấp đôi điểm EXP nhận được khi hoàn thành nhiệm vụ và vượt ải (Tối đa: 3 bình)",
+      price: 80
+    },
+    {
+      id: "item-socratic-vip",
+      name: "Vé Gợi Ý Socratic VIP 💡",
+      type: "vip",
+      value: "vip",
+      max: 10,
+      desc: "Mở khóa 3 lượt hướng dẫn chi tiết & phân tích định lý chuyên sâu từ Thầy AI",
+      price: 50
+    },
+    {
+      id: "item-lucky-chest",
+      name: "Túi May Mắn Toán Học 🎁",
+      type: "lucky_chest",
+      value: "lucky_chest",
+      desc: "Mở ngay nhận ngẫu nhiên từ 80 - 150 EXP, Xu may mắn hoặc quà thưởng bất ngờ!",
+      price: 70
+    },
+    {
       id: "avatar-dragon",
       name: "Hiệp Sĩ Rồng Lửa 🐉",
       type: "avatar",
       value: "🐉",
       desc: "Trang bị diện mạo Hiệp Sĩ Rồng huyền thoại rực rỡ",
-      price: 50
+      price: 100
     },
     {
       id: "avatar-lightning",
@@ -2597,7 +2734,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       type: "avatar",
       value: "⚡",
       desc: "Hào quang tốc độ giải toán siêu đẳng",
-      price: 75
+      price: 120
     },
     {
       id: "avatar-wizard",
@@ -2605,7 +2742,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       type: "avatar",
       value: "🧙‍♂️",
       desc: "Bậc thầy tư duy hình học và logic",
-      price: 90
+      price: 150
     },
     {
       id: "avatar-lion",
@@ -2613,7 +2750,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       type: "avatar",
       value: "🦁",
       desc: "Thống trị mọi góc, cạnh và tam giác",
-      price: 120
+      price: 180
     },
     {
       id: "avatar-cosmic",
@@ -2621,23 +2758,15 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       type: "avatar",
       value: "🚀",
       desc: "Chinh phục mọi định lý trong vũ trụ tri thức",
-      price: 150
+      price: 200
     },
     {
-      id: "item-streak-shield",
-      name: "Khiên Bảo Vệ Chuỗi Ngày 🛡️",
-      type: "shield",
-      value: "shield",
-      desc: "Bảo vệ chuỗi ngày học của bạn không bị mất nếu bận 1 ngày",
-      price: 40
-    },
-    {
-      id: "item-socratic-vip",
-      name: "Thẻ Gợi Ý Socratic VIP 💡",
-      type: "vip",
-      value: "vip",
-      desc: "Mở rộng phân tích bài toán và mẹo giải độc quyền từ AI",
-      price: 35
+      id: "avatar-phoenix",
+      name: "Phượng Hoàng Lửa Bất Tử 🦅",
+      type: "avatar",
+      value: "🦅",
+      desc: "Biểu tượng của ý chí kiên định và thành tích xuất sắc",
+      price: 250
     }
   ];
 
@@ -2666,6 +2795,24 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       const isOwned = isAvatar && appState.unlockedAvatars.includes(item.value);
       const canAfford = appState.playerCoins >= item.price;
 
+      // Giới hạn số lượng
+      const isShield = item.type === "shield";
+      const currentShields = appState.streakShield || 0;
+      const isShieldMaxed = isShield && currentShields >= 2;
+
+      const isDoubleExp = item.type === "double_exp";
+      const currentExpPotions = appState.doubleExpTokens || 0;
+      const isExpMaxed = isDoubleExp && currentExpPotions >= 3;
+
+      let badgeHtml = "";
+      if (isShield) {
+        badgeHtml = `<div class="shop-item-badge shield-badge">Đang có: ${currentShields}/2 🛡️</div>`;
+      } else if (isDoubleExp) {
+        badgeHtml = `<div class="shop-item-badge">Đang có: ${currentExpPotions}/3 🧪</div>`;
+      } else if (item.type === "vip") {
+        badgeHtml = `<div class="shop-item-badge">Đang có: ${appState.socraticVipTokens || 0} lượt 💡</div>`;
+      }
+
       let btnLabel = `Mua (${item.price} 🪙)`;
       let btnClass = "btn-buy-shop-item";
       let btnDisabled = false;
@@ -2677,13 +2824,29 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       } else if (isOwned) {
         btnLabel = "Đổi Sang Avatar Này";
         btnClass = "btn-buy-shop-item";
+      } else if (isShieldMaxed) {
+        btnLabel = "Đã Đạt Giới Hạn (2/2) 🛡️";
+        btnClass += " maxed";
+        btnDisabled = true;
+      } else if (isExpMaxed) {
+        btnLabel = "Đã Đạt Giới Hạn (3/3) 🧪";
+        btnClass += " maxed";
+        btnDisabled = true;
       } else if (!canAfford) {
         btnLabel = `Cần ${item.price} 🪙`;
         btnDisabled = true;
       }
 
+      let avatarDisplay = "🛍️";
+      if (isAvatar) avatarDisplay = item.value;
+      else if (isShield) avatarDisplay = "🛡️";
+      else if (isDoubleExp) avatarDisplay = "🧪";
+      else if (item.type === "vip") avatarDisplay = "💡";
+      else if (item.type === "lucky_chest") avatarDisplay = "🎁";
+
       card.innerHTML = `
-        <div class="shop-item-avatar">${item.type === "avatar" ? item.value : (item.type === "shield" ? "🛡️" : "💡")}</div>
+        ${badgeHtml}
+        <div class="shop-item-avatar">${avatarDisplay}</div>
         <div class="shop-item-name">${item.name}</div>
         <div class="shop-item-desc">${item.desc}</div>
         <button class="${btnClass}" ${btnDisabled ? "disabled" : ""}>${btnLabel}</button>
@@ -2704,7 +2867,17 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         }
 
         if (appState.playerCoins < item.price) {
-          alert(`🪙 Em cần thêm ${item.price - appState.playerCoins} Xu để mở khóa vật phẩm này. Hãy vượt Ải và làm Nhiệm vụ để kiếm thêm Xu nhé!`);
+          alert(`🪙 Em cần thêm ${item.price - appState.playerCoins} Xu để mua vật phẩm này. Hãy vượt Ải và làm Nhiệm vụ để kiếm thêm Xu nhé!`);
+          return;
+        }
+
+        if (isShield && isShieldMaxed) {
+          alert(`🛡️ Em đã sở hữu tối đa 2 Khiên Bảo Vệ Chuỗi Ngày Học rồi! Hãy yên tâm học tập nhé.`);
+          return;
+        }
+
+        if (isDoubleExp && isExpMaxed) {
+          alert(`🧪 Em đã sở hữu tối đa 3 Bình Nhân Đôi EXP rồi!`);
           return;
         }
 
@@ -2716,17 +2889,31 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
           if (currentUser && !currentUser.isGuest) {
             currentUser.avatar = item.value;
           }
-        } else if (item.type === "shield") {
+          alert(`🎉 Chúc mừng em đã sở hữu Avatar: ${item.name}!`);
+        } else if (isShield) {
           appState.streakShield = (appState.streakShield || 0) + 1;
+          alert(`🛡️ TUYỆT VỜI! Em đã mua thành công 1 Khiên Bảo Vệ Chuỗi Ngày Học!\n\n(Hiện có: ${appState.streakShield}/2 khiên)\nKhiên sẽ tự động bảo vệ chuỗi ngày học của em nếu em lỡ quên học 1 ngày.`);
+        } else if (isDoubleExp) {
+          appState.doubleExpTokens = (appState.doubleExpTokens || 0) + 1;
+          alert(`🧪 Chúc mừng em đã nhận 1 Bình Nhân Đôi EXP! (Hiện có: ${appState.doubleExpTokens}/3 bình)`);
         } else if (item.type === "vip") {
           appState.socraticVipTokens = (appState.socraticVipTokens || 0) + 3;
+          alert(`💡 Chúc mừng em đã nhận 3 Vé Gợi Ý Socratic VIP! (Hiện có: ${appState.socraticVipTokens} lượt)`);
+        } else if (item.type === "lucky_chest") {
+          const rewards = [
+            { exp: 100, coins: 50, msg: "Nhận được +100 EXP và +50 Xu May Mắn! 🪙" },
+            { exp: 150, coins: 30, msg: "Nhận được +150 EXP Siêu Cấp! 🌟" },
+            { exp: 80, coins: 100, msg: "Trúng Hũ Xu May Mắn +100 Xu Toán Học! 💰" }
+          ];
+          const randomReward = rewards[Math.floor(Math.random() * rewards.length)];
+          addExpAndCoins(randomReward.exp, randomReward.coins);
+          alert(`🎁 MỞ TÚI MAY MẮN TOÁN HỌC:\n🎉 ${randomReward.msg}`);
         }
 
         saveState();
         renderPlayerHUD();
         playCelebration();
         openKnightShopModal();
-        alert(`🎉 Chúc mừng em đã sở hữu: ${item.name}!`);
       });
 
       grid.appendChild(card);
