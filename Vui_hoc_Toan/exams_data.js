@@ -1,5 +1,5 @@
 // =================================================================
-// NGÂN HÀNG ĐỀ THI GIỮA KÌ & CUỐI KÌ TOÁN 6 - 7 (KẾT NỐI TRI THỨC VỚI CUỐI KÌ)
+// NGÂN HÀNG ĐỀ THI GIỮA KÌ & CUỐI KÌ TOÁN 6 - 7 (KẾT NỐI TRI THỨC VỚI CUỘC SỐNG)
 // Chuẩn ma trận đề kiểm tra của Bộ GD&ĐT: GK1, CK1, GK2, CK2 cho cả Lớp 6 và Lớp 7 (Tổng cộng 8 đề)
 // Mỗi câu hỏi liên kết trực tiếp với Định lý tương ứng, có giải thích chi tiết & KaTeX
 // =================================================================

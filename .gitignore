@@ -1,0 +1,9 @@
+node_modules/
+.env
+key.txt
+.DS_Store
+*.log
+check_spelling.js
+deep_audit.js
+scan_subtle_typos.js
+verify_project.js
