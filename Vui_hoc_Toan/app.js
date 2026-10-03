@@ -2034,6 +2034,11 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   // 10. PHÂN HỆ GAMIFICATION: ĐẠI SẢNH & BẢN ĐỒ HÀNH TRÌNH
   // ---------------------------------------------------------------
   function switchTab(tabId) {
+    if (tabId === "tab-quest-book") {
+      openQuestBookModal();
+      return;
+    }
+
     navTabs.forEach(t => {
       if (t.dataset.tab === tabId) t.classList.add("active");
       else t.classList.remove("active");
@@ -3232,6 +3237,8 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     });
 
     if (dot1) dot1.style.display = hasClaimable ? "block" : "none";
+    const dot2 = document.getElementById("hud-qb-dot");
+    if (dot2) dot2.style.display = hasClaimable ? "block" : "none";
   }
 
   function openQuestBookModal(targetChapterId = null) {
@@ -3907,7 +3914,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     });
 
     // Nút mở Sổ Tay Nhiệm Vụ & Thành Tựu
-    document.querySelectorAll("#btn-open-quest-book, #btn-header-quest-book, .btn-open-quest-book").forEach(el => {
+    document.querySelectorAll("#btn-open-quest-book, #btn-header-quest-book, #btn-hud-quest-book, #btn-quest-card-more, #nav-tab-quest-book, #portal-questbook, .btn-open-quest-book").forEach(el => {
       el.addEventListener("click", () => openQuestBookModal());
     });
 
@@ -3923,6 +3930,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     document.getElementById("portal-exams")?.addEventListener("click", () => switchTab("tab-exams"));
     document.getElementById("portal-socratic")?.addEventListener("click", () => switchTab("tab-socratic"));
     document.getElementById("portal-dashboard")?.addEventListener("click", () => switchTab("tab-dashboard"));
+    document.getElementById("portal-questbook")?.addEventListener("click", () => openQuestBookModal());
   }
 
   // ---------------------------------------------------------------

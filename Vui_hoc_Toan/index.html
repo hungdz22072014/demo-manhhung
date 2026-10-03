@@ -5192,6 +5192,10 @@ body {
           <span class="tab-icon">⚔️</span>
           <span class="tab-title">Đấu Trường Diệt Boss</span>
         </button>
+                <button class="nav-tab" data-tab="tab-quest-book" id="nav-tab-quest-book">
+          <span class="tab-icon">📖</span>
+          <span class="tab-title">Sổ Tay Nhiệm Vụ</span>
+        </button>
         <button class="nav-tab" data-tab="tab-theorems">
           <span class="tab-icon">🧠</span>
           <span class="tab-title">Trạm Định Lý & Flashcard</span>
@@ -5256,6 +5260,11 @@ body {
             </div>
           </div>
 
+                    <button class="btn-mystery-chest btn-hud-quest-book" id="btn-hud-quest-book" title="Mở Sổ Tay Nhiệm Vụ & Thành Tựu Phá Đảo!" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%); margin-left: 6px;">
+            <span class="chest-icon">📖</span>
+            <span class="chest-text">Sách Nhiệm Vụ</span>
+            <span class="chest-badge-dot" id="hud-qb-dot" style="display: none;"></span>
+          </button>
           <button class="btn-mystery-chest" id="btn-open-chest" title="Bấm để nhận quà bí ẩn hôm nay!">
             <span class="chest-icon">🎁</span>
             <span class="chest-text">Rương Mỗi Ngày</span>
@@ -5310,6 +5319,9 @@ body {
                   <span class="quests-sub">Làm mới sau mỗi 24h</span>
                 </div>
               </div>
+                            <button class="btn-open-quest-book" id="btn-quest-card-more" style="background: linear-gradient(135deg, #6366f1, #4338ca); color: white; border: none; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 750; cursor: pointer;">
+                <span>📖 Sách 6 Chương</span>
+              </button>
               <span class="quests-reward-pill">+125 EXP</span>
             </div>
 
@@ -5324,6 +5336,11 @@ body {
             <p class="fast-travel-desc">Đi thẳng tới các phòng học chuyên sâu:</p>
 
             <div class="portals-grid">
+                            <div class="portal-box portal-questbook" id="portal-questbook" style="cursor: pointer;">
+                <div class="portal-icon">📖</div>
+                <div class="portal-name">Sách Nhiệm Vụ</div>
+                <div class="portal-tag">6 Chương & Phá Đảo</div>
+              </div>
               <div class="portal-box portal-theorems" id="portal-theorems">
                 <div class="portal-icon">🧠</div>
                 <div class="portal-name">Trạm Định Lý</div>
@@ -10373,6 +10390,11 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   // 10. PHÂN HỆ GAMIFICATION: ĐẠI SẢNH & BẢN ĐỒ HÀNH TRÌNH
   // ---------------------------------------------------------------
   function switchTab(tabId) {
+    if (tabId === "tab-quest-book") {
+      openQuestBookModal();
+      return;
+    }
+
     navTabs.forEach(t => {
       if (t.dataset.tab === tabId) t.classList.add("active");
       else t.classList.remove("active");
@@ -11571,6 +11593,8 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     });
 
     if (dot1) dot1.style.display = hasClaimable ? "block" : "none";
+    const dot2 = document.getElementById("hud-qb-dot");
+    if (dot2) dot2.style.display = hasClaimable ? "block" : "none";
   }
 
   function openQuestBookModal(targetChapterId = null) {
@@ -12246,7 +12270,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     });
 
     // Nút mở Sổ Tay Nhiệm Vụ & Thành Tựu
-    document.querySelectorAll("#btn-open-quest-book, #btn-header-quest-book, .btn-open-quest-book").forEach(el => {
+    document.querySelectorAll("#btn-open-quest-book, #btn-header-quest-book, #btn-hud-quest-book, #btn-quest-card-more, #nav-tab-quest-book, #portal-questbook, .btn-open-quest-book").forEach(el => {
       el.addEventListener("click", () => openQuestBookModal());
     });
 
@@ -12262,6 +12286,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     document.getElementById("portal-exams")?.addEventListener("click", () => switchTab("tab-exams"));
     document.getElementById("portal-socratic")?.addEventListener("click", () => switchTab("tab-socratic"));
     document.getElementById("portal-dashboard")?.addEventListener("click", () => switchTab("tab-dashboard"));
+    document.getElementById("portal-questbook")?.addEventListener("click", () => openQuestBookModal());
   }
 
   // ---------------------------------------------------------------
