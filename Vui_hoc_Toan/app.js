@@ -2728,9 +2728,40 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   // HỆ THỐNG CỬA HÀNG HIỆP SĨ (TIÊU DÙNG XU TOÁN HỌC) & BẢNG CHỨC DANH
   // ---------------------------------------------------------------
   const KNIGHT_SHOP_ITEMS = [
+    // 1. ĐẠO CỤ ĐẤU TRƯỜNG BOSS (MUA DÙNG TRONG ĐẤU TRƯỜNG)
+    {
+      id: "item-boss-hint",
+      name: "Gợi Ý Chiêu Thức 50:50 💡",
+      category: "boss",
+      type: "boss_hint",
+      value: "boss_hint",
+      desc: "Loại trừ ngay 2 phương án sai & soi gợi ý suy luận tư duy khi đánh Boss",
+      price: 100
+    },
+    {
+      id: "item-boss-double",
+      name: "Bùa x2 Sát Thương Boss (3 Phút) ⚡",
+      category: "boss",
+      type: "boss_double",
+      value: "boss_double",
+      desc: "Chém Boss mất 2 Tim ❤️ mỗi khi giải đúng câu hỏi nâng cao trong suốt 3 phút",
+      price: 200
+    },
+    {
+      id: "item-boss-heal",
+      name: "Thánh Dược Hồi Sinh (+1 Tim) 💖",
+      category: "boss",
+      type: "boss_heal",
+      value: "boss_heal",
+      desc: "Hồi phục ngay 1 Tim (💔 ➔ ❤️) khi bị Boss phản đòn trong Đấu Trường",
+      price: 1000
+    },
+
+    // 2. VẬT PHẨM BỔ TRỢ & THƯỞNG
     {
       id: "item-streak-shield",
       name: "Khiên Bảo Vệ Chuỗi Ngày 🛡️",
+      category: "boost",
       type: "shield",
       value: "shield",
       max: 2,
@@ -2740,6 +2771,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     {
       id: "item-double-exp",
       name: "Bình Nhân Đôi EXP 🧪",
+      category: "boost",
       type: "double_exp",
       value: "double_exp",
       max: 3,
@@ -2749,6 +2781,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     {
       id: "item-socratic-vip",
       name: "Vé Gợi Ý Socratic VIP 💡",
+      category: "boost",
       type: "vip",
       value: "vip",
       max: 10,
@@ -2756,40 +2789,20 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       price: 50
     },
     {
-      id: "item-boss-hint",
-      name: "Gợi Ý Chiêu Thức 50:50 💡",
-      type: "boss_hint",
-      value: "boss_hint",
-      desc: "Loại trừ ngay 2 phương án sai & gợi ý suy luận tư duy trong trận Đấu Boss",
-      price: 100
-    },
-    {
-      id: "item-boss-double",
-      name: "Bùa x2 Sát Thương Boss (3 Phút) ⚡",
-      type: "boss_double",
-      value: "boss_double",
-      desc: "Chém Boss mất 2 Tim ❤️ mỗi khi giải đúng câu hỏi nâng cao trong suốt 3 phút",
-      price: 200
-    },
-    {
-      id: "item-boss-heal",
-      name: "Thánh Dược Hồi Sinh (+1 Tim) 💖",
-      type: "boss_heal",
-      value: "boss_heal",
-      desc: "Hồi phục ngay 1 Tim (💔 ➔ ❤️) khi bị Boss tấn công trong Đấu Trường",
-      price: 1000
-    },
-    {
       id: "item-lucky-chest",
       name: "Túi May Mắn Toán Học 🎁",
+      category: "boost",
       type: "lucky_chest",
       value: "lucky_chest",
       desc: "Mở ngay nhận ngẫu nhiên từ 80 - 150 EXP, Xu may mắn hoặc quà thưởng bất ngờ!",
       price: 70
     },
+
+    // 3. AVATAR HIỆP SĨ TOÁN HỌC
     {
       id: "avatar-dragon",
       name: "Hiệp Sĩ Rồng Lửa 🐉",
+      category: "avatar",
       type: "avatar",
       value: "🐉",
       desc: "Trang bị diện mạo Hiệp Sĩ Rồng huyền thoại rực rỡ",
@@ -2798,6 +2811,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     {
       id: "avatar-lightning",
       name: "Kiện Tướng Sấm Sét ⚡",
+      category: "avatar",
       type: "avatar",
       value: "⚡",
       desc: "Hào quang tốc độ giải toán siêu đẳng",
@@ -2806,6 +2820,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     {
       id: "avatar-wizard",
       name: "Đại Pháp Sư Toán Học 🧙‍♂️",
+      category: "avatar",
       type: "avatar",
       value: "🧙‍♂️",
       desc: "Bậc thầy tư duy hình học và logic",
@@ -2814,6 +2829,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     {
       id: "avatar-lion",
       name: "Chúa Tể Hình Học 🦁",
+      category: "avatar",
       type: "avatar",
       value: "🦁",
       desc: "Thống trị mọi góc, cạnh và tam giác",
@@ -2822,6 +2838,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     {
       id: "avatar-cosmic",
       name: "Phi Hành Gia Vũ Trụ 🚀",
+      category: "avatar",
       type: "avatar",
       value: "🚀",
       desc: "Chinh phục mọi định lý trong vũ trụ tri thức",
@@ -2830,6 +2847,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     {
       id: "avatar-phoenix",
       name: "Phượng Hoàng Lửa Bất Tử 🦅",
+      category: "avatar",
       type: "avatar",
       value: "🦅",
       desc: "Biểu tượng của ý chí kiên định và thành tích xuất sắc",
@@ -2837,12 +2855,30 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }
   ];
 
-  function openKnightShopModal() {
+  let currentShopCategory = "all";
+  function openKnightShopModal(activeCat = "all") {
     const modal = document.getElementById("knight-shop-modal");
     if (!modal) return;
 
+    currentShopCategory = activeCat;
+
     const coinsValEl = document.getElementById("shop-coins-display");
     if (coinsValEl) coinsValEl.textContent = appState.playerCoins;
+
+    // Cập nhật nút tab lọc danh mục
+    document.querySelectorAll(".shop-filter-btn").forEach(btn => {
+      if (btn.dataset.shopCat === currentShopCategory) {
+        btn.classList.add("active");
+        btn.style.background = btn.dataset.shopCat === "boss" ? "#ef4444" : "#4f46e5";
+        btn.style.color = "white";
+        btn.style.borderColor = "transparent";
+      } else {
+        btn.classList.remove("active");
+        btn.style.background = btn.dataset.shopCat === "boss" ? "#fff5f5" : "white";
+        btn.style.color = btn.dataset.shopCat === "boss" ? "#dc2626" : "#475569";
+        btn.style.borderColor = btn.dataset.shopCat === "boss" ? "#fca5a5" : "#e2e8f0";
+      }
+    });
 
     const grid = document.getElementById("shop-items-grid");
     if (!grid) return;
@@ -2853,7 +2889,13 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }
 
     grid.innerHTML = "";
-    KNIGHT_SHOP_ITEMS.forEach(item => {
+
+    const itemsToDisplay = KNIGHT_SHOP_ITEMS.filter(item => {
+      if (currentShopCategory === "all") return true;
+      return item.category === currentShopCategory;
+    });
+
+    itemsToDisplay.forEach(item => {
       const card = document.createElement("div");
       card.className = "shop-item-card";
 
@@ -2879,11 +2921,11 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       } else if (item.type === "vip") {
         badgeHtml = `<div class="shop-item-badge">Đang có: ${appState.socraticVipTokens || 0} lượt 💡</div>`;
       } else if (item.type === "boss_hint") {
-        badgeHtml = `<div class="shop-item-badge">Đang có: ${appState.bossInventory?.hint || 0} 💡</div>`;
+        badgeHtml = `<div class="shop-item-badge" style="background:#fee2e2; color:#991b1b;">Đang có: ${appState.bossInventory?.hint || 0} 💡</div>`;
       } else if (item.type === "boss_double") {
-        badgeHtml = `<div class="shop-item-badge">Đang có: ${appState.bossInventory?.double || 0} ⚡</div>`;
+        badgeHtml = `<div class="shop-item-badge" style="background:#fee2e2; color:#991b1b;">Đang có: ${appState.bossInventory?.double || 0} ⚡</div>`;
       } else if (item.type === "boss_heal") {
-        badgeHtml = `<div class="shop-item-badge">Đang có: ${appState.bossInventory?.heal || 0} 💖</div>`;
+        badgeHtml = `<div class="shop-item-badge" style="background:#fee2e2; color:#991b1b;">Đang có: ${appState.bossInventory?.heal || 0} 💖</div>`;
       }
 
       let btnLabel = `Mua (${item.price} 🪙)`;
@@ -2936,7 +2978,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
           }
           saveState();
           renderPlayerHUD();
-          openKnightShopModal();
+          openKnightShopModal(currentShopCategory);
           playSuccessSound();
           alert(`✨ Bạn đã đổi sang Avatar ${item.name} thành công!`);
           return;
@@ -2999,9 +3041,8 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
 
         saveState();
         renderPlayerHUD();
-        updateBossSuppliesUI();
         playCelebration();
-        openKnightShopModal();
+        openKnightShopModal(currentShopCategory);
       });
 
       grid.appendChild(card);
@@ -3089,6 +3130,13 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     document.getElementById("btn-close-shop-modal")?.addEventListener("click", () => {
       const m = document.getElementById("knight-shop-modal");
       if (m) m.style.display = "none";
+    });
+
+    document.querySelectorAll(".shop-filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const cat = btn.dataset.shopCat || "all";
+        openKnightShopModal(cat);
+      });
     });
 
     document.getElementById("btn-close-ranks-modal")?.addEventListener("click", () => {
@@ -4129,6 +4177,11 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     renderBossTiersGrid();
     updateBossCooldownUI();
     updateBossSuppliesUI();
+
+    // Nút mở nhanh Cửa Hàng Đạo Cụ Boss
+    document.getElementById("btn-open-shop-from-boss")?.addEventListener("click", () => {
+      openKnightShopModal("boss");
+    });
 
     // Nút mua tiếp tế
     document.querySelectorAll(".btn-buy-supply").forEach(btn => {
