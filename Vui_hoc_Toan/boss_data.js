@@ -418,6 +418,12 @@ const BOSS_QUESTIONS_GRADE_7 = [
   }
 ];
 
+if (typeof window !== "undefined") {
+  window.BOSS_TIERS_DATA = BOSS_TIERS_DATA;
+  window.BOSS_QUESTIONS_GRADE_6 = BOSS_QUESTIONS_GRADE_6;
+  window.BOSS_QUESTIONS_GRADE_7 = BOSS_QUESTIONS_GRADE_7;
+}
+
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     BOSS_TIERS_DATA,

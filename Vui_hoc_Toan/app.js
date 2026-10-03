@@ -898,18 +898,26 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   const navTabs = document.querySelectorAll(".nav-tab");
   navTabs.forEach(tab => {
     tab.addEventListener("click", () => {
-      navTabs.forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
       const targetId = tab.dataset.tab;
-      document.querySelectorAll(".tab-section").forEach(sec => sec.classList.remove("active"));
-      document.getElementById(targetId).classList.add("active");
-      appState.activeTab = targetId;
+      if (typeof switchTab === "function") {
+        switchTab(targetId);
+      } else {
+        navTabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        document.querySelectorAll(".tab-section").forEach(sec => sec.classList.remove("active"));
+        document.getElementById(targetId)?.classList.add("active");
+        appState.activeTab = targetId;
 
-      if (targetId === "tab-dashboard") {
-        renderKnowledgeMap();
-        updateDashboardStats();
+        if (targetId === "tab-boss") {
+          renderBossTiersGrid();
+          updateBossCooldownUI();
+        }
+        if (targetId === "tab-dashboard") {
+          renderKnowledgeMap();
+          updateDashboardStats();
+        }
+        renderAllMath();
       }
-      renderAllMath();
     });
   });
 
@@ -3391,8 +3399,12 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     const highestCleared = appState.bossRaid.clearedTier || 0;
 
     let html = "";
-    if (typeof BOSS_TIERS_DATA !== "undefined" && Array.isArray(BOSS_TIERS_DATA)) {
-      BOSS_TIERS_DATA.forEach(tier => {
+    const tiersData = (typeof BOSS_TIERS_DATA !== "undefined" && Array.isArray(BOSS_TIERS_DATA)) 
+      ? BOSS_TIERS_DATA 
+      : ((typeof window !== "undefined" && Array.isArray(window.BOSS_TIERS_DATA)) ? window.BOSS_TIERS_DATA : []);
+
+    if (tiersData.length > 0) {
+      tiersData.forEach(tier => {
         const isCleared = highestCleared >= tier.level;
         const isUnlocked = tier.level === 1 || highestCleared >= tier.level - 1;
         const isCurrentTarget = isUnlocked && !isCleared;
@@ -3799,6 +3811,9 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   }
 
   function setupBossBattleSystem() {
+    renderBossTiersGrid();
+    updateBossCooldownUI();
+
     // Nút rút lui trong trận đấu
     document.getElementById("btn-flee-battle")?.addEventListener("click", () => {
       const conf = confirm("Em có chắc chắn muốn rút lui khỏi trận đấu Boss không? Trận đấu hiện tại sẽ bị hủy bỏ.");
