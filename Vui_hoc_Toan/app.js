@@ -103,7 +103,16 @@ document.addEventListener("DOMContentLoaded", () => {
         "badge-exam-master": false,
         "badge-socratic-friend": false
       },
-      socraticChatCount: 0
+      socraticChatCount: 0,
+      questBookClaimedQuests: {},
+      questBookClaimedChapters: {},
+      questBookStats: {
+        flashcardsCount: 0,
+        fillblankCount: 0,
+        socraticCount: 0,
+        examsPassed8: 0,
+        examsPerfect: 0
+      }
     };
   }
 
@@ -247,6 +256,17 @@ document.addEventListener("DOMContentLoaded", () => {
             hint: 0,
             double: 0,
             heal: 0
+          };
+        }
+        if (!appState.questBookClaimedQuests) appState.questBookClaimedQuests = {};
+        if (!appState.questBookClaimedChapters) appState.questBookClaimedChapters = {};
+        if (!appState.questBookStats) {
+          appState.questBookStats = {
+            flashcardsCount: 0,
+            fillblankCount: 0,
+            socraticCount: 0,
+            examsPassed8: 0,
+            examsPerfect: 0
           };
         }
         const todayStr = new Date().toISOString().split("T")[0];
@@ -1043,6 +1063,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       playFlipSound();
       if (flashcardEl.classList.contains("flipped")) {
         trackQuestProgress("flashcards");
+        trackQuestBookProgress("flashcard");
       }
     });
   }
@@ -1051,6 +1072,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     flashcardEl.classList.add("flipped");
     playFlipSound();
     trackQuestProgress("flashcards");
+    trackQuestBookProgress("flashcard");
   });
 
   btnFlipBack?.addEventListener("click", () => {
@@ -1193,6 +1215,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       setLeitnerBox(thm.id, "green");
       addExpAndCoins(15, 10);
       trackQuestProgress("fillblank");
+      trackQuestBookProgress("fillblank");
     } else {
       resultBox.className = "challenge-result show error";
       resultBox.textContent = `❌ Chưa chính xác hoàn toàn! Các đáp án đúng là: ${thm.fillBlank.answers.join(", ")}.`;
@@ -1767,6 +1790,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     if (parseFloat(score) >= 8.0) {
       trackQuestProgress("exam");
     }
+    trackQuestBookProgress("exam", 1, { score: parseFloat(score) });
     saveState();
 
     // Hiển thị màn hình kết quả
@@ -1855,6 +1879,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
 
     appState.socraticChatCount++;
     trackQuestProgress("socratic");
+    trackQuestBookProgress("socratic");
     if (appState.socraticChatCount >= 3) {
       appState.badges["badge-socratic-friend"] = true;
       saveState();
@@ -2725,6 +2750,743 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   }
 
   // ---------------------------------------------------------------
+  // QUYỂN SÁCH NHIỆM VỤ & THÀNH TỰU (THE GRAND QUEST TOME - 6 CHƯƠNG ĐỘ KHÓ TĂNG DẦN)
+  // ---------------------------------------------------------------
+  const QUEST_BOOK_CHAPTERS = [
+    {
+      id: 1,
+      title: "Chương 1: Khởi Đầu Hiệp Sĩ",
+      subtitle: "Tập Sự Toán Học (Lv.1+)",
+      requiredLevel: 1,
+      difficultyStars: "⭐",
+      difficultyLabel: "Dễ (Cơ bản)",
+      desc: "Làm quen với các công thức trọng tâm, ôn tập thẻ ghi nhớ Leitner và tương tác cùng Thầy AI.",
+      rewardExp: 150,
+      rewardCoins: 80,
+      rewardSpecial: "Huy Hiệu Tân Binh ⭐",
+      rewardAction: null,
+      quests: [
+        {
+          id: "ch1_flashcard_10",
+          icon: "🧠",
+          name: "Lật ôn 10 lượt Thẻ Flashcard Định lý",
+          desc: "Lật xem và ôn tập 10 thẻ định lý bất kỳ tại Trạm Định Lý",
+          target: 10,
+          unit: "lượt",
+          rewardExp: 60,
+          rewardCoins: 30,
+          actionTab: "tab-theorems",
+          submode: "flashcard",
+          actionBtn: "Luyện Thẻ",
+          getProgress: () => appState.questBookStats?.flashcardsCount || 0
+        },
+        {
+          id: "ch1_fillblank_3",
+          icon: "✏️",
+          name: "Điền khuyết chính xác 3 câu định lý",
+          desc: "Rèn luyện trí nhớ bằng cách điền từ khóa chuẩn xác vào chỗ trống",
+          target: 3,
+          unit: "câu",
+          rewardExp: 70,
+          rewardCoins: 35,
+          actionTab: "tab-theorems",
+          submode: "fillblank",
+          actionBtn: "Điền Khuyết",
+          getProgress: () => appState.questBookStats?.fillblankCount || 0
+        },
+        {
+          id: "ch1_socratic_2",
+          icon: "🦉",
+          name: "Hỏi bài & đàm thoại 2 câu cùng Thầy AI Socratic",
+          desc: "Gửi 2 câu hỏi toán học để Thầy AI hướng dẫn tư duy",
+          target: 2,
+          unit: "câu",
+          rewardExp: 60,
+          rewardCoins: 30,
+          actionTab: "tab-socratic",
+          actionBtn: "Hỏi AI",
+          getProgress: () => appState.questBookStats?.socraticCount || 0
+        },
+        {
+          id: "ch1_streak_2",
+          icon: "🔥",
+          name: "Duy trì chuỗi học 2 ngày liên tiếp",
+          desc: "Đăng nhập và ôn tập mỗi ngày để thắp sáng ngọn lửa chuỗi học",
+          target: 2,
+          unit: "ngày",
+          rewardExp: 80,
+          rewardCoins: 40,
+          actionTab: "tab-home",
+          actionBtn: "Xem Chuỗi",
+          getProgress: () => appState.streak || 1
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Chương 2: Chiến Binh Số Học & Hình Học",
+      subtitle: "Rèn Luyện Bản Lĩnh (Lv.2+)",
+      requiredLevel: 2,
+      difficultyStars: "⭐⭐",
+      difficultyLabel: "Trung Bình",
+      desc: "Thử sức với đề thi thử, đưa kiến thức vào trí nhớ dài hạn và khiêu chiến Boss Cấp 1.",
+      rewardExp: 220,
+      rewardCoins: 120,
+      rewardSpecial: "1 Bình Nhân Đôi EXP 🧪",
+      rewardAction: () => {
+        appState.doubleExpTokens = (appState.doubleExpTokens || 0) + 1;
+      },
+      quests: [
+        {
+          id: "ch2_exam_8",
+          icon: "📝",
+          name: "Luyện 1 Đề thi thử đạt từ 8.0 điểm trở lên",
+          desc: "Làm bài thi thử trắc nghiệm bấm giờ tại Phòng Luyện Thi đạt từ 8 điểm",
+          target: 1,
+          unit: "đề",
+          rewardExp: 100,
+          rewardCoins: 50,
+          actionTab: "tab-exams",
+          actionBtn: "Vào Thi Thử",
+          getProgress: () => appState.questBookStats?.examsPassed8 || 0
+        },
+        {
+          id: "ch2_stage_3",
+          icon: "🏰",
+          name: "Chinh phục vượt qua Ải 3 Bản Đồ Hành Trình",
+          desc: "Giải chính xác thử thách Ải 3 trên Bản đồ Phiêu lưu",
+          target: 3,
+          unit: "Ải",
+          rewardExp: 120,
+          rewardCoins: 60,
+          actionTab: "tab-home",
+          actionBtn: "Bản Đồ Ải",
+          getProgress: () => Math.max(...(appState.clearedStages || [0]), 0)
+        },
+        {
+          id: "ch2_boss_1",
+          icon: "👺",
+          name: "Thách đấu và Tiêu diệt Goblin Toán Học (Boss 1)",
+          desc: "Vào Đấu Trường Boss và hạ gục Boss cấp đầu tiên",
+          target: 1,
+          unit: "Boss",
+          rewardExp: 150,
+          rewardCoins: 80,
+          actionTab: "tab-boss",
+          actionBtn: "Vào Đấu Boss",
+          getProgress: () => (appState.bossRaid?.clearedTier >= 1 ? 1 : 0)
+        },
+        {
+          id: "ch2_leitner_green_3",
+          icon: "🟢",
+          name: "Đưa 3 định lý vào Hộp Xanh (Đã thuộc kỹ)",
+          desc: "Ôn tập và trả lời đúng liên tiếp để đưa định lý sang Hộp Xanh",
+          target: 3,
+          unit: "định lý",
+          rewardExp: 120,
+          rewardCoins: 60,
+          actionTab: "tab-theorems",
+          actionBtn: "Hộp Leitner",
+          getProgress: () => appState.leitner?.green?.length || 0
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Chương 3: Hiệp Sĩ Góc & Tam Giác",
+      subtitle: "Chinh Phục Đỉnh Cao (Lv.3+)",
+      requiredLevel: 3,
+      difficultyStars: "⭐⭐⭐",
+      difficultyLabel: "Khá",
+      desc: "Làm chủ các định lý góc, tam giác bằng nhau và tiêu diệt Thạch Thủ Hình Học.",
+      rewardExp: 320,
+      rewardCoins: 160,
+      rewardSpecial: "1 Khiên Bảo Vệ Chuỗi 🛡️",
+      rewardAction: () => {
+        if ((appState.streakShield || 0) < 2) appState.streakShield = (appState.streakShield || 0) + 1;
+      },
+      quests: [
+        {
+          id: "ch3_exam_10",
+          icon: "💯",
+          name: "Đạt Điểm 10 Tuyệt Đối trong 1 Đề thi thử",
+          desc: "Giải đúng 100% toàn bộ câu hỏi trong 1 đề thi trắc nghiệm",
+          target: 1,
+          unit: "lần 10đ",
+          rewardExp: 160,
+          rewardCoins: 80,
+          actionTab: "tab-exams",
+          actionBtn: "Săn Điểm 10",
+          getProgress: () => appState.questBookStats?.examsPerfect || 0
+        },
+        {
+          id: "ch3_boss_3",
+          icon: "🗿",
+          name: "Tiêu diệt Thạch Thủ Hình Học (Boss Cấp 3)",
+          desc: "Vượt qua thử thách Boss Cấp 3 trong Đấu Trường",
+          target: 3,
+          unit: "Cấp Boss",
+          rewardExp: 200,
+          rewardCoins: 100,
+          actionTab: "tab-boss",
+          actionBtn: "Đánh Boss 3",
+          getProgress: () => appState.bossRaid?.clearedTier || 0
+        },
+        {
+          id: "ch3_stage_5",
+          icon: "🚩",
+          name: "Vượt qua Ải 5 trên Bản Đồ Hành Trình",
+          desc: "Chinh phục Ải 5 về Tỉ lệ thức hoặc Phân số",
+          target: 5,
+          unit: "Ải",
+          rewardExp: 180,
+          rewardCoins: 90,
+          actionTab: "tab-home",
+          actionBtn: "Vượt Ải 5",
+          getProgress: () => Math.max(...(appState.clearedStages || [0]), 0)
+        },
+        {
+          id: "ch3_streak_4",
+          icon: "🔥",
+          name: "Duy trì chuỗi học 4 ngày liên tiếp",
+          desc: "Giữ vững tinh thần tự giác học tập mỗi ngày",
+          target: 4,
+          unit: "ngày",
+          rewardExp: 200,
+          rewardCoins: 100,
+          actionTab: "tab-home",
+          actionBtn: "Giữ Chuỗi",
+          getProgress: () => appState.streak || 1
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Chương 4: Bậc Thầy Logic & Phân Số",
+      subtitle: "Trí Tuệ Uyên Bác (Lv.4+)",
+      requiredLevel: 4,
+      difficultyStars: "⭐⭐⭐⭐",
+      difficultyLabel: "Khó",
+      desc: "Đưa 8 định lý vào Hộp Xanh, hạ gục Hỏa Long Đồ Thị và phân tích toán học nâng cao.",
+      rewardExp: 450,
+      rewardCoins: 220,
+      rewardSpecial: "3 Vé Gợi Ý Socratic VIP 💡",
+      rewardAction: () => {
+        appState.socraticVipTokens = (appState.socraticVipTokens || 0) + 3;
+      },
+      quests: [
+        {
+          id: "ch4_boss_5",
+          icon: "🐉",
+          name: "Tiêu diệt Hỏa Long Đồ Thị (Boss Cấp 5)",
+          desc: "Vượt qua ngọn lửa thiêu đốt của Boss Cấp 5",
+          target: 5,
+          unit: "Cấp Boss",
+          rewardExp: 250,
+          rewardCoins: 120,
+          actionTab: "tab-boss",
+          actionBtn: "Đánh Boss 5",
+          getProgress: () => appState.bossRaid?.clearedTier || 0
+        },
+        {
+          id: "ch4_leitner_green_8",
+          icon: "🟢",
+          name: "Đưa 8 định lý vào Hộp Xanh",
+          desc: "Khắc sâu 8 định lý trọng tâm vào trí nhớ dài hạn",
+          target: 8,
+          unit: "định lý",
+          rewardExp: 250,
+          rewardCoins: 120,
+          actionTab: "tab-theorems",
+          actionBtn: "Luyện Hộp Xanh",
+          getProgress: () => appState.leitner?.green?.length || 0
+        },
+        {
+          id: "ch4_exams_master",
+          icon: "📊",
+          name: "Hoàn thành 3 đề thi khác nhau đạt điểm Giỏi (>= 8.5)",
+          desc: "Khẳng định phong độ ổn định với 3 đề thi điểm cao",
+          target: 3,
+          unit: "đề",
+          rewardExp: 300,
+          rewardCoins: 150,
+          actionTab: "tab-exams",
+          actionBtn: "Luyện 3 Đề",
+          getProgress: () => appState.questBookStats?.examsPassed8 || 0
+        },
+        {
+          id: "ch4_socratic_master",
+          icon: "🦉",
+          name: "Vấn đáp 5 câu hỏi chuyên sâu cùng AI Socratic",
+          desc: "Phân tích giả thiết, kết luận và phương pháp chứng minh",
+          target: 5,
+          unit: "câu",
+          rewardExp: 220,
+          rewardCoins: 110,
+          actionTab: "tab-socratic",
+          actionBtn: "Hỏi AI Socratic",
+          getProgress: () => appState.questBookStats?.socraticCount || 0
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Chương 5: Đại Sư Tam Giác & Không Gian",
+      subtitle: "Bậc Thầy Chiến Trường (Lv.5+)",
+      requiredLevel: 5,
+      difficultyStars: "⭐⭐⭐⭐⭐",
+      difficultyLabel: "Rất Khó",
+      desc: "Chinh phục toàn bộ 7 Ải Bản Đồ, tiêu diệt Băng Tinh Pháp Hoàng (Boss 8) và đạt chuỗi 7 ngày.",
+      rewardExp: 650,
+      rewardCoins: 350,
+      rewardSpecial: "Avatar Hiệp Sĩ Rồng 🐉",
+      rewardAction: () => {
+        if (!Array.isArray(appState.unlockedAvatars)) appState.unlockedAvatars = [];
+        if (!appState.unlockedAvatars.includes("🐉")) appState.unlockedAvatars.push("🐉");
+      },
+      quests: [
+        {
+          id: "ch5_boss_8",
+          icon: "❄️",
+          name: "Tiêu diệt Băng Tinh Pháp Hoàng (Boss Cấp 8)",
+          desc: "Phá tan lớp băng giáp vĩnh cửu của Boss Cấp 8",
+          target: 8,
+          unit: "Cấp Boss",
+          rewardExp: 400,
+          rewardCoins: 200,
+          actionTab: "tab-boss",
+          actionBtn: "Đánh Boss 8",
+          getProgress: () => appState.bossRaid?.clearedTier || 0
+        },
+        {
+          id: "ch5_stage_7",
+          icon: "👑",
+          name: "Chinh phục toàn bộ 7 Ải trên Bản Đồ Hành Trình",
+          desc: "Vượt qua toàn bộ các ải thử thách trong chương trình",
+          target: 7,
+          unit: "Ải",
+          rewardExp: 450,
+          rewardCoins: 220,
+          actionTab: "tab-home",
+          actionBtn: "Phá 7 Ải",
+          getProgress: () => (appState.clearedStages?.length || 0)
+        },
+        {
+          id: "ch5_streak_7",
+          icon: "🔥",
+          name: "Duy trì chuỗi 7 ngày học liên tiếp rực lửa",
+          desc: "Học tập kiên trì suốt 1 tuần không ngắt quãng",
+          target: 7,
+          unit: "ngày",
+          rewardExp: 450,
+          rewardCoins: 220,
+          actionTab: "tab-home",
+          actionBtn: "Chuỗi 7 Ngày",
+          getProgress: () => appState.streak || 1
+        },
+        {
+          id: "ch5_leitner_green_15",
+          icon: "🟢",
+          name: "Đưa ít nhất 15 định lý vào Hộp Xanh",
+          desc: "Nắm chắc gần như toàn bộ kho định lý sách KNTT",
+          target: 15,
+          unit: "định lý",
+          rewardExp: 500,
+          rewardCoins: 250,
+          actionTab: "tab-theorems",
+          actionBtn: "Ôn Hộp Xanh",
+          getProgress: () => appState.leitner?.green?.length || 0
+        }
+      ]
+    },
+    {
+      id: 6,
+      title: "Chương 6: Đại Huyền Thoại Phá Đảo Tri Thức",
+      subtitle: "Vinh Quang Bất Diệt (Lv.6+)",
+      requiredLevel: 6,
+      difficultyStars: "👑 MAX",
+      difficultyLabel: "Cực Hạn / Phá Đảo",
+      desc: "Tiêu diệt Thần Ma Vũ Trụ (Boss 10), đạt 5 lần điểm 10 và làm chủ 100% kho định lý!",
+      rewardExp: 2000,
+      rewardCoins: 1000,
+      rewardSpecial: "Avatar Phượng Hoàng Lửa 🦅 & Danh Hiệu Huyền Thoại",
+      rewardAction: () => {
+        if (!Array.isArray(appState.unlockedAvatars)) appState.unlockedAvatars = [];
+        if (!appState.unlockedAvatars.includes("🦅")) appState.unlockedAvatars.push("🦅");
+        appState.playerTitle = "Huyền Thoại Phá Đảo Bất Bại 🌌";
+      },
+      quests: [
+        {
+          id: "ch6_boss_10",
+          icon: "🌌",
+          name: "Tiêu diệt Trùm Cuối Tối Thượng - Thần Ma Vũ Trụ (Boss 10)",
+          desc: "Đánh bại Trùm Cuối Cấp 10 để chính thức Phá Đảo Đấu Trường",
+          target: 10,
+          unit: "Cấp Boss",
+          rewardExp: 800,
+          rewardCoins: 400,
+          actionTab: "tab-boss",
+          actionBtn: "Đánh Boss 10",
+          getProgress: () => appState.bossRaid?.clearedTier || 0
+        },
+        {
+          id: "ch6_exam_god",
+          icon: "🌟",
+          name: "Đạt Điểm 10 Tuyệt Đối trong 5 Đề thi thử khác nhau",
+          desc: "Chứng minh tài năng toán học đỉnh cao qua 5 bài thi tuyệt đối",
+          target: 5,
+          unit: "lần 10đ",
+          rewardExp: 800,
+          rewardCoins: 400,
+          actionTab: "tab-exams",
+          actionBtn: "Thi Săn 10",
+          getProgress: () => appState.questBookStats?.examsPerfect || 0
+        },
+        {
+          id: "ch6_leitner_master",
+          icon: "🏆",
+          name: "Chuyển 20 Định lý vào Hộp Xanh Trí Nhớ Dài Hạn",
+          desc: "Ghi nhớ vĩnh viễn toàn bộ định lý sách KNTT",
+          target: 20,
+          unit: "định lý",
+          rewardExp: 1000,
+          rewardCoins: 500,
+          actionTab: "tab-theorems",
+          actionBtn: "Luyện Định Lý",
+          getProgress: () => appState.leitner?.green?.length || 0
+        },
+        {
+          id: "ch6_streak_14",
+          icon: "🔥",
+          name: "Duy trì chuỗi học 14 ngày liên tiếp",
+          desc: "Đạt mốc 2 tuần kiên trì bền bỉ không bỏ sót ngày nào",
+          target: 14,
+          unit: "ngày",
+          rewardExp: 1000,
+          rewardCoins: 500,
+          actionTab: "tab-home",
+          actionBtn: "Chuỗi 14 Ngày",
+          getProgress: () => appState.streak || 1
+        }
+      ]
+    }
+  ];
+
+  let currentQuestBookChapter = 1;
+
+  function trackQuestBookProgress(type, amount = 1, meta = {}) {
+    if (!appState) return;
+    if (!appState.questBookStats) {
+      appState.questBookStats = {
+        flashcardsCount: 0,
+        fillblankCount: 0,
+        socraticCount: 0,
+        examsPassed8: 0,
+        examsPerfect: 0
+      };
+    }
+
+    if (type === "flashcard") {
+      appState.questBookStats.flashcardsCount = (appState.questBookStats.flashcardsCount || 0) + amount;
+    } else if (type === "fillblank") {
+      appState.questBookStats.fillblankCount = (appState.questBookStats.fillblankCount || 0) + amount;
+    } else if (type === "socratic") {
+      appState.questBookStats.socraticCount = (appState.questBookStats.socraticCount || 0) + amount;
+    } else if (type === "exam") {
+      const score = typeof meta.score === "number" ? meta.score : 0;
+      if (score >= 8.0) {
+        appState.questBookStats.examsPassed8 = (appState.questBookStats.examsPassed8 || 0) + 1;
+      }
+      if (score >= 9.99) {
+        appState.questBookStats.examsPerfect = (appState.questBookStats.examsPerfect || 0) + 1;
+      }
+    }
+
+    saveState();
+    updateQuestBookBadgeDot();
+  }
+
+  function updateQuestBookBadgeDot() {
+    if (!appState) return;
+    const dot1 = document.getElementById("header-qb-dot");
+    let hasClaimable = false;
+
+    QUEST_BOOK_CHAPTERS.forEach(ch => {
+      const isUnlocked = appState.playerLevel >= ch.requiredLevel;
+      if (!isUnlocked) return;
+
+      ch.quests.forEach(q => {
+        const prog = q.getProgress();
+        const isComplete = prog >= q.target;
+        const isClaimed = appState.questBookClaimedQuests?.[q.id];
+        if (isComplete && !isClaimed) {
+          hasClaimable = true;
+        }
+      });
+
+      const allQuestsDone = ch.quests.every(q => q.getProgress() >= q.target);
+      const isChapterClaimed = appState.questBookClaimedChapters?.[ch.id];
+      if (allQuestsDone && !isChapterClaimed) {
+        hasClaimable = true;
+      }
+    });
+
+    if (dot1) dot1.style.display = hasClaimable ? "block" : "none";
+  }
+
+  function openQuestBookModal(targetChapterId = null) {
+    const modal = document.getElementById("quest-book-modal");
+    if (!modal) return;
+
+    if (targetChapterId) {
+      currentQuestBookChapter = targetChapterId;
+    } else {
+      // Tự động tìm chương chưa hoàn thành gần nhất
+      const firstUncompleted = QUEST_BOOK_CHAPTERS.find(ch => {
+        const isUnlocked = appState.playerLevel >= ch.requiredLevel;
+        const isClaimed = appState.questBookClaimedChapters?.[ch.id];
+        return isUnlocked && !isClaimed;
+      });
+      currentQuestBookChapter = firstUncompleted ? firstUncompleted.id : 1;
+    }
+
+    renderQuestBookUI();
+    modal.style.display = "flex";
+  }
+
+  function renderQuestBookUI() {
+    const isRealUser = currentUser && !currentUser.isGuest;
+    const currentAvatar = isRealUser ? (currentUser.avatar || "🧙‍♂️") : "🎒";
+    const currentName = isRealUser ? currentUser.fullname : "Khách Học Thử";
+
+    const avatarEl = document.getElementById("qb-player-avatar");
+    const nameEl = document.getElementById("qb-player-name");
+    const lvlEl = document.getElementById("qb-player-lvl");
+
+    if (avatarEl) avatarEl.textContent = currentAvatar;
+    if (nameEl) nameEl.textContent = currentName;
+    if (lvlEl) lvlEl.textContent = `Cấp Độ: Lv. ${appState.playerLevel} • ${appState.playerTitle}`;
+
+    // Tính tổng tiến độ hoàn thành toàn bộ sách (24 nhiệm vụ)
+    let totalCompleted = 0;
+    let totalQuestsCount = 0;
+    QUEST_BOOK_CHAPTERS.forEach(ch => {
+      ch.quests.forEach(q => {
+        totalQuestsCount++;
+        if (appState.questBookClaimedQuests?.[q.id] || q.getProgress() >= q.target) {
+          totalCompleted++;
+        }
+      });
+    });
+
+    const totalPct = Math.round((totalCompleted / totalQuestsCount) * 100);
+    const progressTextEl = document.getElementById("qb-total-progress-text");
+    const progressFillEl = document.getElementById("qb-total-progress-fill");
+    if (progressTextEl) progressTextEl.textContent = `${totalCompleted} / ${totalQuestsCount} Nhiệm vụ (${totalPct}%)`;
+    if (progressFillEl) progressFillEl.style.width = `${totalPct}%`;
+
+    // Render Tabs các Chương
+    const tabsContainer = document.getElementById("quest-book-chapter-tabs");
+    if (tabsContainer) {
+      tabsContainer.innerHTML = QUEST_BOOK_CHAPTERS.map(ch => {
+        const isUnlocked = appState.playerLevel >= ch.requiredLevel;
+        const isActive = ch.id === currentQuestBookChapter;
+        const isChapterClaimed = appState.questBookClaimedChapters?.[ch.id];
+        const allQuestsDone = ch.quests.every(q => q.getProgress() >= q.target);
+
+        let statusTag = "";
+        if (!isUnlocked) statusTag = `🔒 Lv.${ch.requiredLevel}`;
+        else if (isChapterClaimed) statusTag = `✅ Hoàn thành`;
+        else if (allQuestsDone) statusTag = `🎁 Nhận thưởng`;
+
+        return `
+          <button class="qb-chapter-tab ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}" data-chapter-id="${ch.id}">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span>Chương ${ch.id}</span>
+              <span class="qb-tab-stars">${ch.difficultyStars}</span>
+            </div>
+            <div style="font-size:11px; opacity:0.85;">${statusTag || ch.subtitle}</div>
+          </button>
+        `;
+      }).join("");
+
+      tabsContainer.querySelectorAll(".qb-chapter-tab").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const chId = parseInt(btn.dataset.chapterId);
+          currentQuestBookChapter = chId;
+          renderQuestBookUI();
+        });
+      });
+    }
+
+    // Render Nội Dung Chương Hiện Tại
+    const chapter = QUEST_BOOK_CHAPTERS.find(c => c.id === currentQuestBookChapter) || QUEST_BOOK_CHAPTERS[0];
+    const contentContainer = document.getElementById("quest-book-chapter-content");
+    if (!contentContainer) return;
+
+    const isUnlocked = appState.playerLevel >= chapter.requiredLevel;
+
+    if (!isUnlocked) {
+      contentContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 16px;">
+          <div style="font-size: 48px; margin-bottom: 12px;">🔒</div>
+          <h4 style="font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 6px;">${chapter.title} Đang Bị Khóa</h4>
+          <p style="font-size: 14px; color: #64748b; max-width: 480px; margin: 0 auto 16px;">
+            Em cần đạt <strong>Cấp Độ Lv. ${chapter.requiredLevel}</strong> để mở khóa chương thử thách này! Hãy hoàn thành các nhiệm vụ ở chương trước để tích lũy thêm EXP nhé!
+          </p>
+          <div style="font-size: 13px; font-weight: 700; color: #4f46e5;">Cấp độ hiện tại của em: Lv. ${appState.playerLevel}</div>
+        </div>
+      `;
+      return;
+    }
+
+    const allQuestsDone = chapter.quests.every(q => q.getProgress() >= q.target);
+    const isChapterClaimed = appState.questBookClaimedChapters?.[chapter.id];
+
+    let questsHtml = chapter.quests.map(q => {
+      const prog = q.getProgress();
+      const pct = Math.min(100, Math.round((prog / q.target) * 100));
+      const isComplete = prog >= q.target;
+      const isClaimed = appState.questBookClaimedQuests?.[q.id];
+
+      let btnHtml = "";
+      if (isClaimed) {
+        btnHtml = `<button class="btn-qb-action claimed" disabled>Đã nhận ✓</button>`;
+      } else if (isComplete) {
+        btnHtml = `<button class="btn-qb-action claim" data-quest-id="${q.id}" data-chapter-id="${chapter.id}">Nhận 🎁</button>`;
+      } else {
+        btnHtml = `<button class="btn-qb-action go" data-action-tab="${q.actionTab}" ${q.submode ? `data-submode="${q.submode}"` : ""}>${q.actionBtn} ➔</button>`;
+      }
+
+      return `
+        <div class="qb-quest-card ${isComplete ? 'completed' : ''}">
+          <div class="qb-quest-icon">${q.icon || '📜'}</div>
+          <div class="qb-quest-info">
+            <div class="qb-quest-name">${q.name}</div>
+            <div class="qb-quest-desc">${q.desc}</div>
+            <div class="qb-quest-meter">
+              <div class="qb-quest-meter-fill" style="width: ${pct}%;"></div>
+            </div>
+            <div class="qb-quest-meta">
+              <span>Tiến độ: ${Math.min(prog, q.target)} / ${q.target} ${q.unit} (${pct}%)</span>
+              <span class="qb-quest-reward-tag">+${q.rewardExp} EXP • +${q.rewardCoins} 🪙</span>
+            </div>
+          </div>
+          ${btnHtml}
+        </div>
+      `;
+    }).join("");
+
+    let chapterRewardBtnHtml = "";
+    if (isChapterClaimed) {
+      chapterRewardBtnHtml = `<button class="btn-claim-chapter-reward claimed" disabled>Đã Nhận Quà Chương ✓</button>`;
+    } else if (allQuestsDone) {
+      chapterRewardBtnHtml = `<button class="btn-claim-chapter-reward" id="btn-claim-chapter-master" data-chapter-id="${chapter.id}">Nhận Quà Chương 🏆</button>`;
+    } else {
+      chapterRewardBtnHtml = `<button class="btn-claim-chapter-reward" disabled>Cần xong 4 nhiệm vụ</button>`;
+    }
+
+    contentContainer.innerHTML = `
+      <div class="qb-chapter-banner">
+        <div class="qb-chapter-header-row">
+          <div class="qb-chapter-title-text">${chapter.title}</div>
+          <span class="qb-chapter-diff-badge">Độ khó: ${chapter.difficultyStars} ${chapter.difficultyLabel}</span>
+        </div>
+        <p class="qb-chapter-desc">${chapter.desc}</p>
+      </div>
+
+      <div class="qb-quest-list">
+        ${questsHtml}
+      </div>
+
+      <!-- Khối Thưởng Hoàn Thành Chương -->
+      <div class="qb-chapter-reward-card">
+        <div class="qb-chapter-reward-info">
+          <div class="qb-chapter-reward-chest">🎁</div>
+          <div>
+            <div class="qb-chapter-reward-title">Quà Hoàn Thành ${chapter.title}</div>
+            <div class="qb-chapter-reward-sub">
+              +${chapter.rewardExp} EXP Siêu Cấp • +${chapter.rewardCoins} Xu Toán Học 🪙 ${chapter.rewardSpecial ? `• Quà: ${chapter.rewardSpecial}` : ''}
+            </div>
+          </div>
+        </div>
+        ${chapterRewardBtnHtml}
+      </div>
+    `;
+
+    // Gắn sự kiện cho các nút trong nội dung chương
+    contentContainer.querySelectorAll(".btn-qb-action.claim").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const qId = btn.dataset.questId;
+        const chId = parseInt(btn.dataset.chapterId);
+        claimQuestBookReward(qId, chId);
+      });
+    });
+
+    contentContainer.querySelectorAll(".btn-qb-action.go").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const modal = document.getElementById("quest-book-modal");
+        if (modal) modal.style.display = "none";
+        const tab = btn.dataset.actionTab;
+        const submode = btn.dataset.submode;
+        if (tab) switchTab(tab);
+        if (submode) {
+          document.querySelector(`[data-submode="${submode}"]`)?.click();
+        }
+      });
+    });
+
+    contentContainer.querySelector("#btn-claim-chapter-master")?.addEventListener("click", () => {
+      claimChapterMasterReward(chapter.id);
+    });
+  }
+
+  function claimQuestBookReward(questId, chapterId) {
+    const chapter = QUEST_BOOK_CHAPTERS.find(c => c.id === chapterId);
+    if (!chapter) return;
+    const quest = chapter.quests.find(q => q.id === questId);
+    if (!quest) return;
+
+    if (!appState.questBookClaimedQuests) appState.questBookClaimedQuests = {};
+    if (appState.questBookClaimedQuests[questId]) return;
+
+    appState.questBookClaimedQuests[questId] = true;
+    addExpAndCoins(quest.rewardExp, quest.rewardCoins);
+    playCelebration();
+    saveState();
+
+    alert(`🎉 HOÀN THÀNH NHIỆM VỤ SỔ TAY:\n"${quest.name}"\n\n🎁 Nhận thưởng:\n+${quest.rewardExp} EXP • +${quest.rewardCoins} Xu Toán Học 🪙!`);
+
+    renderQuestBookUI();
+    renderPlayerHUD();
+    updateQuestBookBadgeDot();
+  }
+
+  function claimChapterMasterReward(chapterId) {
+    const chapter = QUEST_BOOK_CHAPTERS.find(c => c.id === chapterId);
+    if (!chapter) return;
+
+    if (!appState.questBookClaimedChapters) appState.questBookClaimedChapters = {};
+    if (appState.questBookClaimedChapters[chapterId]) return;
+
+    appState.questBookClaimedChapters[chapterId] = true;
+    if (typeof chapter.rewardAction === "function") {
+      chapter.rewardAction();
+    }
+
+    addExpAndCoins(chapter.rewardExp, chapter.rewardCoins);
+    playCelebration();
+    saveState();
+
+    let specialMsg = chapter.rewardSpecial ? `\n✨ Quà đặc biệt: ${chapter.rewardSpecial}` : "";
+    alert(`👑 XUẤT SẮC! EM ĐÃ PHÁ ĐẢO ${chapter.title.toUpperCase()}!\n\n🎁 Phần thưởng hoàn thành toàn bộ chương:\n+${chapter.rewardExp} EXP Siêu Cấp • +${chapter.rewardCoins} Xu Toán Học 🪙${specialMsg}\n\n🌟 Hãy tiếp tục mở khóa các chương tiếp theo với độ khó cao hơn để gặt hái thêm nhiều vinh quang!`);
+
+    renderQuestBookUI();
+    renderPlayerHUD();
+    updateQuestBookBadgeDot();
+  }
+
+  // ---------------------------------------------------------------
   // HỆ THỐNG CỬA HÀNG HIỆP SĨ (TIÊU DÙNG XU TOÁN HỌC) & BẢNG CHỨC DANH
   // ---------------------------------------------------------------
   const KNIGHT_SHOP_ITEMS = [
@@ -3143,6 +3905,18 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       const m = document.getElementById("knight-ranks-modal");
       if (m) m.style.display = "none";
     });
+
+    // Nút mở Sổ Tay Nhiệm Vụ & Thành Tựu
+    document.querySelectorAll("#btn-open-quest-book, #btn-header-quest-book, .btn-open-quest-book").forEach(el => {
+      el.addEventListener("click", () => openQuestBookModal());
+    });
+
+    document.getElementById("btn-close-quest-book-modal")?.addEventListener("click", () => {
+      const m = document.getElementById("quest-book-modal");
+      if (m) m.style.display = "none";
+    });
+
+    updateQuestBookBadgeDot();
 
     // Cổng dịch chuyển nhanh
     document.getElementById("portal-theorems")?.addEventListener("click", () => switchTab("tab-theorems"));

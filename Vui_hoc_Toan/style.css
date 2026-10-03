@@ -4693,6 +4693,418 @@ body {
   border-color: #334155 !important;
 }
 
+/* =================================================================
+   QUYỂN SÁCH NHIỆM VỤ & THÀNH TỰU (THE GRAND QUEST TOME)
+   ================================================================= */
+.quest-book-modal-card {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+  border: 2px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.quest-book-header {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+  color: #ffffff;
+  border-bottom: 2px solid #6366f1;
+  padding: 16px 20px;
+}
+
+.quest-book-overview-banner {
+  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.quest-book-overview-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quest-book-avatar-frame {
+  font-size: 32px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+
+.qb-player-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.qb-player-lvl {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.quest-book-overview-right {
+  min-width: 200px;
+  flex: 1;
+  max-width: 320px;
+}
+
+.qb-stat-box {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.qb-progress-track {
+  width: 100%;
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.qb-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.quest-book-chapter-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+  scrollbar-width: thin;
+}
+
+.qb-chapter-tab {
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: all 0.2s ease;
+  min-width: 130px;
+}
+
+.qb-chapter-tab:hover {
+  border-color: #6366f1;
+  background: #f5f3ff;
+}
+
+.qb-chapter-tab.active {
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  color: #ffffff;
+  border-color: #4338ca;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+}
+
+.qb-chapter-tab.locked {
+  opacity: 0.65;
+  background: #f1f5f9;
+}
+
+.qb-tab-stars {
+  font-size: 11px;
+  color: #f59e0b;
+}
+
+.qb-chapter-tab.active .qb-tab-stars {
+  color: #fde047;
+}
+
+.qb-chapter-banner {
+  background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+  border: 1.5px solid #f0abfc;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+
+.qb-chapter-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.qb-chapter-title-text {
+  font-size: 16px;
+  font-weight: 800;
+  color: #86198f;
+}
+
+.qb-chapter-diff-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  background: #fdf2f8;
+  color: #be185d;
+  border: 1px solid #fbcfe8;
+}
+
+.qb-chapter-desc {
+  font-size: 13px;
+  color: #701a75;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.qb-quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.qb-quest-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s ease;
+}
+
+.qb-quest-card:hover {
+  border-color: #818cf8;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.08);
+}
+
+.qb-quest-card.completed {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.qb-quest-icon {
+  font-size: 26px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.qb-quest-info {
+  flex: 1;
+}
+
+.qb-quest-name {
+  font-size: 14px;
+  font-weight: 750;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.qb-quest-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.qb-quest-meter {
+  width: 100%;
+  height: 7px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.qb-quest-meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+  border-radius: 999px;
+}
+
+.qb-quest-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.qb-quest-reward-tag {
+  color: #d97706;
+}
+
+.btn-qb-action {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 750;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-qb-action.go {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1.5px solid #bfdbfe;
+}
+
+.btn-qb-action.go:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.btn-qb-action.claim {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  animation: reward-pulse 1.2s infinite alternate;
+}
+
+.btn-qb-action.claimed {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: default;
+}
+
+.btn-qb-action.locked {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.qb-chapter-reward-card {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #fde68a;
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.qb-chapter-reward-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.qb-chapter-reward-chest {
+  font-size: 36px;
+  animation: float-soft 3s ease-in-out infinite;
+}
+
+.qb-chapter-reward-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #92400e;
+}
+
+.qb-chapter-reward-sub {
+  font-size: 13px;
+  color: #b45309;
+  font-weight: 600;
+}
+
+.btn-claim-chapter-reward {
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+  border: none;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+  transition: all 0.2s ease;
+}
+
+.btn-claim-chapter-reward:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.5);
+}
+
+.btn-claim-chapter-reward:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-claim-chapter-reward.claimed {
+  background: #10b981;
+  color: #ffffff;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* Nút Mở Sổ Tay Nhiệm Vụ trong HUD & Home */
+.btn-open-quest-book {
+  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.btn-open-quest-book:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.qb-badge-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  background: #ef4444;
+  border: 2px solid white;
+  border-radius: 50%;
+  animation: reward-pulse 1s infinite alternate;
+}
+
 
 
 
