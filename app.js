@@ -68,6 +68,12 @@ document.addEventListener("DOMContentLoaded", () => {
       socraticVipTokens: 0, // Vé gợi ý Socratic VIP
       lastActiveDate: new Date().toISOString().split("T")[0],
       unlockedAvatars: ["🧙‍♂️", "🎒"],
+      bossRaid: {
+        clearedTier: 0, // Cấp boss cao nhất đã tiêu diệt (0 -> 10)
+        todayBattlesCount: 0, // Số lượt đã đánh hôm nay (tối đa 3 lượt)
+        lastBattleTime: 0, // Timestamp lần cuối đánh
+        lastBattleDate: new Date().toISOString().split("T")[0] // YYYY-MM-DD
+      },
       playerLevel: 1,
       playerExp: 0,
       playerMaxExp: 100,
@@ -223,6 +229,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof appState.doubleExpTokens !== "number") appState.doubleExpTokens = 0;
         if (typeof appState.socraticVipTokens !== "number") appState.socraticVipTokens = 0;
         if (!appState.quests) appState.quests = defaultState.quests;
+        if (!appState.bossRaid) {
+          appState.bossRaid = {
+            clearedTier: 0,
+            todayBattlesCount: 0,
+            lastBattleTime: 0,
+            lastBattleDate: new Date().toISOString().split("T")[0]
+          };
+        }
+        const todayStr = new Date().toISOString().split("T")[0];
+        if (appState.bossRaid.lastBattleDate !== todayStr) {
+          appState.bossRaid.todayBattlesCount = 0;
+          appState.bossRaid.lastBattleDate = todayStr;
+        }
         ensureLeitnerIntegrity(userGrade);
       } else {
         // Chưa đăng nhập -> Vào Chế độ Khách Học Thử sạch sẽ, KHÔNG ĐỌC TIẾN ĐỘ CỦA BẤT KỲ AI
@@ -1983,6 +2002,10 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       renderJourneyMap();
       renderDailyQuests();
     }
+    if (tabId === "tab-boss") {
+      renderBossTiersGrid();
+      updateBossCooldownUI();
+    }
     if (tabId === "tab-dashboard") {
       renderKnowledgeMap();
       updateDashboardStats();
@@ -2393,11 +2416,11 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
             <span class="stage-realm boss">ẢI TRÙM CUỐI • ĐẤU TRƯỜNG</span>
             <span class="stage-stars">${bossUnlocked ? '🏆🏆🏆' : '🔒🔒🔒'}</span>
           </div>
-          <h4 class="stage-name">Đại Thử Thách: Phòng Luyện Thi GK - CK</h4>
-          <p class="stage-summary">Chinh phục bài thi bấm giờ tổng hợp Toán 6 - 7 để đạt Danh hiệu Kiện Tướng!</p>
+          <h4 class="stage-name">Đại Thử Thách: Đấu Trường Diệt 10 Cấp Boss ⚔️</h4>
+          <p class="stage-summary">Khiêu chiến 20 câu hỏi tư duy nâng cao, rút cạn 20 Tim của Boss để thăng cấp danh hiệu!</p>
           <div class="stage-footer-row">
             <span class="stage-status-text boss">${bossUnlocked ? 'Đấu trường mở 24/7 ⚔️' : 'Khóa (Cần vượt ít nhất 3 Ải) 🔒'}</span>
-            <button class="btn-stage-action boss" id="btn-home-go-exam" ${bossUnlocked ? '' : 'disabled'}>${bossUnlocked ? 'Khiêu chiến Trùm ➔' : 'Cần qua 3 Ải'}</button>
+            <button class="btn-stage-action boss" id="btn-home-go-exam" ${bossUnlocked ? '' : 'disabled'}>${bossUnlocked ? 'Khiêu chiến Boss ➔' : 'Cần qua 3 Ải'}</button>
           </div>
         </div>
       </div>
@@ -2412,7 +2435,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         const action = btn.dataset.action;
 
         if (stageId === "boss" || btn.id === "btn-home-go-exam") {
-          switchTab("tab-exams");
+          switchTab("tab-boss");
           return;
         }
 
@@ -3291,9 +3314,510 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }
   }
 
+  // ---------------------------------------------------------------
+  // 12. PHÂN HỆ ĐẤU TRƯỜNG DIỆT BOSS TOÁN HỌC (10 CẤP ĐỘ NÂNG CAO)
+  // ---------------------------------------------------------------
+  let currentBossBattle = {
+    active: false,
+    tier: null,
+    questions: [],
+    currentQIndex: 0,
+    playerHp: 3,
+    playerMaxHp: 3,
+    bossHp: 20,
+    bossMaxHp: 20,
+    timeLeft: 60,
+    timerInterval: null,
+    isAnswering: false
+  };
+
+  let bossCooldownInterval = null;
+
+  function updateBossCooldownUI() {
+    const pill = document.getElementById("boss-cooldown-pill");
+    const textEl = document.getElementById("boss-cooldown-text");
+    const limitText = document.getElementById("boss-battles-left-text");
+    const clearedText = document.getElementById("boss-highest-cleared-text");
+
+    if (!appState || !appState.bossRaid) return;
+
+    // Reset ngày mới nếu cần
+    const todayStr = new Date().toISOString().split("T")[0];
+    if (appState.bossRaid.lastBattleDate !== todayStr) {
+      appState.bossRaid.todayBattlesCount = 0;
+      appState.bossRaid.lastBattleDate = todayStr;
+    }
+
+    const battlesLeft = Math.max(0, 3 - (appState.bossRaid.todayBattlesCount || 0));
+    if (limitText) limitText.textContent = `${battlesLeft} / 3 lượt`;
+    if (clearedText) clearedText.textContent = `Đã tiêu diệt: Cấp ${appState.bossRaid.clearedTier || 0} / 10`;
+
+    const elapsed = Date.now() - (appState.bossRaid.lastBattleTime || 0);
+    const cooldownMs = 30 * 60 * 1000; // 30 phút
+
+    if (battlesLeft <= 0) {
+      if (textEl) textEl.textContent = "Hết lượt hôm nay (3/3)";
+      if (pill) {
+        pill.className = "boss-stat-pill cooldown";
+      }
+      return;
+    }
+
+    if (elapsed < cooldownMs) {
+      const remainSec = Math.ceil((cooldownMs - elapsed) / 1000);
+      const m = Math.floor(remainSec / 60);
+      const s = remainSec % 60;
+      if (textEl) textEl.textContent = `Hồi năng lượng: ${m}:${s < 10 ? '0' : ''}${s}`;
+      if (pill) {
+        pill.className = "boss-stat-pill cooldown";
+      }
+    } else {
+      if (textEl) textEl.textContent = "Sẵn sàng xuất trận! ⚔️";
+      if (pill) {
+        pill.className = "boss-stat-pill ready";
+      }
+    }
+  }
+
+  function renderBossTiersGrid() {
+    const grid = document.getElementById("boss-tiers-grid");
+    if (!grid) return;
+
+    updateBossCooldownUI();
+
+    const elapsed = Date.now() - (appState.bossRaid.lastBattleTime || 0);
+    const isCoolingDown = elapsed < 30 * 60 * 1000;
+    const battlesLeft = Math.max(0, 3 - (appState.bossRaid.todayBattlesCount || 0));
+    const highestCleared = appState.bossRaid.clearedTier || 0;
+
+    let html = "";
+    if (typeof BOSS_TIERS_DATA !== "undefined" && Array.isArray(BOSS_TIERS_DATA)) {
+      BOSS_TIERS_DATA.forEach(tier => {
+        const isCleared = highestCleared >= tier.level;
+        const isUnlocked = tier.level === 1 || highestCleared >= tier.level - 1;
+        const isCurrentTarget = isUnlocked && !isCleared;
+
+        let cardClass = "boss-tier-card";
+        let badgeHtml = "";
+        let btnHtml = "";
+
+        if (isCleared) {
+          cardClass += " cleared";
+          badgeHtml = `<span class="boss-tier-badge badge-cleared">Đã Tiêu Diệt ✅</span>`;
+          btnHtml = `<button class="btn-fight-boss cleared-btn" data-tier="${tier.level}">Khiêu Chiến Lại ⚔️</button>`;
+        } else if (isCurrentTarget) {
+          cardClass += " active-target";
+          badgeHtml = `<span class="boss-tier-badge badge-ready">Trùm Mục Tiêu 🎯</span>`;
+          if (battlesLeft <= 0) {
+            btnHtml = `<button class="btn-fight-boss" disabled>Hết lượt hôm nay</button>`;
+          } else if (isCoolingDown) {
+            btnHtml = `<button class="btn-fight-boss" disabled>Đang hồi chiêu</button>`;
+          } else {
+            btnHtml = `<button class="btn-fight-boss" data-tier="${tier.level}">Diệt Trùm Ngay ⚔️</button>`;
+          }
+        } else {
+          cardClass += " locked";
+          badgeHtml = `<span class="boss-tier-badge badge-locked">Khóa (Cần diệt Cấp ${tier.level - 1}) 🔒</span>`;
+          btnHtml = `<button class="btn-fight-boss" disabled>Chưa mở khóa</button>`;
+        }
+
+        html += `
+          <div class="${cardClass}" id="boss-tier-card-${tier.level}">
+            ${badgeHtml}
+            <div class="boss-card-top">
+              <div class="boss-card-avatar">${tier.avatar}</div>
+              <div class="boss-card-info">
+                <h3>${tier.name}</h3>
+                <div class="boss-card-title">${tier.title}</div>
+              </div>
+            </div>
+            <div class="boss-card-desc">${tier.desc}</div>
+            <div class="boss-card-stats">
+              <span class="boss-hp-tag">❤️ ${tier.maxHp} Tim Boss</span>
+              <span class="boss-reward-tag">+${tier.rewardExp} EXP • ${tier.rewardCoins} 🪙</span>
+            </div>
+            ${btnHtml}
+          </div>
+        `;
+      });
+    }
+
+    grid.innerHTML = html;
+
+    // Gắn sự kiện cho các nút chiến đấu
+    grid.querySelectorAll(".btn-fight-boss:not(:disabled)").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tLevel = parseInt(btn.dataset.tier);
+        if (tLevel) startBossBattle(tLevel);
+      });
+    });
+  }
+
+  function startBossBattle(tierLevel) {
+    const elapsed = Date.now() - (appState.bossRaid.lastBattleTime || 0);
+    const battlesLeft = Math.max(0, 3 - (appState.bossRaid.todayBattlesCount || 0));
+
+    if (battlesLeft <= 0) {
+      alert("⚠️ Em đã sử dụng hết 3/3 lượt khiêu chiến Boss của ngày hôm nay rồi! Hãy nghỉ ngơi và quay lại vào ngày mai nhé!");
+      return;
+    }
+
+    if (elapsed < 30 * 60 * 1000) {
+      const remainSec = Math.ceil((30 * 60 * 1000 - elapsed) / 1000);
+      const m = Math.floor(remainSec / 60);
+      const s = remainSec % 60;
+      alert(`⏳ Đấu Trường đang trong thời gian hồi phục năng lượng! Em hãy chờ thêm ${m} phút ${s} giây nữa nhé.`);
+      return;
+    }
+
+    const tier = (typeof BOSS_TIERS_DATA !== "undefined") ? BOSS_TIERS_DATA.find(t => t.level === tierLevel) : null;
+    if (!tier) return;
+
+    // Chọn ngân hàng câu hỏi theo lớp hiện tại
+    const sourceQuestions = (appState.selectedGrade === 6 && typeof BOSS_QUESTIONS_GRADE_6 !== "undefined") 
+      ? [...BOSS_QUESTIONS_GRADE_6] 
+      : (typeof BOSS_QUESTIONS_GRADE_7 !== "undefined" ? [...BOSS_QUESTIONS_GRADE_7] : []);
+
+    const pool = [...sourceQuestions];
+    // Xáo trộn ngẫu nhiên
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const questions = pool.slice(0, 20);
+
+    // Ghi nhận lượt đánh & timestamp
+    appState.bossRaid.todayBattlesCount = (appState.bossRaid.todayBattlesCount || 0) + 1;
+    appState.bossRaid.lastBattleTime = Date.now();
+    saveState();
+
+    currentBossBattle = {
+      active: true,
+      tier: tier,
+      questions: questions,
+      currentQIndex: 0,
+      playerHp: 3,
+      playerMaxHp: 3,
+      bossHp: 20,
+      bossMaxHp: 20,
+      timeLeft: 60,
+      timerInterval: null,
+      isAnswering: false
+    };
+
+    // Chuyển view sang màn hình đánh Boss
+    const selView = document.getElementById("boss-selection-view");
+    const battleView = document.getElementById("boss-battle-active-view");
+    if (selView) selView.style.display = "none";
+    if (battleView) battleView.style.display = "block";
+
+    // Setup Fighter HUD
+    const isRealUser = currentUser && !currentUser.isGuest;
+    const playerAvatar = isRealUser ? (currentUser.avatar || "🧙‍♂️") : "🎒";
+    const playerName = isRealUser ? (currentUser.fullname || currentUser.username) : "Hiệp Sĩ Toán Học";
+
+    const pAvatarEl = document.getElementById("battle-player-avatar");
+    const pNameEl = document.getElementById("battle-player-name");
+    const heroSpriteEl = document.getElementById("hero-sprite-el");
+    const bAvatarEl = document.getElementById("battle-boss-avatar");
+    const bNameEl = document.getElementById("battle-boss-name");
+    const bossSpriteEl = document.getElementById("boss-sprite-el");
+
+    if (pAvatarEl) pAvatarEl.textContent = playerAvatar;
+    if (pNameEl) pNameEl.textContent = playerName;
+    if (heroSpriteEl) heroSpriteEl.textContent = playerAvatar;
+
+    if (bAvatarEl) bAvatarEl.textContent = tier.avatar;
+    if (bNameEl) bNameEl.textContent = `${tier.name} (Cấp ${tier.level})`;
+    if (bossSpriteEl) bossSpriteEl.textContent = tier.avatar;
+
+    updateBattleHUD();
+    loadBossQuestion(0);
+  }
+
+  function updateBattleHUD() {
+    // Player Hearts (3 Tim)
+    const heartsEl = document.getElementById("battle-player-hearts");
+    if (heartsEl) {
+      let hHtml = "";
+      for (let i = 0; i < currentBossBattle.playerMaxHp; i++) {
+        if (i < currentBossBattle.playerHp) {
+          hHtml += `<span class="heart-icon">❤️</span>`;
+        } else {
+          hHtml += `<span class="heart-icon lost">💔</span>`;
+        }
+      }
+      heartsEl.innerHTML = hHtml;
+    }
+
+    // Boss 20 HP
+    const fillEl = document.getElementById("battle-boss-hp-fill");
+    const textEl = document.getElementById("battle-boss-hp-text");
+    if (fillEl) {
+      const pct = Math.max(0, Math.round((currentBossBattle.bossHp / currentBossBattle.bossMaxHp) * 100));
+      fillEl.style.width = `${pct}%`;
+    }
+    if (textEl) {
+      textEl.textContent = `${currentBossBattle.bossHp} / ${currentBossBattle.bossMaxHp} Tim ❤️`;
+    }
+  }
+
+  function loadBossQuestion(qIdx) {
+    if (!currentBossBattle.active) return;
+    if (qIdx >= currentBossBattle.questions.length) {
+      qIdx = 0; // Vòng lặp câu hỏi nếu cần
+    }
+    currentBossBattle.currentQIndex = qIdx;
+    currentBossBattle.isAnswering = false;
+
+    const q = currentBossBattle.questions[qIdx];
+    const qCounterEl = document.getElementById("battle-q-counter-text");
+    const qTextEl = document.getElementById("battle-q-text");
+    const qTopicEl = document.getElementById("battle-q-topic");
+    const grid = document.getElementById("battle-options-grid");
+    const alertEl = document.getElementById("battle-feedback-alert");
+
+    if (qCounterEl) qCounterEl.textContent = `Câu hỏi ${qIdx + 1} / 20 (Đang đấu ${currentBossBattle.tier.name})`;
+    if (qTopicEl) qTopicEl.textContent = `TOÁN NÂNG CAO LỚP ${appState.selectedGrade} • CẤP ĐỘ ${currentBossBattle.tier.level}`;
+    if (qTextEl && q) qTextEl.innerHTML = q.question;
+    if (alertEl) {
+      alertEl.style.display = "none";
+      alertEl.className = "battle-feedback-alert";
+      alertEl.textContent = "";
+    }
+
+    // Reset Sprites
+    const heroSprite = document.getElementById("hero-sprite-el");
+    const bossSprite = document.getElementById("boss-sprite-el");
+    const fxEl = document.getElementById("battle-mid-fx");
+    heroSprite?.classList.remove("attack");
+    bossSprite?.classList.remove("hit", "attack");
+    fxEl?.classList.remove("show-fx");
+
+    // Render 4 Options
+    if (grid && q) {
+      grid.innerHTML = "";
+      const letters = ["A", "B", "C", "D"];
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "battle-opt-btn";
+        btn.innerHTML = `<span style="color:#f59e0b; margin-right:8px; font-weight:800;">${letters[idx]}.</span> ${opt}`;
+        btn.addEventListener("click", () => handlePlayerBattleAnswer(idx, btn));
+        grid.appendChild(btn);
+      });
+    }
+
+    renderAllMath(document.getElementById("boss-battle-active-view"));
+
+    // Reset & Start 60s Countdown
+    currentBossBattle.timeLeft = 60;
+    updateTimerUI();
+
+    if (currentBossBattle.timerInterval) clearInterval(currentBossBattle.timerInterval);
+    currentBossBattle.timerInterval = setInterval(() => {
+      currentBossBattle.timeLeft--;
+      updateTimerUI();
+
+      if (currentBossBattle.timeLeft <= 0) {
+        clearInterval(currentBossBattle.timerInterval);
+        handleBossTimeout();
+      }
+    }, 1000);
+  }
+
+  function updateTimerUI() {
+    const fillEl = document.getElementById("battle-timer-fill");
+    const textEl = document.getElementById("battle-timer-text");
+    const time = currentBossBattle.timeLeft;
+
+    if (textEl) textEl.textContent = `⏳ ${time} giây còn lại`;
+    if (fillEl) {
+      const pct = Math.max(0, (time / 60) * 100);
+      fillEl.style.width = `${pct}%`;
+      fillEl.classList.remove("warning", "critical");
+      if (time <= 15 && time > 5) fillEl.classList.add("warning");
+      else if (time <= 5) fillEl.classList.add("critical");
+    }
+  }
+
+  function handlePlayerBattleAnswer(selectedIdx, clickedBtn) {
+    if (!currentBossBattle.active || currentBossBattle.isAnswering) return;
+    currentBossBattle.isAnswering = true;
+
+    if (currentBossBattle.timerInterval) clearInterval(currentBossBattle.timerInterval);
+
+    const q = currentBossBattle.questions[currentBossBattle.currentQIndex];
+    if (!q) return;
+    const isCorrect = selectedIdx === q.correctIndex;
+
+    const alertEl = document.getElementById("battle-feedback-alert");
+    const heroSprite = document.getElementById("hero-sprite-el");
+    const bossSprite = document.getElementById("boss-sprite-el");
+    const fxEl = document.getElementById("battle-mid-fx");
+    const allBtns = document.querySelectorAll(".battle-opt-btn");
+    allBtns.forEach(b => b.disabled = true);
+
+    if (isCorrect) {
+      // TRẢ LỜI ĐÚNG -> TẤN CÔNG BOSS (-1 TIM BOSS)
+      clickedBtn?.classList.add("correct-strike");
+      currentBossBattle.bossHp--;
+      updateBattleHUD();
+
+      // Hiệu ứng Visual
+      heroSprite?.classList.add("attack");
+      bossSprite?.classList.add("hit");
+      if (fxEl) {
+        fxEl.textContent = "⚔️💥";
+        fxEl.classList.add("show-fx");
+      }
+      playSuccessSound();
+
+      if (alertEl) {
+        alertEl.className = "battle-feedback-alert hit-boss";
+        alertEl.innerHTML = `⚔️ <strong>CHÍNH XÁC! XUẤT SẮC!</strong><br>Bạn tung chiêu tuyệt kỹ chém trúng ${currentBossBattle.tier.name}! <strong>Boss mất 1 Tim ❤️</strong><br><em>Giải thích:</em> ${q.explanation}`;
+        alertEl.style.display = "block";
+      }
+
+      if (currentBossBattle.bossHp <= 0) {
+        setTimeout(() => handleBossVictory(), 1400);
+      } else {
+        setTimeout(() => {
+          loadBossQuestion(currentBossBattle.currentQIndex + 1);
+        }, 1600);
+      }
+    } else {
+      // TRẢ LỜI SAI -> BOSS PHẢN ĐÒN (-1 TIM HIỆP SĨ)
+      clickedBtn?.classList.add("wrong-strike");
+      allBtns[q.correctIndex]?.classList.add("correct-strike");
+      currentBossBattle.playerHp--;
+      updateBattleHUD();
+
+      // Hiệu ứng Visual
+      bossSprite?.classList.add("attack");
+      if (fxEl) {
+        fxEl.textContent = "🔥⚡";
+        fxEl.classList.add("show-fx");
+      }
+      playTone(180, "sawtooth", 0.3);
+
+      if (alertEl) {
+        alertEl.className = "battle-feedback-alert hit-player";
+        alertEl.innerHTML = `💔 <strong>CHƯA CHÍNH XÁC!</strong><br>Boss đã tung đòn phản công khiến bạn <strong>mất 1 Tim 💔</strong>!<br><em>Đáp án đúng:</em> ${q.options[q.correctIndex]}<br><em>Giải thích:</em> ${q.explanation}`;
+        alertEl.style.display = "block";
+      }
+
+      if (currentBossBattle.playerHp <= 0) {
+        setTimeout(() => handleBossDefeat(), 1800);
+      } else {
+        setTimeout(() => {
+          loadBossQuestion(currentBossBattle.currentQIndex + 1);
+        }, 2000);
+      }
+    }
+  }
+
+  function handleBossTimeout() {
+    if (!currentBossBattle.active || currentBossBattle.isAnswering) return;
+    currentBossBattle.isAnswering = true;
+
+    const q = currentBossBattle.questions[currentBossBattle.currentQIndex];
+    if (!q) return;
+    currentBossBattle.playerHp--;
+    updateBattleHUD();
+
+    const alertEl = document.getElementById("battle-feedback-alert");
+    const bossSprite = document.getElementById("boss-sprite-el");
+    const fxEl = document.getElementById("battle-mid-fx");
+    const allBtns = document.querySelectorAll(".battle-opt-btn");
+    allBtns.forEach(b => b.disabled = true);
+    allBtns[q.correctIndex]?.classList.add("correct-strike");
+
+    bossSprite?.classList.add("attack");
+    if (fxEl) {
+      fxEl.textContent = "⏰💥";
+      fxEl.classList.add("show-fx");
+    }
+    playTone(180, "sawtooth", 0.3);
+
+    if (alertEl) {
+      alertEl.className = "battle-feedback-alert hit-player";
+      alertEl.innerHTML = `⏰ <strong>HẾT GIỜ (60 GIÂY)!</strong><br>Không kịp trả lời nên Boss đã ra đòn khiến bạn <strong>mất 1 Tim 💔</strong>!<br><em>Đáp án đúng:</em> ${q.options[q.correctIndex]}<br><em>Giải thích:</em> ${q.explanation}`;
+      alertEl.style.display = "block";
+    }
+
+    if (currentBossBattle.playerHp <= 0) {
+      setTimeout(() => handleBossDefeat(), 1800);
+    } else {
+      setTimeout(() => {
+        loadBossQuestion(currentBossBattle.currentQIndex + 1);
+      }, 2000);
+    }
+  }
+
+  function handleBossVictory() {
+    if (currentBossBattle.timerInterval) clearInterval(currentBossBattle.timerInterval);
+    currentBossBattle.active = false;
+
+    const tier = currentBossBattle.tier;
+    if (appState.bossRaid.clearedTier < tier.level) {
+      appState.bossRaid.clearedTier = tier.level;
+    }
+
+    // Khen thưởng
+    addExpAndCoins(tier.rewardExp, tier.rewardCoins);
+    playCelebration();
+    saveState();
+
+    alert(`👑 CHIẾN THẮNG VANG DỘI!\n\nChúc mừng em đã anh dũng tiêu diệt ${tier.name} (${tier.title})!\n\n🎁 Phần thưởng danh giá:\n+${tier.rewardExp} EXP • +${tier.rewardCoins} Xu Toán Học 🪙\n\n✨ Cấp độ Boss tiếp theo đã được mở khóa!`);
+
+    exitBossBattleView();
+  }
+
+  function handleBossDefeat() {
+    if (currentBossBattle.timerInterval) clearInterval(currentBossBattle.timerInterval);
+    currentBossBattle.active = false;
+
+    const tier = currentBossBattle.tier;
+    saveState();
+
+    alert(`💔 BẠN ĐÃ THẤT BẠI!\n\nHiệp Sĩ đã mất hết 3 Tim trước sức mạnh của ${tier.name}.\n\n💡 Đừng nản lòng! Hãy ôn lại các định lý trong Sách giáo khoa và trở lại phục thù sau 30 phút nhé!`);
+
+    exitBossBattleView();
+  }
+
+  function exitBossBattleView() {
+    if (currentBossBattle.timerInterval) clearInterval(currentBossBattle.timerInterval);
+    currentBossBattle.active = false;
+
+    const selView = document.getElementById("boss-selection-view");
+    const battleView = document.getElementById("boss-battle-active-view");
+    if (selView) selView.style.display = "block";
+    if (battleView) battleView.style.display = "none";
+
+    renderBossTiersGrid();
+    renderPlayerHUD();
+  }
+
+  function setupBossBattleSystem() {
+    // Nút rút lui trong trận đấu
+    document.getElementById("btn-flee-battle")?.addEventListener("click", () => {
+      const conf = confirm("Em có chắc chắn muốn rút lui khỏi trận đấu Boss không? Trận đấu hiện tại sẽ bị hủy bỏ.");
+      if (conf) exitBossBattleView();
+    });
+
+    // Cập nhật cooldown đồng hồ mỗi 1 giây nếu đang ở tab-boss
+    if (bossCooldownInterval) clearInterval(bossCooldownInterval);
+    bossCooldownInterval = setInterval(() => {
+      if (appState && appState.activeTab === "tab-boss" && !currentBossBattle.active) {
+        updateBossCooldownUI();
+      }
+    }, 1000);
+  }
+
   // Khởi chạy toàn bộ hệ thống
   setupGamification();
   setupAuthSystem();
+  setupBossBattleSystem();
   syncGradeHeaderUI();
   applyGradeExamFilter();
   refreshCurrentView();

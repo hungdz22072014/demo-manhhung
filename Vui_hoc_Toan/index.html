@@ -3884,6 +3884,566 @@ body {
   cursor: default !important;
 }
 
+/* =================================================================
+   ĐẤU TRƯỜNG DIỆT BOSS TOÁN HỌC RPG (BOSS BATTLE ARENA)
+   ================================================================= */
+.boss-arena-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.boss-banner-card {
+  background: linear-gradient(135deg, #1e1b4b 0%, #450a0a 50%, #7f1d1d 100%);
+  color: white;
+  border-radius: var(--radius-xl);
+  padding: 24px 30px;
+  box-shadow: 0 12px 32px rgba(127, 29, 29, 0.3);
+  border: 1px solid rgba(254, 202, 202, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.boss-banner-card::before {
+  content: "⚔️";
+  position: absolute;
+  right: -10px;
+  top: -20px;
+  font-size: 140px;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.boss-banner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.boss-banner-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fef08a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.boss-banner-sub {
+  font-size: 13.5px;
+  color: #fecaca;
+  line-height: 1.5;
+  max-width: 780px;
+}
+
+.boss-stats-pills {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.boss-stat-pill {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fef3c7;
+}
+
+.boss-stat-pill.ready {
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.boss-stat-pill.cooldown {
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+
+/* 10 Cấp Độ Boss Grid */
+.boss-tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.boss-tier-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--border-color);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.boss-tier-card:hover:not(.locked) {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary);
+}
+
+.boss-tier-card.active-target {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+  background: linear-gradient(180deg, #fff 0%, #fff5f5 100%);
+}
+
+.boss-tier-card.cleared {
+  border-color: #10b981;
+  background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%);
+}
+
+.boss-tier-card.locked {
+  opacity: 0.65;
+  background: #f8fafc;
+  filter: grayscale(0.5);
+}
+
+.boss-tier-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.boss-tier-badge.badge-cleared { background: #d1fae5; color: #065f46; }
+.boss-tier-badge.badge-ready { background: #fee2e2; color: #991b1b; animation: reward-pulse 1.4s infinite alternate; }
+.boss-tier-badge.badge-locked { background: #e2e8f0; color: #64748b; }
+
+.boss-card-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.boss-card-avatar {
+  font-size: 42px;
+  line-height: 1;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.boss-card-info h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.boss-card-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.boss-card-desc {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  min-height: 48px;
+}
+
+.boss-card-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.boss-hp-tag { color: #dc2626; display: flex; align-items: center; gap: 4px; }
+.boss-reward-tag { color: #d97706; }
+
+.btn-fight-boss {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: var(--radius-lg);
+  border: none;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition-fast);
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+.btn-fight-boss:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45);
+}
+
+.btn-fight-boss:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-fight-boss.cleared-btn {
+  background: #f1f5f9;
+  color: #047857;
+  border: 1.5px solid #10b981;
+}
+
+/* =================================================================
+   MÀN HÌNH CHIẾN ĐẤU THỰC CHIẾN (ACTIVE BATTLE STAGE)
+   ================================================================= */
+.active-battle-container {
+  background: #0f172a;
+  color: white;
+  border-radius: var(--radius-2xl);
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  border: 2px solid #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Battle HUD Top */
+.battle-hud-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  background: rgba(30, 41, 59, 0.7);
+  padding: 14px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fighter-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fighter-profile.boss-profile {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.fighter-avatar-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.fighter-avatar-circle.boss-avatar-glow {
+  background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+}
+
+.fighter-meta-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fighter-name-text {
+  font-size: 14.5px;
+  font-weight: 800;
+}
+
+/* Player 3 Hearts */
+.player-hearts-box {
+  display: flex;
+  gap: 4px;
+  font-size: 20px;
+}
+
+.heart-icon {
+  filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.5));
+  transition: transform 0.2s ease;
+}
+
+.heart-icon.lost {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+/* Boss 20 HP Bar */
+.boss-hp-bar-wrapper {
+  width: 180px;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border: 1.5px solid #ef4444;
+  overflow: hidden;
+  position: relative;
+}
+
+.boss-hp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f43f5e 0%, #ef4444 100%);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.8);
+}
+
+.boss-hp-text {
+  font-size: 11px;
+  font-weight: 800;
+  color: #fca5a5;
+  margin-top: 2px;
+}
+
+.battle-vs-badge {
+  font-size: 20px;
+  font-weight: 900;
+  color: #f59e0b;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+}
+
+/* Visual Arena Field */
+.battle-visual-stage {
+  min-height: 140px;
+  background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  position: relative;
+}
+
+.hero-sprite {
+  font-size: 56px;
+  filter: drop-shadow(0 4px 16px rgba(59, 130, 246, 0.4));
+  transition: all 0.2s ease;
+}
+
+.hero-sprite.attack {
+  transform: translateX(60px) scale(1.15);
+}
+
+.boss-sprite {
+  font-size: 68px;
+  filter: drop-shadow(0 6px 20px rgba(239, 68, 68, 0.5));
+  transition: all 0.2s ease;
+}
+
+.boss-sprite.hit {
+  transform: translateX(30px) scale(0.9);
+  filter: brightness(2) contrast(1.5) drop-shadow(0 0 20px #ef4444);
+}
+
+.boss-sprite.attack {
+  transform: translateX(-60px) scale(1.15);
+}
+
+.battle-mid-fx {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 40px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.battle-mid-fx.show-fx {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.4);
+}
+
+/* Timer Bar 60s */
+.battle-timer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.battle-timer-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.battle-timer-track {
+  height: 8px;
+  background: #334155;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.battle-timer-fill {
+  height: 100%;
+  width: 100%;
+  background: #10b981;
+  transition: width 1s linear, background-color 0.3s ease;
+}
+
+.battle-timer-fill.warning { background: #f59e0b; }
+.battle-timer-fill.critical { background: #ef4444; animation: reward-pulse 0.5s infinite alternate; }
+
+/* Question Area */
+.battle-q-box {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1.5px solid #475569;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.battle-q-num {
+  font-size: 12px;
+  font-weight: 800;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.battle-q-text {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #f8fafc;
+}
+
+/* Options Grid */
+.battle-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.battle-opt-btn {
+  background: #1e293b;
+  border: 1.5px solid #475569;
+  color: white;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.battle-opt-btn:hover:not(:disabled) {
+  background: #334155;
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+}
+
+.battle-opt-btn.correct-strike {
+  background: #065f46 !important;
+  border-color: #34d399 !important;
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.5);
+}
+
+.battle-opt-btn.wrong-strike {
+  background: #7f1d1d !important;
+  border-color: #f87171 !important;
+  box-shadow: 0 0 16px rgba(248, 113, 113, 0.5);
+}
+
+.battle-feedback-alert {
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  display: none;
+}
+
+.battle-feedback-alert.hit-boss {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1.5px solid #10b981;
+  color: #6ee7b7;
+}
+
+.battle-feedback-alert.hit-player {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1.5px solid #ef4444;
+  color: #fca5a5;
+}
+
+.battle-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-flee-battle {
+  background: transparent;
+  border: 1.5px solid #64748b;
+  color: #94a3b8;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-flee-battle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .battle-hud-top {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .fighter-profile.boss-profile {
+    flex-direction: row;
+    text-align: left;
+  }
+  .battle-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 
 
 
@@ -3937,6 +4497,10 @@ body {
         <button class="nav-tab active" data-tab="tab-home">
           <span class="tab-icon">🏰</span>
           <span class="tab-title">Đại Sảnh & Bản Đồ Ải</span>
+        </button>
+        <button class="nav-tab" data-tab="tab-boss">
+          <span class="tab-icon">⚔️</span>
+          <span class="tab-title">Đấu Trường Diệt Boss</span>
         </button>
         <button class="nav-tab" data-tab="tab-theorems">
           <span class="tab-icon">🧠</span>
@@ -4086,6 +4650,128 @@ body {
         </div>
       </div>
     </section>
+
+    <!-- ========================================================= -->
+    <!-- PHÂN HỆ: ĐẤU TRƯỜNG DIỆT BOSS TOÁN HỌC (10 CẤP ĐỘ NÂNG CAO) -->
+    <!-- ========================================================= -->
+    <section id="tab-boss" class="tab-section">
+      <div class="boss-arena-container">
+        
+        <!-- Banner Đầu Trang -->
+        <div class="boss-banner-card">
+          <div class="boss-banner-header">
+            <h2 class="boss-banner-title">⚔️ Đấu Trường Diệt Boss Toán Học (10 Cấp Độ)</h2>
+            <div class="boss-stats-pills">
+              <div class="boss-stat-pill" id="boss-daily-limit-pill">
+                <span>🎯</span>
+                <span>Lượt khiêu chiến hôm nay: <strong id="boss-battles-left-text">3 / 3</strong></span>
+              </div>
+              <div class="boss-stat-pill ready" id="boss-cooldown-pill">
+                <span>⏳</span>
+                <span id="boss-cooldown-text">Sẵn sàng xuất trận! ⚔️</span>
+              </div>
+            </div>
+          </div>
+          <p class="boss-banner-sub">
+            🔥 <strong>Luật chiến đấu khắc nghiệt:</strong> Mỗi trận đấu gồm <strong>20 câu hỏi tư duy nâng cao</strong> theo đúng khối lớp của em. Mỗi câu có <strong>60 giây</strong> để suy nghĩ. Trả lời đúng sẽ chém Boss mất <strong>1 Tim ❤️</strong> (Boss có 20 Tim). Nếu trả lời sai hoặc hết 60s, Boss sẽ phản đòn khiến em mất <strong>1 Tim 💔</strong> (Em có 3 Tim). Mỗi 30 phút được vào 1 lần và tối đa 3 lần/ngày. Tiêu diệt Boss để mở khóa Cấp tiếp theo và nhận thưởng EXP & Xu khổng lồ!
+          </p>
+        </div>
+
+        <!-- VIEW 1: DANH SÁCH 10 CẤP ĐỘ BOSS (LỰA CHỌN KHIÊU CHIẾN) -->
+        <div id="boss-selection-view">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+              <span>🐉</span>
+              <span>10 Đại Thần Ma Trùm Cuối (Chọn Cấp Độ Khiêu Chiến)</span>
+            </h3>
+            <span style="font-size: 13px; font-weight: 700; color: #b45309;" id="boss-highest-cleared-text">Đã tiêu diệt: Cấp 0 / 10</span>
+          </div>
+          <div class="boss-tiers-grid" id="boss-tiers-grid">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- VIEW 2: MÀN HÌNH CHIẾN ĐẤU THỰC CHIẾN (ACTIVE BATTLE ARENA) -->
+        <div id="boss-battle-active-view" style="display: none;">
+          <div class="active-battle-container">
+            
+            <!-- Battle HUD Top (Player HP vs Boss HP) -->
+            <div class="battle-hud-top">
+              <!-- Player Profile -->
+              <div class="fighter-profile">
+                <div class="fighter-avatar-circle" id="battle-player-avatar">🧙‍♂️</div>
+                <div class="fighter-meta-box">
+                  <div class="fighter-name-text" id="battle-player-name">Hiệp Sĩ Toán Học</div>
+                  <div class="player-hearts-box" id="battle-player-hearts">
+                    <span class="heart-icon">❤️</span>
+                    <span class="heart-icon">❤️</span>
+                    <span class="heart-icon">❤️</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- VS Badge -->
+              <div class="battle-vs-badge">⚡ VS ⚡</div>
+
+              <!-- Boss Profile -->
+              <div class="fighter-profile boss-profile">
+                <div class="fighter-avatar-circle boss-avatar-glow" id="battle-boss-avatar">👺</div>
+                <div class="fighter-meta-box">
+                  <div class="fighter-name-text" id="battle-boss-name">Goblin Toán Học (Lv.1)</div>
+                  <div class="boss-hp-bar-wrapper">
+                    <div class="boss-hp-bar-fill" id="battle-boss-hp-fill" style="width: 100%;"></div>
+                  </div>
+                  <div class="boss-hp-text" id="battle-boss-hp-text">20 / 20 Tim ❤️</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sân đấu Visual (Visual Stage) -->
+            <div class="battle-visual-stage" id="battle-visual-stage">
+              <div class="hero-sprite" id="hero-sprite-el">🧙‍♂️</div>
+              <div class="battle-mid-fx" id="battle-mid-fx">💥</div>
+              <div class="boss-sprite" id="boss-sprite-el">👺</div>
+            </div>
+
+            <!-- Thanh đếm ngược 60 giây -->
+            <div class="battle-timer-container">
+              <div class="battle-timer-header">
+                <span id="battle-q-counter-text">Câu hỏi 1 / 20</span>
+                <span id="battle-timer-text">⏳ 60 giây còn lại</span>
+              </div>
+              <div class="battle-timer-track">
+                <div class="battle-timer-fill" id="battle-timer-fill" style="width: 100%;"></div>
+              </div>
+            </div>
+
+            <!-- Khung Câu Hỏi Nâng Cao -->
+            <div class="battle-q-box">
+              <div class="battle-q-num" id="battle-q-topic">TOÁN NÂNG CAO THCS</div>
+              <div class="battle-q-text" id="battle-q-text">Đang tải câu hỏi nâng cao...</div>
+            </div>
+
+            <!-- Khung 4 Lựa Chọn Trắc Nghiệm -->
+            <div class="battle-options-grid" id="battle-options-grid">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Thông báo phản hồi đòn đánh -->
+            <div class="battle-feedback-alert" id="battle-feedback-alert"></div>
+
+            <!-- Thanh hành động -->
+            <div class="battle-actions-bar">
+              <button class="btn-flee-battle" id="btn-flee-battle">🏳️ Rút lui / Thoát trận</button>
+              <div style="font-size: 12px; color: #94a3b8;">
+                💡 <em>Mẹo: Mỗi câu hỏi nâng cao có 1 phút để suy nghĩ, trả lời đúng để rút máu Boss!</em>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+  
 
     <!-- ========================================================= -->
     <!-- PHÂN HỆ 1: TRẠM THỬ THÁCH & GHI NHỚ ĐỊNH LÝ -->
@@ -5021,6 +5707,436 @@ body {
   </div>
 
   <!-- Audio elements & Scripts -->
+<script>
+// =================================================================
+// KHO DỮ LIỆU ĐẤU TRƯỜNG DIỆT BOSS TOÁN 6 - 7 (KẾT NỐI TRI THỨC VỚI CUỘC SỐNG)
+// 10 Cấp Độ Boss & Ngân Hàng Câu Hỏi Nâng Cao Khối Lớp 6 và 7
+// =================================================================
+
+const BOSS_TIERS_DATA = [
+  {
+    level: 1,
+    name: "Goblin Toán Học",
+    avatar: "👺",
+    title: "Cấp 1 • Tiểu Quái Vùng Ven",
+    desc: "Kẻ canh giữ cửa ngõ đại ngàn, chuyên dùng các phép tính lũy thừa và chia hết cơ bản để thử thách hiệp sĩ.",
+    maxHp: 20,
+    rewardExp: 150,
+    rewardCoins: 60,
+    bossColor: "#10b981",
+    themeClass: "boss-tier-1"
+  },
+  {
+    level: 2,
+    name: "Quái Thú Số Học",
+    avatar: "🐺",
+    title: "Cấp 2 • Ma Sói Rừng Rậm",
+    desc: "Sở hữu tốc độ tính nhẩm siêu thanh và các bài toán tìm ước chung, bội chung nhanh như chớp.",
+    maxHp: 20,
+    rewardExp: 180,
+    rewardCoins: 75,
+    bossColor: "#0ea5e9",
+    themeClass: "boss-tier-2"
+  },
+  {
+    level: 3,
+    name: "Thạch Thủ Hình Học",
+    avatar: "🗿",
+    title: "Cấp 3 • Hộ Vệ Cự Thạch",
+    desc: "Cơ thể bằng đá tảng hình học bất hoại, chỉ có thể bị tổn thương bởi các công thức chu vi, diện tích và tính chất đa giác.",
+    maxHp: 20,
+    rewardExp: 210,
+    rewardCoins: 90,
+    bossColor: "#f59e0b",
+    themeClass: "boss-tier-3"
+  },
+  {
+    level: 4,
+    name: "Hắc Pháp Sư Phân Số",
+    avatar: "🧙‍♂️",
+    title: "Cấp 4 • Pháp Sư Thao Túng",
+    desc: "Bậc thầy quy đồng và tính nhanh dãy phân số có quy luật, tạo ra những ma trận số bí ẩn.",
+    maxHp: 20,
+    rewardExp: 240,
+    rewardCoins: 110,
+    bossColor: "#8b5cf6",
+    themeClass: "boss-tier-4"
+  },
+  {
+    level: 5,
+    name: "Rồng Lửa Tỉ Lệ Thức",
+    avatar: "🐉",
+    title: "Cấp 5 • Hỏa Long Núi Lửa",
+    desc: "Hơi thở rực lửa biến đổi khôn lường các đại lượng tỉ lệ thuận, tỉ lệ nghịch và dãy tỉ số bằng nhau.",
+    maxHp: 20,
+    rewardExp: 280,
+    rewardCoins: 130,
+    bossColor: "#ef4444",
+    themeClass: "boss-tier-5"
+  },
+  {
+    level: 6,
+    name: "Bạo Chúa Đa Thức",
+    avatar: "🦖",
+    title: "Cấp 6 • Chúa Tể Rừng Già",
+    desc: "Kẻ thống trị các biểu thức đại số, nghiệm của đa thức một biến và các bài toán rút gọn phức tạp.",
+    maxHp: 20,
+    rewardExp: 320,
+    rewardCoins: 150,
+    bossColor: "#ec4899",
+    themeClass: "boss-tier-6"
+  },
+  {
+    level: 7,
+    name: "Ma Thần Tam Giác Bằng Nhau",
+    avatar: "👁️",
+    title: "Cấp 7 • Ác Ma Không Gian",
+    desc: "Sở hữu nhãn thuật nhìn thấu mọi góc, cạnh tương ứng và 3 trường hợp bằng nhau của tam giác.",
+    maxHp: 20,
+    rewardExp: 360,
+    rewardCoins: 170,
+    bossColor: "#6366f1",
+    themeClass: "boss-tier-7"
+  },
+  {
+    level: 8,
+    name: "Lãnh Chúa Bất Đẳng Thức",
+    avatar: "⚔️",
+    title: "Cấp 8 • Kiếm Thánh Bất Khả Chiến Bại",
+    desc: "Chuyên sử dụng bất đẳng thức tam giác và bài toán cực trị hình học để phản đòn hiệp sĩ.",
+    maxHp: 20,
+    rewardExp: 400,
+    rewardCoins: 190,
+    bossColor: "#059669",
+    themeClass: "boss-tier-8"
+  },
+  {
+    level: 9,
+    name: "Hắc Long Đồng Quy",
+    avatar: "🐲",
+    title: "Cấp 9 • Thần Long Bốn Trọng Điểm",
+    desc: "Tập hợp sức mạnh của trọng tâm, trực tâm, tâm đường tròn nội tiếp và ngoại tiếp tam giác.",
+    maxHp: 20,
+    rewardExp: 450,
+    rewardCoins: 220,
+    bossColor: "#7c3aed",
+    themeClass: "boss-tier-9"
+  },
+  {
+    level: 10,
+    name: "Thần Ma Toán Học Vô Cực",
+    avatar: "🌌",
+    title: "Cấp 10 • TRÙM CUỐI HUYỀN THOẠI",
+    desc: "Hiện thân của cảnh giới Toán học THCS tối cao! Kẻ đánh bại Thần Ma sẽ được tôn vinh là Huyền Thoại Toán Học Bất Tử!",
+    maxHp: 20,
+    rewardExp: 600,
+    rewardCoins: 300,
+    bossColor: "#f43f5e",
+    themeClass: "boss-tier-10"
+  }
+];
+
+// =================================================================
+// NGÂN HÀNG CÂU HỎI NÂNG CAO LỚP 6
+// =================================================================
+const BOSS_QUESTIONS_GRADE_6 = [
+  {
+    id: "bq6-1",
+    question: "Chữ số tận cùng của số $A = 2^{2024}$ là chữ số nào?",
+    options: ["2", "4", "6", "8"],
+    correctIndex: 2,
+    explanation: "Ta có $2^4 = 16$ tận cùng là 6. Mà $2^{2024} = (2^4)^{506} = 16^{506}$ luôn có chữ số tận cùng là 6."
+  },
+  {
+    id: "bq6-2",
+    question: "Tìm số tự nhiên $x$ thỏa mãn: $1 + 2 + 3 + \\dots + x = 210$.",
+    options: ["$x = 20$", "$x = 21$", "$x = 19$", "$x = 22$"],
+    correctIndex: 0,
+    explanation: "Tổng dãy số: $\\frac{x(x+1)}{2} = 210 \\Rightarrow x(x+1) = 420 = 20 \\times 21$. Vậy $x = 20$."
+  },
+  {
+    id: "bq6-3",
+    question: "Tìm chữ số tận cùng của tổng $S = 1 + 3 + 3^2 + 3^3 + \\dots + 3^{2024}$:",
+    options: ["1", "3", "0", "4"],
+    correctIndex: 0,
+    explanation: "Nhân 3 vào $S$: $3S = 3 + 3^2 + \\dots + 3^{2025} \\Rightarrow 2S = 3^{2025} - 1$. Vì $3^{2025} = 3 \\cdot (3^4)^{506}$ tận cùng là 3, nên $3^{2025} - 1$ tận cùng là 2 $\\Rightarrow 2S$ tận cùng là 2 $\\Rightarrow S$ tận cùng là 1 (hoặc 6, nhưng tổng số lẻ có 2025 số hạng lẻ nên là số lẻ $\\Rightarrow$ tận cùng là 1)."
+  },
+  {
+    id: "bq6-4",
+    question: "Số tự nhiên $n$ nhỏ nhất khác 0 chia hết cho cả 12, 15 và 18 là:",
+    options: ["90", "180", "360", "540"],
+    correctIndex: 1,
+    explanation: "Ta tìm $\\text{BCNN}(12, 15, 18)$. Phân tích: $12 = 2^2 \\cdot 3$, $15 = 3 \\cdot 5$, $18 = 2 \\cdot 3^2 \\Rightarrow \\text{BCNN} = 2^2 \\cdot 3^2 \\cdot 5 = 180$."
+  },
+  {
+    id: "bq6-5",
+    question: "Cho biểu thức $A = \\frac{1}{1 \\cdot 2} + \\frac{1}{2 \\cdot 3} + \\frac{1}{3 \\cdot 4} + \\dots + \\frac{1}{99 \\cdot 100}$. Giá trị của $A$ là:",
+    options: ["$\\frac{99}{100}$", "$\\frac{1}{100}$", "$\\frac{100}{99}$", "$\\frac{98}{100}$"],
+    correctIndex: 0,
+    explanation: "$A = (1 - \\frac{1}{2}) + (\\frac{1}{2} - \\frac{1}{3}) + \\dots + (\\frac{1}{99} - \\frac{1}{100}) = 1 - \\frac{1}{100} = \\frac{99}{100}$."
+  },
+  {
+    id: "bq6-6",
+    question: "Có bao nhiêu số nguyên $x$ thỏa mãn $-5 < x \\le 4$?",
+    options: ["8", "9", "10", "11"],
+    correctIndex: 1,
+    explanation: "Các số nguyên $x \\in \\{-4, -3, -2, -1, 0, 1, 2, 3, 4\\}$. Tổng cộng có 9 số nguyên."
+  },
+  {
+    id: "bq6-7",
+    question: "Số ước tự nhiên của số $72$ là:",
+    options: ["10", "12", "14", "16"],
+    correctIndex: 1,
+    explanation: "Phân tích ra thừa số nguyên tố: $72 = 2^3 \\cdot 3^2$. Số lượng ước tự nhiên là $(3+1)(2+1) = 4 \\cdot 3 = 12$ ước."
+  },
+  {
+    id: "bq6-8",
+    question: "Cho $n$ điểm phân biệt trong đó không có 3 điểm nào thẳng hàng. Vẽ được tất cả 45 đoạn thẳng nối các cặp điểm. Giá trị của $n$ là:",
+    options: ["$n = 9$", "$n = 10$", "$n = 11$", "$n = 12$"],
+    correctIndex: 1,
+    explanation: "Số đoạn thẳng tạo từ $n$ điểm: $\\frac{n(n-1)}{2} = 45 \\Rightarrow n(n-1) = 90 = 10 \\times 9 \\Rightarrow n = 10$."
+  },
+  {
+    id: "bq6-9",
+    question: "Cho góc $\\widehat{xOy} = 120^\\circ$, tia $Oz$ là tia phân giác của góc $\\widehat{xOy}$. Số đo góc $\\widehat{xOz}$ là:",
+    options: ["60°", "30°", "45°", "90°"],
+    correctIndex: 0,
+    explanation: "Tia phân giác chia góc ra làm 2 phần bằng nhau: $\\widehat{xOz} = \\frac{\\widehat{xOy}}{2} = \\frac{120^\\circ}{2} = 60^\\circ$."
+  },
+  {
+    id: "bq6-10",
+    question: "Rút gọn phân số $\\frac{2^{10} \\cdot 3^8}{6^8}$ ta được kết quả là:",
+    options: ["2", "4", "8", "16"],
+    correctIndex: 1,
+    explanation: "Ta có $6^8 = (2 \\cdot 3)^8 = 2^8 \\cdot 3^8$. Vậy $\\frac{2^{10} \\cdot 3^8}{2^8 \\cdot 3^8} = 2^{10-8} = 2^2 = 4$."
+  },
+  {
+    id: "bq6-11",
+    question: "Tìm chữ số tận cùng của $7^{2023}$:",
+    options: ["1", "3", "7", "9"],
+    correctIndex: 1,
+    explanation: "Lũy thừa của 7 theo chu kỳ 4: $7^1=7, 7^2=9, 7^3=3, 7^4=1$. Ta có $2023 = 4 \\cdot 505 + 3$, nên $7^{2023}$ có tận cùng bằng chữ số tận cùng của $7^3$ là 3."
+  },
+  {
+    id: "bq6-12",
+    question: "Một mảnh vườn hình chữ nhật có chu vi 48m, chiều dài gấp 3 lần chiều rộng. Diện tích mảnh vườn là:",
+    options: ["108 m²", "144 m²", "128 m²", "96 m²"],
+    correctIndex: 0,
+    explanation: "Nửa chu vi = $48 : 2 = 24\\text{m}$. Chiều rộng = $24 : (1+3) = 6\\text{m}$. Chiều dài = $18\\text{m}$. Diện tích = $18 \\times 6 = 108\\text{ m}^2$."
+  },
+  {
+    id: "bq6-13",
+    question: "Tìm tất cả các số nguyên $n$ để phân số $\\frac{n+3}{n-1}$ nhận giá trị nguyên:",
+    options: ["$n \\in \\{2, 0, 3, -1, 5, -3\\}$", "$n \\in \\{2, 0, 3, -1\\}$", "$n \\in \\{1, -1, 2, -2\\}$", "$n \\in \\{5, -3\\}$"],
+    correctIndex: 0,
+    explanation: "Ta có $\\frac{n+3}{n-1} = 1 + \\frac{4}{n-1}$. Để là số nguyên thì $n-1 \\in \\text{Ư}(4) = \\{\\pm 1, \\pm 2, \\pm 4\\} \\Rightarrow n \\in \\{2, 0, 3, -1, 5, -3\\}$."
+  },
+  {
+    id: "bq6-14",
+    question: "Giá trị của tổng $B = \\frac{1}{2} + \\frac{1}{4} + \\frac{1}{8} + \\frac{1}{16} + \\frac{1}{32} + \\frac{1}{64}$ là:",
+    options: ["$\\frac{63}{64}$", "$\\frac{31}{32}$", "$\\frac{65}{64}$", "1"],
+    correctIndex: 0,
+    explanation: "Nhân 2 vào $B$: $2B = 1 + \\frac{1}{2} + \\dots + \\frac{1}{32} \\Rightarrow B = 2B - B = 1 - \\frac{1}{64} = \\frac{63}{64}$."
+  },
+  {
+    id: "bq6-15",
+    question: "Một bể nước có dung tích 1200 lít. Vòi thứ nhất chảy trong 4 giờ thì đầy bể, vòi thứ hai chảy trong 6 giờ thì đầy bể. Cả hai vòi cùng chảy thì sau bao lâu đầy bể?",
+    options: ["2,4 giờ", "2,5 giờ", "3 giờ", "5 giờ"],
+    correctIndex: 0,
+    explanation: "Trong 1 giờ hai vòi chảy được: $\\frac{1}{4} + \\frac{1}{6} = \\frac{5}{12}$ bể. Thời gian đầy bể là: $1 : \\frac{5}{12} = \\frac{12}{5} = 2{,}4$ giờ (2 giờ 24 phút)."
+  },
+  {
+    id: "bq6-16",
+    question: "Tổng của 5 số tự nhiên liên tiếp là 105. Số lớn nhất trong 5 số đó là:",
+    options: ["21", "22", "23", "24"],
+    correctIndex: 2,
+    explanation: "Số chính giữa là $105 : 5 = 21$. Năm số đó là: 19, 20, 21, 22, 23. Số lớn nhất là 23."
+  },
+  {
+    id: "bq6-17",
+    question: "Tìm giá trị của $x$ biết: $|x - 3| + 5 = 12$:",
+    options: ["$x = 10$ hoặc $x = -4$", "$x = 10$", "$x = -4$", "$x = 7$"],
+    correctIndex: 0,
+    explanation: "$|x - 3| = 12 - 5 = 7 \\Rightarrow x - 3 = 7 \\Rightarrow x = 10$ hoặc $x - 3 = -7 \\Rightarrow x = -4$."
+  },
+  {
+    id: "bq6-18",
+    question: "Cho hai góc kề bù $\\widehat{AOB}$ và $\\widehat{BOC}$. Biết $\\widehat{AOB} = 2\\widehat{BOC}$. Số đo góc $\\widehat{AOB}$ là:",
+    options: ["60°", "120°", "90°", "100°"],
+    correctIndex: 1,
+    explanation: "Vì kề bù nên $\\widehat{AOB} + \\widehat{BOC} = 180^\\circ \\Rightarrow 2\\widehat{BOC} + \\widehat{BOC} = 180^\\circ \\Rightarrow 3\\widehat{BOC} = 180^\\circ \\Rightarrow \\widehat{BOC} = 60^\\circ \\Rightarrow \\widehat{AOB} = 120^\\circ$."
+  },
+  {
+    id: "bq6-19",
+    question: "Trong các số sau, số nào chia hết cho cả 2, 3, 5 và 9?",
+    options: ["1350", "2460", "3150", "1350 và 3150 đều đúng"],
+    correctIndex: 3,
+    explanation: "Số chia hết cho 2 và 5 tận cùng là 0. Số chia hết cho 9 thì tổng các chữ số chia hết cho 9. Cả 1350 (tổng = 9) và 3150 (tổng = 9) đều thỏa mãn chia hết cho 2, 3, 5, 9."
+  },
+  {
+    id: "bq6-20",
+    question: "Hình thoi có độ dài hai đường chéo lần lượt là 14cm và 18cm. Diện tích hình thoi là:",
+    options: ["126 cm²", "252 cm²", "63 cm²", "108 cm²"],
+    correctIndex: 0,
+    explanation: "Diện tích hình thoi = $\\frac{1}{2} d_1 d_2 = \\frac{1}{2} \\cdot 14 \\cdot 18 = 126\\text{ cm}^2$."
+  }
+];
+
+// =================================================================
+// NGÂN HÀNG CÂU HỎI NÂNG CAO LỚP 7
+// =================================================================
+const BOSS_QUESTIONS_GRADE_7 = [
+  {
+    id: "bq7-1",
+    question: "Cho $\\frac{a}{b} = \\frac{c}{d}$. Đẳng thức nào sau đây luôn đúng?",
+    options: ["$\\frac{a+b}{b} = \\frac{c+d}{d}$", "$\\frac{a-b}{b} = \\frac{c+d}{d}$", "$\\frac{a}{c} = \\frac{d}{b}$", "$a \\cdot c = b \\cdot d$"],
+    correctIndex: 0,
+    explanation: "Từ $\\frac{a}{b} = \\frac{c}{d} \\Rightarrow \\frac{a}{b} + 1 = \\frac{c}{d} + 1 \\Rightarrow \\frac{a+b}{b} = \\frac{c+d}{d}$."
+  },
+  {
+    id: "bq7-2",
+    question: "Tìm $x, y, z$ biết $\\frac{x}{2} = \\frac{y}{3} = \\frac{z}{4}$ và $x + 2y - z = 16$:",
+    options: ["$x=8, y=12, z=16$", "$x=4, y=6, z=8$", "$x=6, y=9, z=12$", "$x=10, y=15, z=20$"],
+    correctIndex: 0,
+    explanation: "Áp dụng tính chất dãy tỉ số: $\\frac{x}{2} = \\frac{2y}{6} = \\frac{z}{4} = \\frac{x+2y-z}{2+6-4} = \\frac{16}{4} = 4 \\Rightarrow x=8, y=12, z=16$."
+  },
+  {
+    id: "bq7-3",
+    question: "Cho tam giác $ABC$ có $\\widehat{A} : \\widehat{B} : \\widehat{C} = 1 : 2 : 3$. Số đo ba góc $A, B, C$ lần lượt là:",
+    options: ["30°, 60°, 90°", "20°, 40°, 120°", "40°, 60°, 80°", "15°, 30°, 135°"],
+    correctIndex: 0,
+    explanation: "Tổng 3 góc bằng 180°: $\\frac{\\widehat{A}}{1} = \\frac{\\widehat{B}}{2} = \\frac{\\widehat{C}}{3} = \\frac{180^\\circ}{1+2+3} = 30^\\circ \\Rightarrow \\widehat{A}=30^\\circ, \\widehat{B}=60^\\circ, \\widehat{C}=90^\\circ$."
+  },
+  {
+    id: "bq7-4",
+    question: "Đa thức $P(x) = x^2 - 5x + 6$ có tập nghiệm là:",
+    options: ["$\\{2, 3\\}$", "$\\{-2, -3\\}$", "$\\{1, 6\\}$", "$\\{-1, -6\\}$"],
+    correctIndex: 0,
+    explanation: "$x^2 - 5x + 6 = (x-2)(x-3) = 0 \\Rightarrow x = 2$ hoặc $x = 3$."
+  },
+  {
+    id: "bq7-5",
+    question: "Giá trị nhỏ nhất của biểu thức $A = |x - 2| + |x - 8|$ là:",
+    options: ["6", "0", "8", "2"],
+    correctIndex: 0,
+    explanation: "Áp dụng bất đẳng thức trị tuyệt đối: $|x - 2| + |x - 8| = |x - 2| + |8 - x| \\ge |x - 2 + 8 - x| = 6$. Dấu '=' xảy ra khi $2 \\le x \\le 8$."
+  },
+  {
+    id: "bq7-6",
+    question: "Cho tam giác $ABC$ cân tại $A$ có $\\widehat{A} = 100^\\circ$. Số đo góc đáy $\\widehat{B}$ là:",
+    options: ["40°", "80°", "50°", "45°"],
+    correctIndex: 0,
+    explanation: "Tam giác cân có hai góc ở đáy bằng nhau: $\\widehat{B} = \\widehat{C} = \\frac{180^\\circ - 100^\\circ}{2} = 40^\\circ$."
+  },
+  {
+    id: "bq7-7",
+    question: "Bộ ba đoạn thẳng nào sau đây KHÔNG THỂ tạo thành một tam giác?",
+    options: ["2cm, 4cm, 6cm", "3cm, 4cm, 5cm", "5cm, 6cm, 7cm", "4cm, 4cm, 7cm"],
+    correctIndex: 0,
+    explanation: "Bất đẳng thức tam giác: Tổng 2 cạnh bất kì phải lớn hơn cạnh còn lại. Bộ ba $2 + 4 = 6$ không thỏa mãn (phải lớn hơn 6)."
+  },
+  {
+    id: "bq7-8",
+    question: "Tam giác $ABC$ có trung tuyến $AM$, trọng tâm $G$. Tỉ số $\\frac{AG}{AM}$ bằng:",
+    options: ["$\\frac{2}{3}$", "$\\frac{1}{2}$", "$\\frac{1}{3}$", "$\\frac{3}{4}$"],
+    correctIndex: 0,
+    explanation: "Tính chất 3 đường trung tuyến: Trọng tâm cách mỗi đỉnh một khoảng bằng $\\frac{2}{3}$ độ dài đường trung tuyến đi qua đỉnh đó ($AG = \\frac{2}{3} AM$)."
+  },
+  {
+    id: "bq7-9",
+    question: "Tìm hệ số cao nhất và hệ số tự do của đa thức $Q(x) = -3x^4 + 5x^3 - 2x^2 + 7x - 9$:",
+    options: ["Hệ số cao nhất: -3, Hệ số tự do: -9", "Hệ số cao nhất: 5, Hệ số tự do: 9", "Hệ số cao nhất: 4, Hệ số tự do: -9", "Hệ số cao nhất: -3, Hệ số tự do: 7"],
+    correctIndex: 0,
+    explanation: "Bậc cao nhất là bậc 4 ứng với hệ số $-3$. Hệ số không chứa biến là hệ số tự do: $-9$."
+  },
+  {
+    id: "bq7-10",
+    question: "Cho tam giác $ABC$ vuông tại $A$ có $AB = 6\\text{ cm}, AC = 8\\text{ cm}$. Độ dài đường trung tuyến $AM$ ứng với cạnh huyền là:",
+    options: ["5 cm", "10 cm", "4,8 cm", "7 cm"],
+    correctIndex: 0,
+    explanation: "Cạnh huyền $BC = \\sqrt{6^2 + 8^2} = 10\\text{ cm}$. Trong tam giác vuông, đường trung tuyến ứng với cạnh huyền bằng nửa cạnh huyền: $AM = \\frac{BC}{2} = 5\\text{ cm}$."
+  },
+  {
+    id: "bq7-11",
+    question: "Tìm giá trị của $x$ để đa thức $M(x) = x^2 + 4$ có nghiệm:",
+    options: ["Không có giá trị nào của $x$", "$x = 2$", "$x = -2$", "$x = 0$"],
+    correctIndex: 0,
+    explanation: "Vì $x^2 \\ge 0$ với mọi $x$ nên $x^2 + 4 \\ge 4 > 0$ với mọi $x$. Đa thức vô nghiệm trên tập số thực."
+  },
+  {
+    id: "bq7-12",
+    question: "Giao điểm của ba đường phân giác trong tam giác là điểm:",
+    options: ["Cách đều 3 cạnh của tam giác", "Cách đều 3 đỉnh của tam giác", "Trực tâm tam giác", "Trọng tâm tam giác"],
+    correctIndex: 0,
+    explanation: "Tính chất 3 đường phân giác: Giao điểm của ba đường phân giác là tâm đường tròn nội tiếp, cách đều ba cạnh của tam giác."
+  },
+  {
+    id: "bq7-13",
+    question: "Cho biết 12 người thợ gặt xong một cánh đồng trong 4 ngày. Muốn gặt xong cánh đồng đó trong 3 ngày thì cần bao nhiêu người thợ (năng suất như nhau)?",
+    options: ["16 người", "15 người", "18 người", "14 người"],
+    correctIndex: 0,
+    explanation: "Số người và số ngày là hai đại lượng tỉ lệ nghịch: $12 \\times 4 = x \\times 3 \\Rightarrow x = \\frac{48}{3} = 16$ người."
+  },
+  {
+    id: "bq7-14",
+    question: "Cho đa thức $f(x) = ax^2 + bx + c$. Biết $f(0) = 2, f(1) = 7, f(-1) = 1$. Giá trị của $a$ là:",
+    options: ["$a = 2$", "$a = 3$", "$a = 1$", "$a = -1$"],
+    correctIndex: 0,
+    explanation: "$f(0) = c = 2$. $f(1) = a + b + 2 = 7 \\Rightarrow a + b = 5$. $f(-1) = a - b + 2 = 1 \\Rightarrow a - b = -1$. Cộng lại: $2a = 4 \\Rightarrow a = 2$."
+  },
+  {
+    id: "bq7-15",
+    question: "Cho tam giác $ABC$ có $\\widehat{B} = 75^\\circ, \\widehat{C} = 45^\\circ$. So sánh độ dài ba cạnh $AB, BC, AC$:",
+    options: ["$AB < BC < AC$", "$BC < AB < AC$", "$AC < AB < BC$", "$AB < AC < BC$"],
+    correctIndex: 0,
+    explanation: "Góc $\\widehat{A} = 180^\\circ - 75^\\circ - 45^\\circ = 60^\\circ$. So sánh góc: $\\widehat{C}(45^\\circ) < \\widehat{A}(60^\\circ) < \\widehat{B}(75^\\circ) \\Rightarrow AB < BC < AC$."
+  },
+  {
+    id: "bq7-16",
+    question: "Tìm giá trị lớn nhất của biểu thức $B = 10 - (x - 3)^2 - |y + 2|$:",
+    options: ["10", "13", "7", "0"],
+    correctIndex: 0,
+    explanation: "Vì $-(x-3)^2 \\le 0$ và $-|y+2| \\le 0$ nên $B \\le 10$. Dấu '=' xảy ra khi $x = 3$ và $y = -2$."
+  },
+  {
+    id: "bq7-17",
+    question: "Giao điểm của ba đường trung trực trong tam giác là điểm:",
+    options: ["Cách đều 3 đỉnh của tam giác", "Cách đều 3 cạnh của tam giác", "Trọng tâm tam giác", "Trực tâm tam giác"],
+    correctIndex: 0,
+    explanation: "Tính chất ba đường trung trực: Giao điểm của ba đường trung trực là tâm đường tròn ngoại tiếp, cách đều 3 đỉnh của tam giác."
+  },
+  {
+    id: "bq7-18",
+    question: "Tìm giá trị của $x$ biết: $(2x - 1)^3 = -27$:",
+    options: ["$x = -1$", "$x = 1$", "$x = -2$", "$x = 2$"],
+    correctIndex: 0,
+    explanation: "$(2x - 1)^3 = (-3)^3 \\Rightarrow 2x - 1 = -3 \\Rightarrow 2x = -2 \\Rightarrow x = -1$."
+  },
+  {
+    id: "bq7-19",
+    question: "Đa thức nào sau đây có nghiệm $x = -2$?",
+    options: ["$P(x) = 2x + 4$", "$Q(x) = x^2 + 4$", "$R(x) = 2x - 4$", "$S(x) = x^2 - 2$"],
+    correctIndex: 0,
+    explanation: "Thay $x = -2$ vào $P(x)$: $2(-2) + 4 = -4 + 4 = 0$. Vậy $x = -2$ là nghiệm của $P(x)$."
+  },
+  {
+    id: "bq7-20",
+    question: "Một hình lăng trụ đứng tam giác có đáy là tam giác vuông có hai cạnh góc vuông là 3cm và 4cm, chiều cao lăng trụ là 10cm. Thể tích hình lăng trụ là:",
+    options: ["60 cm³", "120 cm³", "50 cm³", "70 cm³"],
+    correctIndex: 0,
+    explanation: "Diện tích đáy $S_đ = \\frac{1}{2} \\cdot 3 \\cdot 4 = 6\\text{ cm}^2$. Thể tích $V = S_đ \\cdot h = 6 \\cdot 10 = 60\\text{ cm}^3$."
+  }
+];
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    BOSS_TIERS_DATA,
+    BOSS_QUESTIONS_GRADE_6,
+    BOSS_QUESTIONS_GRADE_7
+  };
+}
+
+</script>
 <script>
 // =================================================================
 // KHO DỮ LIỆU ĐỊNH LÝ & CÔNG THỨC TOÁN 6 - 7 (KẾT NỐI TRI THỨC VỚI CUỘC SỐNG)
@@ -6459,6 +7575,12 @@ document.addEventListener("DOMContentLoaded", () => {
       socraticVipTokens: 0, // Vé gợi ý Socratic VIP
       lastActiveDate: new Date().toISOString().split("T")[0],
       unlockedAvatars: ["🧙‍♂️", "🎒"],
+      bossRaid: {
+        clearedTier: 0, // Cấp boss cao nhất đã tiêu diệt (0 -> 10)
+        todayBattlesCount: 0, // Số lượt đã đánh hôm nay (tối đa 3 lượt)
+        lastBattleTime: 0, // Timestamp lần cuối đánh
+        lastBattleDate: new Date().toISOString().split("T")[0] // YYYY-MM-DD
+      },
       playerLevel: 1,
       playerExp: 0,
       playerMaxExp: 100,
@@ -6614,6 +7736,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof appState.doubleExpTokens !== "number") appState.doubleExpTokens = 0;
         if (typeof appState.socraticVipTokens !== "number") appState.socraticVipTokens = 0;
         if (!appState.quests) appState.quests = defaultState.quests;
+        if (!appState.bossRaid) {
+          appState.bossRaid = {
+            clearedTier: 0,
+            todayBattlesCount: 0,
+            lastBattleTime: 0,
+            lastBattleDate: new Date().toISOString().split("T")[0]
+          };
+        }
+        const todayStr = new Date().toISOString().split("T")[0];
+        if (appState.bossRaid.lastBattleDate !== todayStr) {
+          appState.bossRaid.todayBattlesCount = 0;
+          appState.bossRaid.lastBattleDate = todayStr;
+        }
         ensureLeitnerIntegrity(userGrade);
       } else {
         // Chưa đăng nhập -> Vào Chế độ Khách Học Thử sạch sẽ, KHÔNG ĐỌC TIẾN ĐỘ CỦA BẤT KỲ AI
@@ -8374,6 +9509,10 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       renderJourneyMap();
       renderDailyQuests();
     }
+    if (tabId === "tab-boss") {
+      renderBossTiersGrid();
+      updateBossCooldownUI();
+    }
     if (tabId === "tab-dashboard") {
       renderKnowledgeMap();
       updateDashboardStats();
@@ -8784,11 +9923,11 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
             <span class="stage-realm boss">ẢI TRÙM CUỐI • ĐẤU TRƯỜNG</span>
             <span class="stage-stars">${bossUnlocked ? '🏆🏆🏆' : '🔒🔒🔒'}</span>
           </div>
-          <h4 class="stage-name">Đại Thử Thách: Phòng Luyện Thi GK - CK</h4>
-          <p class="stage-summary">Chinh phục bài thi bấm giờ tổng hợp Toán 6 - 7 để đạt Danh hiệu Kiện Tướng!</p>
+          <h4 class="stage-name">Đại Thử Thách: Đấu Trường Diệt 10 Cấp Boss ⚔️</h4>
+          <p class="stage-summary">Khiêu chiến 20 câu hỏi tư duy nâng cao, rút cạn 20 Tim của Boss để thăng cấp danh hiệu!</p>
           <div class="stage-footer-row">
             <span class="stage-status-text boss">${bossUnlocked ? 'Đấu trường mở 24/7 ⚔️' : 'Khóa (Cần vượt ít nhất 3 Ải) 🔒'}</span>
-            <button class="btn-stage-action boss" id="btn-home-go-exam" ${bossUnlocked ? '' : 'disabled'}>${bossUnlocked ? 'Khiêu chiến Trùm ➔' : 'Cần qua 3 Ải'}</button>
+            <button class="btn-stage-action boss" id="btn-home-go-exam" ${bossUnlocked ? '' : 'disabled'}>${bossUnlocked ? 'Khiêu chiến Boss ➔' : 'Cần qua 3 Ải'}</button>
           </div>
         </div>
       </div>
@@ -8803,7 +9942,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         const action = btn.dataset.action;
 
         if (stageId === "boss" || btn.id === "btn-home-go-exam") {
-          switchTab("tab-exams");
+          switchTab("tab-boss");
           return;
         }
 
@@ -9682,9 +10821,510 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }
   }
 
+  // ---------------------------------------------------------------
+  // 12. PHÂN HỆ ĐẤU TRƯỜNG DIỆT BOSS TOÁN HỌC (10 CẤP ĐỘ NÂNG CAO)
+  // ---------------------------------------------------------------
+  let currentBossBattle = {
+    active: false,
+    tier: null,
+    questions: [],
+    currentQIndex: 0,
+    playerHp: 3,
+    playerMaxHp: 3,
+    bossHp: 20,
+    bossMaxHp: 20,
+    timeLeft: 60,
+    timerInterval: null,
+    isAnswering: false
+  };
+
+  let bossCooldownInterval = null;
+
+  function updateBossCooldownUI() {
+    const pill = document.getElementById("boss-cooldown-pill");
+    const textEl = document.getElementById("boss-cooldown-text");
+    const limitText = document.getElementById("boss-battles-left-text");
+    const clearedText = document.getElementById("boss-highest-cleared-text");
+
+    if (!appState || !appState.bossRaid) return;
+
+    // Reset ngày mới nếu cần
+    const todayStr = new Date().toISOString().split("T")[0];
+    if (appState.bossRaid.lastBattleDate !== todayStr) {
+      appState.bossRaid.todayBattlesCount = 0;
+      appState.bossRaid.lastBattleDate = todayStr;
+    }
+
+    const battlesLeft = Math.max(0, 3 - (appState.bossRaid.todayBattlesCount || 0));
+    if (limitText) limitText.textContent = `${battlesLeft} / 3 lượt`;
+    if (clearedText) clearedText.textContent = `Đã tiêu diệt: Cấp ${appState.bossRaid.clearedTier || 0} / 10`;
+
+    const elapsed = Date.now() - (appState.bossRaid.lastBattleTime || 0);
+    const cooldownMs = 30 * 60 * 1000; // 30 phút
+
+    if (battlesLeft <= 0) {
+      if (textEl) textEl.textContent = "Hết lượt hôm nay (3/3)";
+      if (pill) {
+        pill.className = "boss-stat-pill cooldown";
+      }
+      return;
+    }
+
+    if (elapsed < cooldownMs) {
+      const remainSec = Math.ceil((cooldownMs - elapsed) / 1000);
+      const m = Math.floor(remainSec / 60);
+      const s = remainSec % 60;
+      if (textEl) textEl.textContent = `Hồi năng lượng: ${m}:${s < 10 ? '0' : ''}${s}`;
+      if (pill) {
+        pill.className = "boss-stat-pill cooldown";
+      }
+    } else {
+      if (textEl) textEl.textContent = "Sẵn sàng xuất trận! ⚔️";
+      if (pill) {
+        pill.className = "boss-stat-pill ready";
+      }
+    }
+  }
+
+  function renderBossTiersGrid() {
+    const grid = document.getElementById("boss-tiers-grid");
+    if (!grid) return;
+
+    updateBossCooldownUI();
+
+    const elapsed = Date.now() - (appState.bossRaid.lastBattleTime || 0);
+    const isCoolingDown = elapsed < 30 * 60 * 1000;
+    const battlesLeft = Math.max(0, 3 - (appState.bossRaid.todayBattlesCount || 0));
+    const highestCleared = appState.bossRaid.clearedTier || 0;
+
+    let html = "";
+    if (typeof BOSS_TIERS_DATA !== "undefined" && Array.isArray(BOSS_TIERS_DATA)) {
+      BOSS_TIERS_DATA.forEach(tier => {
+        const isCleared = highestCleared >= tier.level;
+        const isUnlocked = tier.level === 1 || highestCleared >= tier.level - 1;
+        const isCurrentTarget = isUnlocked && !isCleared;
+
+        let cardClass = "boss-tier-card";
+        let badgeHtml = "";
+        let btnHtml = "";
+
+        if (isCleared) {
+          cardClass += " cleared";
+          badgeHtml = `<span class="boss-tier-badge badge-cleared">Đã Tiêu Diệt ✅</span>`;
+          btnHtml = `<button class="btn-fight-boss cleared-btn" data-tier="${tier.level}">Khiêu Chiến Lại ⚔️</button>`;
+        } else if (isCurrentTarget) {
+          cardClass += " active-target";
+          badgeHtml = `<span class="boss-tier-badge badge-ready">Trùm Mục Tiêu 🎯</span>`;
+          if (battlesLeft <= 0) {
+            btnHtml = `<button class="btn-fight-boss" disabled>Hết lượt hôm nay</button>`;
+          } else if (isCoolingDown) {
+            btnHtml = `<button class="btn-fight-boss" disabled>Đang hồi chiêu</button>`;
+          } else {
+            btnHtml = `<button class="btn-fight-boss" data-tier="${tier.level}">Diệt Trùm Ngay ⚔️</button>`;
+          }
+        } else {
+          cardClass += " locked";
+          badgeHtml = `<span class="boss-tier-badge badge-locked">Khóa (Cần diệt Cấp ${tier.level - 1}) 🔒</span>`;
+          btnHtml = `<button class="btn-fight-boss" disabled>Chưa mở khóa</button>`;
+        }
+
+        html += `
+          <div class="${cardClass}" id="boss-tier-card-${tier.level}">
+            ${badgeHtml}
+            <div class="boss-card-top">
+              <div class="boss-card-avatar">${tier.avatar}</div>
+              <div class="boss-card-info">
+                <h3>${tier.name}</h3>
+                <div class="boss-card-title">${tier.title}</div>
+              </div>
+            </div>
+            <div class="boss-card-desc">${tier.desc}</div>
+            <div class="boss-card-stats">
+              <span class="boss-hp-tag">❤️ ${tier.maxHp} Tim Boss</span>
+              <span class="boss-reward-tag">+${tier.rewardExp} EXP • ${tier.rewardCoins} 🪙</span>
+            </div>
+            ${btnHtml}
+          </div>
+        `;
+      });
+    }
+
+    grid.innerHTML = html;
+
+    // Gắn sự kiện cho các nút chiến đấu
+    grid.querySelectorAll(".btn-fight-boss:not(:disabled)").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tLevel = parseInt(btn.dataset.tier);
+        if (tLevel) startBossBattle(tLevel);
+      });
+    });
+  }
+
+  function startBossBattle(tierLevel) {
+    const elapsed = Date.now() - (appState.bossRaid.lastBattleTime || 0);
+    const battlesLeft = Math.max(0, 3 - (appState.bossRaid.todayBattlesCount || 0));
+
+    if (battlesLeft <= 0) {
+      alert("⚠️ Em đã sử dụng hết 3/3 lượt khiêu chiến Boss của ngày hôm nay rồi! Hãy nghỉ ngơi và quay lại vào ngày mai nhé!");
+      return;
+    }
+
+    if (elapsed < 30 * 60 * 1000) {
+      const remainSec = Math.ceil((30 * 60 * 1000 - elapsed) / 1000);
+      const m = Math.floor(remainSec / 60);
+      const s = remainSec % 60;
+      alert(`⏳ Đấu Trường đang trong thời gian hồi phục năng lượng! Em hãy chờ thêm ${m} phút ${s} giây nữa nhé.`);
+      return;
+    }
+
+    const tier = (typeof BOSS_TIERS_DATA !== "undefined") ? BOSS_TIERS_DATA.find(t => t.level === tierLevel) : null;
+    if (!tier) return;
+
+    // Chọn ngân hàng câu hỏi theo lớp hiện tại
+    const sourceQuestions = (appState.selectedGrade === 6 && typeof BOSS_QUESTIONS_GRADE_6 !== "undefined") 
+      ? [...BOSS_QUESTIONS_GRADE_6] 
+      : (typeof BOSS_QUESTIONS_GRADE_7 !== "undefined" ? [...BOSS_QUESTIONS_GRADE_7] : []);
+
+    const pool = [...sourceQuestions];
+    // Xáo trộn ngẫu nhiên
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const questions = pool.slice(0, 20);
+
+    // Ghi nhận lượt đánh & timestamp
+    appState.bossRaid.todayBattlesCount = (appState.bossRaid.todayBattlesCount || 0) + 1;
+    appState.bossRaid.lastBattleTime = Date.now();
+    saveState();
+
+    currentBossBattle = {
+      active: true,
+      tier: tier,
+      questions: questions,
+      currentQIndex: 0,
+      playerHp: 3,
+      playerMaxHp: 3,
+      bossHp: 20,
+      bossMaxHp: 20,
+      timeLeft: 60,
+      timerInterval: null,
+      isAnswering: false
+    };
+
+    // Chuyển view sang màn hình đánh Boss
+    const selView = document.getElementById("boss-selection-view");
+    const battleView = document.getElementById("boss-battle-active-view");
+    if (selView) selView.style.display = "none";
+    if (battleView) battleView.style.display = "block";
+
+    // Setup Fighter HUD
+    const isRealUser = currentUser && !currentUser.isGuest;
+    const playerAvatar = isRealUser ? (currentUser.avatar || "🧙‍♂️") : "🎒";
+    const playerName = isRealUser ? (currentUser.fullname || currentUser.username) : "Hiệp Sĩ Toán Học";
+
+    const pAvatarEl = document.getElementById("battle-player-avatar");
+    const pNameEl = document.getElementById("battle-player-name");
+    const heroSpriteEl = document.getElementById("hero-sprite-el");
+    const bAvatarEl = document.getElementById("battle-boss-avatar");
+    const bNameEl = document.getElementById("battle-boss-name");
+    const bossSpriteEl = document.getElementById("boss-sprite-el");
+
+    if (pAvatarEl) pAvatarEl.textContent = playerAvatar;
+    if (pNameEl) pNameEl.textContent = playerName;
+    if (heroSpriteEl) heroSpriteEl.textContent = playerAvatar;
+
+    if (bAvatarEl) bAvatarEl.textContent = tier.avatar;
+    if (bNameEl) bNameEl.textContent = `${tier.name} (Cấp ${tier.level})`;
+    if (bossSpriteEl) bossSpriteEl.textContent = tier.avatar;
+
+    updateBattleHUD();
+    loadBossQuestion(0);
+  }
+
+  function updateBattleHUD() {
+    // Player Hearts (3 Tim)
+    const heartsEl = document.getElementById("battle-player-hearts");
+    if (heartsEl) {
+      let hHtml = "";
+      for (let i = 0; i < currentBossBattle.playerMaxHp; i++) {
+        if (i < currentBossBattle.playerHp) {
+          hHtml += `<span class="heart-icon">❤️</span>`;
+        } else {
+          hHtml += `<span class="heart-icon lost">💔</span>`;
+        }
+      }
+      heartsEl.innerHTML = hHtml;
+    }
+
+    // Boss 20 HP
+    const fillEl = document.getElementById("battle-boss-hp-fill");
+    const textEl = document.getElementById("battle-boss-hp-text");
+    if (fillEl) {
+      const pct = Math.max(0, Math.round((currentBossBattle.bossHp / currentBossBattle.bossMaxHp) * 100));
+      fillEl.style.width = `${pct}%`;
+    }
+    if (textEl) {
+      textEl.textContent = `${currentBossBattle.bossHp} / ${currentBossBattle.bossMaxHp} Tim ❤️`;
+    }
+  }
+
+  function loadBossQuestion(qIdx) {
+    if (!currentBossBattle.active) return;
+    if (qIdx >= currentBossBattle.questions.length) {
+      qIdx = 0; // Vòng lặp câu hỏi nếu cần
+    }
+    currentBossBattle.currentQIndex = qIdx;
+    currentBossBattle.isAnswering = false;
+
+    const q = currentBossBattle.questions[qIdx];
+    const qCounterEl = document.getElementById("battle-q-counter-text");
+    const qTextEl = document.getElementById("battle-q-text");
+    const qTopicEl = document.getElementById("battle-q-topic");
+    const grid = document.getElementById("battle-options-grid");
+    const alertEl = document.getElementById("battle-feedback-alert");
+
+    if (qCounterEl) qCounterEl.textContent = `Câu hỏi ${qIdx + 1} / 20 (Đang đấu ${currentBossBattle.tier.name})`;
+    if (qTopicEl) qTopicEl.textContent = `TOÁN NÂNG CAO LỚP ${appState.selectedGrade} • CẤP ĐỘ ${currentBossBattle.tier.level}`;
+    if (qTextEl && q) qTextEl.innerHTML = q.question;
+    if (alertEl) {
+      alertEl.style.display = "none";
+      alertEl.className = "battle-feedback-alert";
+      alertEl.textContent = "";
+    }
+
+    // Reset Sprites
+    const heroSprite = document.getElementById("hero-sprite-el");
+    const bossSprite = document.getElementById("boss-sprite-el");
+    const fxEl = document.getElementById("battle-mid-fx");
+    heroSprite?.classList.remove("attack");
+    bossSprite?.classList.remove("hit", "attack");
+    fxEl?.classList.remove("show-fx");
+
+    // Render 4 Options
+    if (grid && q) {
+      grid.innerHTML = "";
+      const letters = ["A", "B", "C", "D"];
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "battle-opt-btn";
+        btn.innerHTML = `<span style="color:#f59e0b; margin-right:8px; font-weight:800;">${letters[idx]}.</span> ${opt}`;
+        btn.addEventListener("click", () => handlePlayerBattleAnswer(idx, btn));
+        grid.appendChild(btn);
+      });
+    }
+
+    renderAllMath(document.getElementById("boss-battle-active-view"));
+
+    // Reset & Start 60s Countdown
+    currentBossBattle.timeLeft = 60;
+    updateTimerUI();
+
+    if (currentBossBattle.timerInterval) clearInterval(currentBossBattle.timerInterval);
+    currentBossBattle.timerInterval = setInterval(() => {
+      currentBossBattle.timeLeft--;
+      updateTimerUI();
+
+      if (currentBossBattle.timeLeft <= 0) {
+        clearInterval(currentBossBattle.timerInterval);
+        handleBossTimeout();
+      }
+    }, 1000);
+  }
+
+  function updateTimerUI() {
+    const fillEl = document.getElementById("battle-timer-fill");
+    const textEl = document.getElementById("battle-timer-text");
+    const time = currentBossBattle.timeLeft;
+
+    if (textEl) textEl.textContent = `⏳ ${time} giây còn lại`;
+    if (fillEl) {
+      const pct = Math.max(0, (time / 60) * 100);
+      fillEl.style.width = `${pct}%`;
+      fillEl.classList.remove("warning", "critical");
+      if (time <= 15 && time > 5) fillEl.classList.add("warning");
+      else if (time <= 5) fillEl.classList.add("critical");
+    }
+  }
+
+  function handlePlayerBattleAnswer(selectedIdx, clickedBtn) {
+    if (!currentBossBattle.active || currentBossBattle.isAnswering) return;
+    currentBossBattle.isAnswering = true;
+
+    if (currentBossBattle.timerInterval) clearInterval(currentBossBattle.timerInterval);
+
+    const q = currentBossBattle.questions[currentBossBattle.currentQIndex];
+    if (!q) return;
+    const isCorrect = selectedIdx === q.correctIndex;
+
+    const alertEl = document.getElementById("battle-feedback-alert");
+    const heroSprite = document.getElementById("hero-sprite-el");
+    const bossSprite = document.getElementById("boss-sprite-el");
+    const fxEl = document.getElementById("battle-mid-fx");
+    const allBtns = document.querySelectorAll(".battle-opt-btn");
+    allBtns.forEach(b => b.disabled = true);
+
+    if (isCorrect) {
+      // TRẢ LỜI ĐÚNG -> TẤN CÔNG BOSS (-1 TIM BOSS)
+      clickedBtn?.classList.add("correct-strike");
+      currentBossBattle.bossHp--;
+      updateBattleHUD();
+
+      // Hiệu ứng Visual
+      heroSprite?.classList.add("attack");
+      bossSprite?.classList.add("hit");
+      if (fxEl) {
+        fxEl.textContent = "⚔️💥";
+        fxEl.classList.add("show-fx");
+      }
+      playSuccessSound();
+
+      if (alertEl) {
+        alertEl.className = "battle-feedback-alert hit-boss";
+        alertEl.innerHTML = `⚔️ <strong>CHÍNH XÁC! XUẤT SẮC!</strong><br>Bạn tung chiêu tuyệt kỹ chém trúng ${currentBossBattle.tier.name}! <strong>Boss mất 1 Tim ❤️</strong><br><em>Giải thích:</em> ${q.explanation}`;
+        alertEl.style.display = "block";
+      }
+
+      if (currentBossBattle.bossHp <= 0) {
+        setTimeout(() => handleBossVictory(), 1400);
+      } else {
+        setTimeout(() => {
+          loadBossQuestion(currentBossBattle.currentQIndex + 1);
+        }, 1600);
+      }
+    } else {
+      // TRẢ LỜI SAI -> BOSS PHẢN ĐÒN (-1 TIM HIỆP SĨ)
+      clickedBtn?.classList.add("wrong-strike");
+      allBtns[q.correctIndex]?.classList.add("correct-strike");
+      currentBossBattle.playerHp--;
+      updateBattleHUD();
+
+      // Hiệu ứng Visual
+      bossSprite?.classList.add("attack");
+      if (fxEl) {
+        fxEl.textContent = "🔥⚡";
+        fxEl.classList.add("show-fx");
+      }
+      playTone(180, "sawtooth", 0.3);
+
+      if (alertEl) {
+        alertEl.className = "battle-feedback-alert hit-player";
+        alertEl.innerHTML = `💔 <strong>CHƯA CHÍNH XÁC!</strong><br>Boss đã tung đòn phản công khiến bạn <strong>mất 1 Tim 💔</strong>!<br><em>Đáp án đúng:</em> ${q.options[q.correctIndex]}<br><em>Giải thích:</em> ${q.explanation}`;
+        alertEl.style.display = "block";
+      }
+
+      if (currentBossBattle.playerHp <= 0) {
+        setTimeout(() => handleBossDefeat(), 1800);
+      } else {
+        setTimeout(() => {
+          loadBossQuestion(currentBossBattle.currentQIndex + 1);
+        }, 2000);
+      }
+    }
+  }
+
+  function handleBossTimeout() {
+    if (!currentBossBattle.active || currentBossBattle.isAnswering) return;
+    currentBossBattle.isAnswering = true;
+
+    const q = currentBossBattle.questions[currentBossBattle.currentQIndex];
+    if (!q) return;
+    currentBossBattle.playerHp--;
+    updateBattleHUD();
+
+    const alertEl = document.getElementById("battle-feedback-alert");
+    const bossSprite = document.getElementById("boss-sprite-el");
+    const fxEl = document.getElementById("battle-mid-fx");
+    const allBtns = document.querySelectorAll(".battle-opt-btn");
+    allBtns.forEach(b => b.disabled = true);
+    allBtns[q.correctIndex]?.classList.add("correct-strike");
+
+    bossSprite?.classList.add("attack");
+    if (fxEl) {
+      fxEl.textContent = "⏰💥";
+      fxEl.classList.add("show-fx");
+    }
+    playTone(180, "sawtooth", 0.3);
+
+    if (alertEl) {
+      alertEl.className = "battle-feedback-alert hit-player";
+      alertEl.innerHTML = `⏰ <strong>HẾT GIỜ (60 GIÂY)!</strong><br>Không kịp trả lời nên Boss đã ra đòn khiến bạn <strong>mất 1 Tim 💔</strong>!<br><em>Đáp án đúng:</em> ${q.options[q.correctIndex]}<br><em>Giải thích:</em> ${q.explanation}`;
+      alertEl.style.display = "block";
+    }
+
+    if (currentBossBattle.playerHp <= 0) {
+      setTimeout(() => handleBossDefeat(), 1800);
+    } else {
+      setTimeout(() => {
+        loadBossQuestion(currentBossBattle.currentQIndex + 1);
+      }, 2000);
+    }
+  }
+
+  function handleBossVictory() {
+    if (currentBossBattle.timerInterval) clearInterval(currentBossBattle.timerInterval);
+    currentBossBattle.active = false;
+
+    const tier = currentBossBattle.tier;
+    if (appState.bossRaid.clearedTier < tier.level) {
+      appState.bossRaid.clearedTier = tier.level;
+    }
+
+    // Khen thưởng
+    addExpAndCoins(tier.rewardExp, tier.rewardCoins);
+    playCelebration();
+    saveState();
+
+    alert(`👑 CHIẾN THẮNG VANG DỘI!\n\nChúc mừng em đã anh dũng tiêu diệt ${tier.name} (${tier.title})!\n\n🎁 Phần thưởng danh giá:\n+${tier.rewardExp} EXP • +${tier.rewardCoins} Xu Toán Học 🪙\n\n✨ Cấp độ Boss tiếp theo đã được mở khóa!`);
+
+    exitBossBattleView();
+  }
+
+  function handleBossDefeat() {
+    if (currentBossBattle.timerInterval) clearInterval(currentBossBattle.timerInterval);
+    currentBossBattle.active = false;
+
+    const tier = currentBossBattle.tier;
+    saveState();
+
+    alert(`💔 BẠN ĐÃ THẤT BẠI!\n\nHiệp Sĩ đã mất hết 3 Tim trước sức mạnh của ${tier.name}.\n\n💡 Đừng nản lòng! Hãy ôn lại các định lý trong Sách giáo khoa và trở lại phục thù sau 30 phút nhé!`);
+
+    exitBossBattleView();
+  }
+
+  function exitBossBattleView() {
+    if (currentBossBattle.timerInterval) clearInterval(currentBossBattle.timerInterval);
+    currentBossBattle.active = false;
+
+    const selView = document.getElementById("boss-selection-view");
+    const battleView = document.getElementById("boss-battle-active-view");
+    if (selView) selView.style.display = "block";
+    if (battleView) battleView.style.display = "none";
+
+    renderBossTiersGrid();
+    renderPlayerHUD();
+  }
+
+  function setupBossBattleSystem() {
+    // Nút rút lui trong trận đấu
+    document.getElementById("btn-flee-battle")?.addEventListener("click", () => {
+      const conf = confirm("Em có chắc chắn muốn rút lui khỏi trận đấu Boss không? Trận đấu hiện tại sẽ bị hủy bỏ.");
+      if (conf) exitBossBattleView();
+    });
+
+    // Cập nhật cooldown đồng hồ mỗi 1 giây nếu đang ở tab-boss
+    if (bossCooldownInterval) clearInterval(bossCooldownInterval);
+    bossCooldownInterval = setInterval(() => {
+      if (appState && appState.activeTab === "tab-boss" && !currentBossBattle.active) {
+        updateBossCooldownUI();
+      }
+    }, 1000);
+  }
+
   // Khởi chạy toàn bộ hệ thống
   setupGamification();
   setupAuthSystem();
+  setupBossBattleSystem();
   syncGradeHeaderUI();
   applyGradeExamFilter();
   refreshCurrentView();

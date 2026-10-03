@@ -7,3 +7,6 @@ check_spelling.js
 deep_audit.js
 scan_subtle_typos.js
 verify_project.js
+build_full_app.js
+test_verification.js
+

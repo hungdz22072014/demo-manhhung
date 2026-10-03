@@ -3861,5 +3861,565 @@ body {
   cursor: default !important;
 }
 
+/* =================================================================
+   ĐẤU TRƯỜNG DIỆT BOSS TOÁN HỌC RPG (BOSS BATTLE ARENA)
+   ================================================================= */
+.boss-arena-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.boss-banner-card {
+  background: linear-gradient(135deg, #1e1b4b 0%, #450a0a 50%, #7f1d1d 100%);
+  color: white;
+  border-radius: var(--radius-xl);
+  padding: 24px 30px;
+  box-shadow: 0 12px 32px rgba(127, 29, 29, 0.3);
+  border: 1px solid rgba(254, 202, 202, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.boss-banner-card::before {
+  content: "⚔️";
+  position: absolute;
+  right: -10px;
+  top: -20px;
+  font-size: 140px;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.boss-banner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.boss-banner-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fef08a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.boss-banner-sub {
+  font-size: 13.5px;
+  color: #fecaca;
+  line-height: 1.5;
+  max-width: 780px;
+}
+
+.boss-stats-pills {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.boss-stat-pill {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fef3c7;
+}
+
+.boss-stat-pill.ready {
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.boss-stat-pill.cooldown {
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+
+/* 10 Cấp Độ Boss Grid */
+.boss-tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.boss-tier-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--border-color);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  transition: all 0.25s ease;
+  overflow: hidden;
+}
+
+.boss-tier-card:hover:not(.locked) {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary);
+}
+
+.boss-tier-card.active-target {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+  background: linear-gradient(180deg, #fff 0%, #fff5f5 100%);
+}
+
+.boss-tier-card.cleared {
+  border-color: #10b981;
+  background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%);
+}
+
+.boss-tier-card.locked {
+  opacity: 0.65;
+  background: #f8fafc;
+  filter: grayscale(0.5);
+}
+
+.boss-tier-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.boss-tier-badge.badge-cleared { background: #d1fae5; color: #065f46; }
+.boss-tier-badge.badge-ready { background: #fee2e2; color: #991b1b; animation: reward-pulse 1.4s infinite alternate; }
+.boss-tier-badge.badge-locked { background: #e2e8f0; color: #64748b; }
+
+.boss-card-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.boss-card-avatar {
+  font-size: 42px;
+  line-height: 1;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.boss-card-info h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.boss-card-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #b45309;
+}
+
+.boss-card-desc {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  min-height: 48px;
+}
+
+.boss-card-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.boss-hp-tag { color: #dc2626; display: flex; align-items: center; gap: 4px; }
+.boss-reward-tag { color: #d97706; }
+
+.btn-fight-boss {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: var(--radius-lg);
+  border: none;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition-fast);
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+
+.btn-fight-boss:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45);
+}
+
+.btn-fight-boss:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-fight-boss.cleared-btn {
+  background: #f1f5f9;
+  color: #047857;
+  border: 1.5px solid #10b981;
+}
+
+/* =================================================================
+   MÀN HÌNH CHIẾN ĐẤU THỰC CHIẾN (ACTIVE BATTLE STAGE)
+   ================================================================= */
+.active-battle-container {
+  background: #0f172a;
+  color: white;
+  border-radius: var(--radius-2xl);
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  border: 2px solid #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Battle HUD Top */
+.battle-hud-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  background: rgba(30, 41, 59, 0.7);
+  padding: 14px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.fighter-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fighter-profile.boss-profile {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.fighter-avatar-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.fighter-avatar-circle.boss-avatar-glow {
+  background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+}
+
+.fighter-meta-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fighter-name-text {
+  font-size: 14.5px;
+  font-weight: 800;
+}
+
+/* Player 3 Hearts */
+.player-hearts-box {
+  display: flex;
+  gap: 4px;
+  font-size: 20px;
+}
+
+.heart-icon {
+  filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.5));
+  transition: transform 0.2s ease;
+}
+
+.heart-icon.lost {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+
+/* Boss 20 HP Bar */
+.boss-hp-bar-wrapper {
+  width: 180px;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border: 1.5px solid #ef4444;
+  overflow: hidden;
+  position: relative;
+}
+
+.boss-hp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f43f5e 0%, #ef4444 100%);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.8);
+}
+
+.boss-hp-text {
+  font-size: 11px;
+  font-weight: 800;
+  color: #fca5a5;
+  margin-top: 2px;
+}
+
+.battle-vs-badge {
+  font-size: 20px;
+  font-weight: 900;
+  color: #f59e0b;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+}
+
+/* Visual Arena Field */
+.battle-visual-stage {
+  min-height: 140px;
+  background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  position: relative;
+}
+
+.hero-sprite {
+  font-size: 56px;
+  filter: drop-shadow(0 4px 16px rgba(59, 130, 246, 0.4));
+  transition: all 0.2s ease;
+}
+
+.hero-sprite.attack {
+  transform: translateX(60px) scale(1.15);
+}
+
+.boss-sprite {
+  font-size: 68px;
+  filter: drop-shadow(0 6px 20px rgba(239, 68, 68, 0.5));
+  transition: all 0.2s ease;
+}
+
+.boss-sprite.hit {
+  transform: translateX(30px) scale(0.9);
+  filter: brightness(2) contrast(1.5) drop-shadow(0 0 20px #ef4444);
+}
+
+.boss-sprite.attack {
+  transform: translateX(-60px) scale(1.15);
+}
+
+.battle-mid-fx {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 40px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.battle-mid-fx.show-fx {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.4);
+}
+
+/* Timer Bar 60s */
+.battle-timer-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.battle-timer-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.battle-timer-track {
+  height: 8px;
+  background: #334155;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.battle-timer-fill {
+  height: 100%;
+  width: 100%;
+  background: #10b981;
+  transition: width 1s linear, background-color 0.3s ease;
+}
+
+.battle-timer-fill.warning { background: #f59e0b; }
+.battle-timer-fill.critical { background: #ef4444; animation: reward-pulse 0.5s infinite alternate; }
+
+/* Question Area */
+.battle-q-box {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1.5px solid #475569;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.battle-q-num {
+  font-size: 12px;
+  font-weight: 800;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.battle-q-text {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #f8fafc;
+}
+
+/* Options Grid */
+.battle-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.battle-opt-btn {
+  background: #1e293b;
+  border: 1.5px solid #475569;
+  color: white;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.battle-opt-btn:hover:not(:disabled) {
+  background: #334155;
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+}
+
+.battle-opt-btn.correct-strike {
+  background: #065f46 !important;
+  border-color: #34d399 !important;
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.5);
+}
+
+.battle-opt-btn.wrong-strike {
+  background: #7f1d1d !important;
+  border-color: #f87171 !important;
+  box-shadow: 0 0 16px rgba(248, 113, 113, 0.5);
+}
+
+.battle-feedback-alert {
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+  display: none;
+}
+
+.battle-feedback-alert.hit-boss {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1.5px solid #10b981;
+  color: #6ee7b7;
+}
+
+.battle-feedback-alert.hit-player {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1.5px solid #ef4444;
+  color: #fca5a5;
+}
+
+.battle-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-flee-battle {
+  background: transparent;
+  border: 1.5px solid #64748b;
+  color: #94a3b8;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-flee-battle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+@media (max-width: 640px) {
+  .battle-hud-top {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .fighter-profile.boss-profile {
+    flex-direction: row;
+    text-align: left;
+  }
+  .battle-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 
 
