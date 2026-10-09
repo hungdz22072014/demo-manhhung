@@ -5010,13 +5010,17 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     const container = document.getElementById("textbook-chapters-list");
     if (!container) return;
 
-    if (typeof TEXTBOOK_CURRICULUM_DATA === "undefined" || !Array.isArray(TEXTBOOK_CURRICULUM_DATA)) {
+    const data = (typeof TEXTBOOK_CURRICULUM_DATA !== "undefined" && Array.isArray(TEXTBOOK_CURRICULUM_DATA))
+      ? TEXTBOOK_CURRICULUM_DATA
+      : ((typeof window !== "undefined" && Array.isArray(window.TEXTBOOK_CURRICULUM_DATA)) ? window.TEXTBOOK_CURRICULUM_DATA : []);
+
+    if (!data || data.length === 0) {
       container.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted);">Đang tải dữ liệu Sách Giáo Khoa Toán 6 & 7...</div>`;
       return;
     }
 
     // Lọc dữ liệu
-    const filteredChapters = TEXTBOOK_CURRICULUM_DATA.filter(chap => {
+    const filteredChapters = data.filter(chap => {
       // Khối lớp
       if (textbookFilters.grade !== "all" && chap.grade !== Number(textbookFilters.grade)) return false;
       // Học kì
