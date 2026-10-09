@@ -2060,6 +2060,9 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       renderKnowledgeMap();
       updateDashboardStats();
     }
+    if (tabId === "tab-textbook") {
+      renderTextbookCurriculum();
+    }
     renderAllMath();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -4993,10 +4996,396 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }, 1000);
   }
 
+  // ---------------------------------------------------------------
+  // 12. PHÂN HỆ CẨM NANG & TOÀN BỘ SÁCH GIÁO KHOA TOÁN 6 - 7 (KẾT NỐI TRI THỨC)
+  // ---------------------------------------------------------------
+  let textbookFilters = {
+    grade: "all",
+    semester: "all",
+    category: "all",
+    search: ""
+  };
+
+  function renderTextbookCurriculum() {
+    const container = document.getElementById("textbook-chapters-list");
+    if (!container) return;
+
+    if (typeof TEXTBOOK_CURRICULUM_DATA === "undefined" || !Array.isArray(TEXTBOOK_CURRICULUM_DATA)) {
+      container.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted);">Đang tải dữ liệu Sách Giáo Khoa Toán 6 & 7...</div>`;
+      return;
+    }
+
+    // Lọc dữ liệu
+    const filteredChapters = TEXTBOOK_CURRICULUM_DATA.filter(chap => {
+      // Khối lớp
+      if (textbookFilters.grade !== "all" && chap.grade !== Number(textbookFilters.grade)) return false;
+      // Học kì
+      if (textbookFilters.semester !== "all" && chap.semester !== Number(textbookFilters.semester)) return false;
+      // Phân môn
+      if (textbookFilters.category !== "all" && chap.category !== textbookFilters.category) return false;
+      // Từ khóa tìm kiếm
+      if (textbookFilters.search) {
+        const q = textbookFilters.search.toLowerCase().trim();
+        const inChapTitle = (chap.chapterNumber + " " + chap.chapterTitle + " " + chap.description).toLowerCase().includes(q);
+        const inLessons = chap.lessons.some(les => 
+          (les.lessonNumber + " " + les.title + " " + les.summary + " " + les.commonTraps).toLowerCase().includes(q) ||
+          les.coreConcepts.some(c => (c.title + " " + c.definition + " " + (c.formula || "")).toLowerCase().includes(q))
+        );
+        if (!inChapTitle && !inLessons) return false;
+      }
+      return true;
+    });
+
+    // Cập nhật thanh thống kê
+    const totalChaptersEl = document.getElementById("tb-stat-total-chapters");
+    const totalLessonsEl = document.getElementById("tb-stat-total-lessons");
+    const totalConceptsEl = document.getElementById("tb-stat-total-concepts");
+    
+    let totalLessonsCount = 0;
+    let totalConceptsCount = 0;
+    TEXTBOOK_CURRICULUM_DATA.forEach(chap => {
+      totalLessonsCount += chap.lessons.length;
+      chap.lessons.forEach(l => {
+        totalConceptsCount += l.coreConcepts.length;
+      });
+    });
+
+    if (totalChaptersEl) totalChaptersEl.textContent = `${TEXTBOOK_CURRICULUM_DATA.length} Chương`;
+    if (totalLessonsEl) totalLessonsEl.textContent = `${totalLessonsCount} Bài học`;
+    if (totalConceptsEl) totalConceptsEl.textContent = `${totalConceptsCount}+ Khái niệm`;
+
+    if (filteredChapters.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center; padding: 48px 20px; background: white; border-radius: var(--radius-lg); border: 1px dashed var(--border-color);">
+          <div style="font-size: 40px; margin-bottom: 12px;">🔍</div>
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">Không tìm thấy bài học nào phù hợp</h3>
+          <p style="font-size: 13px; color: var(--text-secondary);">Thử đổi từ khóa tìm kiếm hoặc chọn bộ lọc "Tất Cả" xem nhé!</p>
+          <button id="btn-reset-tb-filter" class="btn-tb-action" style="margin-top: 14px; background: var(--primary); color: white;">
+            🔄 Đặt Lại Bộ Lọc
+          </button>
+        </div>
+      `;
+      document.getElementById("btn-reset-tb-filter")?.addEventListener("click", () => {
+        textbookFilters = { grade: "all", semester: "all", category: "all", search: "" };
+        syncTextbookFilterUI();
+        renderTextbookCurriculum();
+      });
+      return;
+    }
+
+    // Render Chapters & Lessons
+    container.innerHTML = filteredChapters.map((chap, cIdx) => {
+      const lessonsHtml = chap.lessons.map((les, lIdx) => {
+        const conceptsHtml = les.coreConcepts.map(c => `
+          <div class="tb-concept-card">
+            <div class="tb-concept-title">💡 ${escapeHtml(c.title)}</div>
+            <div class="tb-concept-def">${escapeHtml(c.definition)}</div>
+            ${c.formula ? `<div class="tb-formula-box">$${c.formula}$</div>` : ""}
+            ${c.notes ? `<div class="tb-concept-notes">📌 <strong>Lưu ý:</strong> ${escapeHtml(c.notes)}</div>` : ""}
+          </div>
+        `).join("");
+
+        const problemsHtml = les.sampleProblems && les.sampleProblems.length > 0 ? les.sampleProblems.map(p => `
+          <div class="tb-problem-box">
+            <div class="tb-problem-title">📝 Bài toán mẫu & Phương pháp giải</div>
+            <div class="tb-problem-stmt">${escapeHtml(p.problem)}</div>
+            <div class="tb-problem-sol">
+              <strong>Lời giải chuẩn:</strong><br>${escapeHtml(p.solution)}
+              ${p.method ? `<div style="margin-top:6px; color:#0369a1; font-weight:600;">⚡ Phương pháp: ${escapeHtml(p.method)}</div>` : ""}
+            </div>
+          </div>
+        `).join("") : "";
+
+        return `
+          <div class="tb-lesson-item" id="lesson-item-${chap.id}-${les.id}" data-chapter-id="${chap.id}" data-lesson-id="${les.id}">
+            <div class="tb-lesson-header" onclick="toggleLessonAccordion('${chap.id}-${les.id}')">
+              <div class="tb-lesson-title-box">
+                <span class="tb-lesson-num">${escapeHtml(les.lessonNumber)}</span>
+                <span class="tb-lesson-name">${escapeHtml(les.title)}</span>
+                <span class="tb-lesson-summary-preview">• ${escapeHtml(les.summary)}</span>
+              </div>
+              <span class="tb-chevron-icon" id="chevron-${chap.id}-${les.id}">▼</span>
+            </div>
+            <div class="tb-lesson-content" id="content-${chap.id}-${les.id}">
+              <div class="tb-summary-box">
+                <strong>📌 Trọng tâm bài học:</strong> ${escapeHtml(les.summary)}
+              </div>
+
+              <div class="tb-concepts-grid">
+                ${conceptsHtml}
+              </div>
+
+              ${problemsHtml}
+
+              ${les.commonTraps ? `
+                <div class="tb-trap-box">
+                  <strong>⚠️ Lưu ý & Bẫy thường gặp:</strong> ${escapeHtml(les.commonTraps)}
+                </div>
+              ` : ""}
+
+              <div class="tb-lesson-footer-actions">
+                <button class="btn-tb-socratic" onclick="askSocraticAboutLesson('${escapeHtml(les.socraticPrompt || "Em muốn hỏi về bài học " + les.title)}')">
+                  🦉 Nhờ AI Socratic Giảng Bài Này
+                </button>
+                ${les.relatedTheoremsId ? `
+                  <button class="btn-tb-flashcard" onclick="practiceLessonFlashcard('${les.relatedTheoremsId}')">
+                    🧠 Luyện Flashcard Liên Quan
+                  </button>
+                ` : ""}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <div class="tb-chapter-card" id="chapter-card-${chap.id}">
+          <div class="tb-chapter-header">
+            <div class="tb-chapter-title-wrap">
+              <div class="tb-chapter-icon-box" style="background: ${chap.badgeColor}15; color: ${chap.badgeColor};">
+                ${chap.icon}
+              </div>
+              <div>
+                <div class="tb-chapter-badges">
+                  <span class="tb-badge tb-badge-grade">Toán ${chap.grade}</span>
+                  <span class="tb-badge tb-badge-volume">${chap.bookVolume} • HK${chap.semester}</span>
+                  <span class="tb-badge tb-badge-category">${chap.categoryName}</span>
+                </div>
+                <h3 class="tb-chapter-title">${chap.chapterNumber}: ${escapeHtml(chap.chapterTitle)}</h3>
+                <p class="tb-chapter-desc">${escapeHtml(chap.description)}</p>
+              </div>
+            </div>
+            <div class="tb-chapter-actions">
+              <button class="btn-chapter-mindmap" onclick="openTextbookMindmap('${chap.id}')" title="Xem sơ đồ tư duy phân nhánh chương này">
+                🗺️ Sơ Đồ Tư Duy
+              </button>
+            </div>
+          </div>
+          <div class="tb-lessons-list">
+            ${lessonsHtml}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    renderAllMath();
+  }
+
+  function toggleLessonAccordion(uniqueId) {
+    const item = document.getElementById(`lesson-item-${uniqueId}`);
+    if (!item) return;
+    const isActive = item.classList.contains("active");
+    if (isActive) {
+      item.classList.remove("active");
+    } else {
+      item.classList.add("active");
+      renderAllMath();
+    }
+  }
+  window.toggleLessonAccordion = toggleLessonAccordion;
+
+  function askSocraticAboutLesson(promptText) {
+    switchTab("tab-socratic");
+    const input = document.getElementById("socratic-input");
+    if (input) {
+      input.value = promptText;
+      input.focus();
+      setTimeout(() => {
+        if (typeof sendMessageToSocratic === "function") {
+          sendMessageToSocratic();
+        }
+      }, 250);
+    }
+  }
+  window.askSocraticAboutLesson = askSocraticAboutLesson;
+
+  function practiceLessonFlashcard(thmId) {
+    switchTab("tab-theorems");
+    const searchInput = document.getElementById("theorems-search-input");
+    if (searchInput && thmId) {
+      if (typeof THEOREMS_DATA !== "undefined") {
+        const thm = THEOREMS_DATA.find(t => t.id === thmId);
+        if (thm) {
+          searchInput.value = thm.title;
+          searchInput.dispatchEvent(new Event("input"));
+        }
+      }
+    }
+  }
+  window.practiceLessonFlashcard = practiceLessonFlashcard;
+
+  function openTextbookMindmap(chapterId) {
+    const modal = document.getElementById("textbook-mindmap-modal");
+    const body = document.getElementById("tb-mindmap-modal-content");
+    const title = document.getElementById("tb-mindmap-modal-title");
+    if (!modal || !body) return;
+
+    const chap = (typeof TEXTBOOK_CURRICULUM_DATA !== "undefined") 
+      ? TEXTBOOK_CURRICULUM_DATA.find(c => c.id === chapterId) 
+      : null;
+
+    if (!chap || !chap.mindmap) {
+      alert("Chưa có sơ đồ tư duy cho chương này.");
+      return;
+    }
+
+    if (title) {
+      title.innerHTML = `🗺️ Sơ Đồ Tư Duy – ${chap.chapterNumber}: ${escapeHtml(chap.chapterTitle)}`;
+    }
+
+    const branchesHtml = chap.mindmap.branches.map(br => `
+      <div class="mindmap-branch-card">
+        <div class="mindmap-branch-name">🌿 ${escapeHtml(br.name)}</div>
+        <ul class="mindmap-branch-items">
+          ${br.items.map(it => `<li>${escapeHtml(it)}</li>`).join("")}
+        </ul>
+      </div>
+    `).join("");
+
+    body.innerHTML = `
+      <div class="mindmap-tree">
+        <div class="mindmap-root-node">
+          🌟 ${escapeHtml(chap.mindmap.root)} (Toán ${chap.grade} - ${chap.bookVolume})
+        </div>
+        <div class="mindmap-branches-grid">
+          ${branchesHtml}
+        </div>
+      </div>
+    `;
+
+    modal.classList.add("open");
+  }
+  window.openTextbookMindmap = openTextbookMindmap;
+
+  function openTextbookCheatSheet() {
+    const modal = document.getElementById("textbook-cheatsheet-modal");
+    const body = document.getElementById("tb-cheatsheet-modal-content");
+    if (!modal || !body) return;
+
+    if (typeof TEXTBOOK_CURRICULUM_DATA === "undefined") return;
+
+    let tableRows = [];
+    TEXTBOOK_CURRICULUM_DATA.forEach(chap => {
+      chap.lessons.forEach(les => {
+        les.coreConcepts.forEach(c => {
+          if (c.formula) {
+            tableRows.push(`
+              <tr>
+                <td style="font-weight:700; white-space:nowrap;"><span class="tb-badge tb-badge-grade">Lớp ${chap.grade}</span> ${escapeHtml(chap.chapterNumber)}</td>
+                <td style="font-weight:600;">${escapeHtml(les.title)}</td>
+                <td style="color:#1e40af; font-weight:700;">${escapeHtml(c.title)}</td>
+                <td style="background:#f8fafc; text-align:center;"><span style="font-size:14px;">$${c.formula}$</span></td>
+                <td style="font-size:12px; color:var(--text-secondary);">${escapeHtml(c.notes || c.definition)}</td>
+              </tr>
+            `);
+          }
+        });
+      });
+    });
+
+    body.innerHTML = `
+      <div style="margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <span>Tổng cộng <strong>${tableRows.length}</strong> công thức cốt lõi được tổng hợp từ toàn bộ SGK Toán 6 & 7 (Kết Nối Tri Thức).</span>
+        <button class="btn-tb-action" onclick="window.print()" style="background:var(--primary); color:white; font-size:12px; padding:6px 14px;">
+          🖨️ In / Xuất PDF
+        </button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="cheat-sheet-table">
+          <thead>
+            <tr>
+              <th>Chương / Khối</th>
+              <th>Bài học</th>
+              <th>Khái niệm / Định lý</th>
+              <th>Công thức chuẩn KaTeX</th>
+              <th>Lưu ý & Điều kiện</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows.join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    modal.classList.add("open");
+    renderAllMath();
+  }
+  window.openTextbookCheatSheet = openTextbookCheatSheet;
+
+  function syncTextbookFilterUI() {
+    document.querySelectorAll("[data-tb-grade]").forEach(btn => {
+      if (btn.dataset.tbGrade === String(textbookFilters.grade)) btn.classList.add("active");
+      else btn.classList.remove("active");
+    });
+    document.querySelectorAll("[data-tb-semester]").forEach(btn => {
+      if (btn.dataset.tbSemester === String(textbookFilters.semester)) btn.classList.add("active");
+      else btn.classList.remove("active");
+    });
+    document.querySelectorAll("[data-tb-category]").forEach(btn => {
+      if (btn.dataset.tbCategory === String(textbookFilters.category)) btn.classList.add("active");
+      else btn.classList.remove("active");
+    });
+    const searchInput = document.getElementById("textbook-search-input");
+    if (searchInput) searchInput.value = textbookFilters.search;
+  }
+
+  function setupTextbookCurriculumSystem() {
+    document.querySelectorAll("[data-tb-grade]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        textbookFilters.grade = btn.dataset.tbGrade;
+        syncTextbookFilterUI();
+        renderTextbookCurriculum();
+      });
+    });
+
+    document.querySelectorAll("[data-tb-semester]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        textbookFilters.semester = btn.dataset.tbSemester;
+        syncTextbookFilterUI();
+        renderTextbookCurriculum();
+      });
+    });
+
+    document.querySelectorAll("[data-tb-category]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        textbookFilters.category = btn.dataset.tbCategory;
+        syncTextbookFilterUI();
+        renderTextbookCurriculum();
+      });
+    });
+
+    const searchInput = document.getElementById("textbook-search-input");
+    searchInput?.addEventListener("input", (e) => {
+      textbookFilters.search = e.target.value;
+      renderTextbookCurriculum();
+    });
+
+    document.getElementById("btn-tb-open-cheatsheet")?.addEventListener("click", openTextbookCheatSheet);
+    document.getElementById("btn-tb-open-overview-mindmap")?.addEventListener("click", () => {
+      openTextbookMindmap("sgk6-tap1-chuong1");
+    });
+
+    document.querySelectorAll(".tb-modal-close, .tb-modal-backdrop").forEach(el => {
+      el.addEventListener("click", (e) => {
+        if (e.target === el || el.classList.contains("tb-modal-close")) {
+          document.querySelectorAll(".tb-modal-backdrop").forEach(m => m.classList.remove("open"));
+        }
+      });
+    });
+
+    document.getElementById("portal-textbook")?.addEventListener("click", () => {
+      switchTab("tab-textbook");
+    });
+
+    renderTextbookCurriculum();
+  }
+
   // Khởi chạy toàn bộ hệ thống
   setupGamification();
   setupAuthSystem();
   setupBossBattleSystem();
+  setupTextbookCurriculumSystem();
   syncGradeHeaderUI();
   applyGradeExamFilter();
   refreshCurrentView();
