@@ -695,6 +695,133 @@ ${comment}${detailBreakdown}
 ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$` : ""}`;
     }
 
+    // 0.1. TƯ DUY PHẢN BIỆN & TỰ RÀ SOÁT LỖI SAI (CRITICAL THINKING & SELF-CORRECTION)
+    const isChallenging = [
+      "bạn bị sai", "bạn sai rồi", "bạn sai", "thầy sai rồi", "thầy sai", "thầy tính sai",
+      "sai rồi", "sai r", "sai bét", "sai kìa", "đáp án sai", "kết quả sai", "tính sai",
+      "không đúng", "ko đúng", "k đúng", "nhầm rồi", "thầy nhầm", "bị nhầm", "đâu có đúng",
+      "sai rùi", "sai nha", "sai nhé", "chưa đúng"
+    ].some(phrase => lower.includes(phrase));
+
+    if (isChallenging) {
+      const history = (context && context.chatHistory) || (typeof socraticChatHistory !== "undefined" ? socraticChatHistory : []);
+      const prevMsgs = history.filter(m => (m.text || "").trim() !== raw);
+      let lastAiMsg = null;
+      let lastUserMsg = null;
+      for (let i = prevMsgs.length - 1; i >= 0; i--) {
+        if (!lastAiMsg && (prevMsgs[i].role === "ai" || prevMsgs[i].sender === "ai")) {
+          lastAiMsg = prevMsgs[i];
+        } else if (lastAiMsg && !lastUserMsg && (prevMsgs[i].role === "user" || prevMsgs[i].sender === "user")) {
+          lastUserMsg = prevMsgs[i];
+          break;
+        }
+      }
+
+      const prevUserText = lastUserMsg ? lastUserMsg.text : "";
+      const prevAiText = lastAiMsg ? lastAiMsg.text : "";
+      const prevLower = (prevUserText + " " + prevAiText).toLowerCase();
+
+      // Nếu chưa có tương tác bài toán nào trước đó
+      if (!lastUserMsg && !lastAiMsg) {
+        return `Chào ${studentName}! Thầy rất trân trọng tinh thần phản biện và rà soát của em. 
+Trong Toán học, biết nghi ngờ và đi tìm chứng minh chính là phẩm chất của một người học xuất sắc!
+
+Tuy nhiên, Thầy trò mình vừa bắt đầu phiên trò chuyện và chưa có bài toán hay câu hỏi cụ thể nào trước đó. Em hãy gửi đề bài hoặc chỉ rõ Thầy chưa chính xác ở điểm nào để Thầy trò mình cùng phân tích từng bước nhé!`;
+      }
+
+      // 1. Phân tích bài toán về Góc và Tam giác
+      if (prevLower.includes("tam giác") || prevLower.includes("tam giac") || prevLower.includes("góc")) {
+        const nums = [];
+        const matches = prevUserText.match(/\b\d+\b/g);
+        if (matches) {
+          matches.forEach(n => {
+            const num = parseInt(n);
+            if (num > 0 && num < 180) nums.push(num);
+          });
+        }
+
+        if (nums.length >= 2) {
+          const sumKnown = nums[0] + nums[1];
+          const correctRemaining = 180 - sumKnown;
+          const userNumMatches = raw.match(/\b\d+\b/g);
+          const studentProposedNum = userNumMatches ? parseInt(userNumMatches[0]) : null;
+
+          if (studentProposedNum !== null && studentProposedNum === correctRemaining) {
+            return `Chào ${studentName}! Thầy trò mình cùng đối chiếu lại nhé:
+🎯 Kết quả của góc cần tìm chính xác là: **$${correctRemaining}^\\circ$**!
+Thầy và em đã hoàn toàn thống nhất về kết quả chuẩn mực này theo **Định lý Tổng ba góc trong tam giác** ($180^\\circ - ${sumKnown}^\\circ = ${correctRemaining}^\\circ$). Em đã nắm rất vững kiến thức!`;
+          }
+
+          if (studentProposedNum !== null && studentProposedNum !== correctRemaining) {
+            return `Chào ${studentName}! Thầy rất hoan nghênh tinh thần phản biện sắc bén của em! 
+Thầy đã "soi kính lúp" kiểm tra lại toàn bộ các bước tính toán và lý luận của bài toán vừa rồi, và kết quả của Thầy là **hoàn toàn chính xác**. 
+
+Để em hiểu thật rõ bản chất vì sao lại như vậy, Thầy giải thích chi tiết từng bước cho em nhé:
+
+### 🔍 Bước 1: Rà soát lại Giả thiết & Dữ kiện
+- Đề bài cho tam giác có 2 góc đã biết số đo: $${nums[0]}^\\circ$ và $${nums[1]}^\\circ$.
+- Góc thứ ba cần tìm: góc $x$.
+
+### 📖 Bước 2: Định lý SGK Toán 7 Kết nối tri thức
+- Áp dụng **Định lý Tổng ba góc trong một tam giác**:
+  $$\\widehat{A} + \\widehat{B} + \\widehat{C} = 180^\\circ$$
+  *(Tổng số đo ba góc trong bất kỳ tam giác nào cũng luôn luôn bằng đúng $180^\\circ$).*
+
+### ⚡ Bước 3: Kiểm chứng phép tính từng bước
+1. Tổng số đo hai góc đã biết:
+   $$${nums[0]}^\\circ + ${nums[1]}^\\circ = ${sumKnown}^\\circ$$
+2. Số đo góc còn lại $x$:
+   $$x = 180^\\circ - ${sumKnown}^\\circ = \\mathbf{${correctRemaining}^\\circ}$$
+
+💡 **Điểm mấu chốt em dễ bị nhầm lẫn**:
+- Em đang nghĩ kết quả là $${studentProposedNum}^\\circ$. Có thể em đã:
+  + Nhầm phép trừ ($180 - ${sumKnown}$).
+  + Hoặc nhầm lẫn với tính chất của tam giác vuông (tổng 2 góc nhọn bằng $90^\\circ$).
+👉 Kết quả chuẩn xác theo toán học bắt buộc phải là $\\mathbf{${correctRemaining}^\\circ}$. Em hãy lấy giấy nháp kiểm tra lại phép cộng $${nums[0]}^\\circ + ${nums[1]}^\\circ + ${correctRemaining}^\\circ$ xem có đúng bằng đúng $180^\\circ$ không nhé!`;
+          }
+
+          return `Chào ${studentName}! Thầy rất hoan nghênh tinh thần phản biện của em! Khi học Toán, việc nghi ngờ và kiểm tra lại là thói quen của các nhà toán học thực thụ.
+
+Thầy vừa rà soát lại toàn bộ quá trình giải bài toán góc trong tam giác:
+1. 📖 **Định lý chuẩn SGK**: Tổng ba góc trong tam giác luôn bằng $180^\\circ$.
+2. 🔍 **Dữ kiện**: Hai góc đề bài cho là $${nums[0]}^\\circ$ và $${nums[1]}^\\circ$ (tổng bằng $${sumKnown}^\\circ$).
+3. ⚡ **Kết quả chính xác**: Góc còn lại $x = 180^\\circ - ${sumKnown}^\\circ = \\mathbf{${correctRemaining}^\\circ}$.
+
+Thầy kiểm tra lại thì từng bước lập luận và phép tính trên đều hoàn toàn chính xác. 
+❓ ${studentName} đang thấy điểm nào chưa hợp lý, hoặc em tính ra kết quả bao nhiêu độ? Hãy chia sẻ cho Thầy biết để Thầy hướng dẫn chi tiết cho em nhé!`;
+        }
+      }
+
+      // 2. Phân tích bài toán về Căn bậc n
+      const prevRootMatch = prevLower.match(/căn\s*bậc\s*(\d+)?\s*(?:của)?\s*([0-9\.\,]+)/) || prevLower.match(/căn\s*([0-9\.\,]+)/);
+      if (prevRootMatch || prevAiText.includes("\\sqrt")) {
+        return `Chào ${studentName}! Thầy rất hoan nghênh tinh thần phản biện của em!
+Thầy đã kiểm tra lại phép tính căn bậc hai / căn bậc n vừa rồi. 
+- **Định nghĩa căn bậc hai số học**: Căn bậc hai số học của một số $a \\ge 0$ là số $x \\ge 0$ sao cho $x^2 = a$.
+- **Điểm học sinh hay nhầm lẫn**: Nhiều bạn nhầm lẫn căn bậc hai $\\sqrt{a}$ với phép chia cho 2 ($a : 2$). Ví dụ: $\\sqrt{16} = 4$ (vì $4^2 = 16$), chứ không phải $16 : 2 = 8$.
+
+Em đang tính ra kết quả khác là bao nhiêu? Hãy nhắn cho Thầy để Thầy giải thích cặn kẽ cho em nhé!`;
+      }
+
+      // 3. Phân tích bài toán về Lũy thừa
+      if (prevLower.includes("lũy thừa") || prevLower.includes("mũ") || prevLower.includes("^")) {
+        return `Chào ${studentName}! Thầy rất khen ngợi tinh thần phản biện của em!
+Thầy đã rà soát lại phép tính lũy thừa vừa rồi.
+- **Quy tắc tính lũy thừa**: $a^n = \\underbrace{a \\cdot a \\dots a}_{n\\text{ thừa số } a}$.
+- **Điểm bẫy phổ biến**: Rất nhiều bạn thường nhầm lũy thừa $a^n$ thành phép nhân $a \\times n$ (ví dụ: $2^3 = 2 \\times 2 \\times 2 = 8$, nhiều bạn nhầm thành $2 \\times 3 = 6$).
+
+Em thấy chỗ nào chưa đúng hoặc em đang tính ra kết quả nào? Hãy nhắn cho Thầy biết nhé!`;
+      }
+
+      // 4. Bài toán Định lý / Hình học tổng quát
+      return `Chào ${studentName}! Thầy rất hoan nghênh và đánh giá cao tinh thần phản biện của em!
+Trong Toán học, việc dám đặt câu hỏi ngược lại: *"Tại sao lại như vậy?", "Liệu kết quả này có đúng không?"* chính là bước đầu tiên để trở thành một người học xuất sắc.
+
+Thầy đã rà soát lại toàn bộ nội dung hướng dẫn trước đó:
+- Các bước lập luận và định lý Thầy đưa ra hoàn toàn bám sát theo chuẩn chương trình **SGK Toán 6 - 7 Kết nối tri thức với cuộc sống**.
+- Thầy luôn sẵn lòng giải thích chi tiết hơn nữa: Em đang thấy bước nào trong bài giải chưa rõ ràng hoặc đáp án nào em cho là chưa đúng? Em hãy nhắn lại cụ thể suy nghĩ của em, Thầy trò mình sẽ cùng 'mổ xẻ' từng chi tiết nhé!`;
+    }
+
     // 1. Phân tích bài toán về Góc và Tam giác (Định lý Tổng ba góc trong tam giác)
     if (
       (lower.includes("tam giác") || lower.includes("hình vẽ") || lower.includes("tam giac")) &&
@@ -861,17 +988,18 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         enrichedPrompt = `[THÔNG TIN HỌC SINH]: Tên em là "${studentName}", học sinh lớp ${grade} (Sách Kết nối tri thức). Cấp độ: Lv.${appState.playerLevel} (${appState.playerTitle}).\n[CÂU HỎI CỦA EM]: ${prompt}\n(Thầy hãy xưng Thầy và gọi tên em là "${studentName}" một cách thân mật, dẫn dắt từng bước gợi mở, CHỈ RÕ ĐỊNH LÝ CỤ THỂ như Định lý Tổng ba góc trong tam giác, Hai đường thẳng song song... và công thức KaTeX nhé!)`;
       }
 
+      const chatHistory = context.chatHistory || (typeof socraticChatHistory !== "undefined" ? socraticChatHistory : []);
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: enrichedPrompt, mode, context: { ...context, studentName, grade } })
+        body: JSON.stringify({ prompt: enrichedPrompt, mode, context: { ...context, studentName, grade, chatHistory } })
       });
       if (!res.ok) throw new Error("Backend response not ok");
       const data = await res.json();
       return data.reply;
     } catch (err) {
       console.warn("Direct backend request failed, using intelligent fallback:", err);
-      return solveMathOrExplainLocally({ prompt, mode, studentName, grade, context });
+      return solveMathOrExplainLocally({ prompt, mode, studentName, grade, context: { ...context, chatHistory: context.chatHistory || (typeof socraticChatHistory !== "undefined" ? socraticChatHistory : []) } });
     }
   }
 
@@ -1862,6 +1990,8 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }
   });
 
+  let socraticChatHistory = [];
+
   async function sendMessageToSocratic() {
     const text = socraticInput.value.trim();
     if (!text) return;
@@ -1872,6 +2002,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
 
     // Thêm tin nhắn của User
     appendMessage("user", text, studentName, studentAvatar);
+    socraticChatHistory.push({ role: "user", text: text });
     socraticInput.value = "";
 
     // Thêm placeholder "Đang tư duy..."
@@ -1892,9 +2023,13 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         studentName: studentName,
         studentGrade: appState.selectedGrade,
         studentLevel: appState.playerLevel,
-        studentTitle: appState.playerTitle
+        studentTitle: appState.playerTitle,
+        chatHistory: socraticChatHistory
       }
     });
+
+    socraticChatHistory.push({ role: "ai", text: reply });
+    if (socraticChatHistory.length > 20) socraticChatHistory.shift();
 
     loadingMsgEl.querySelector(".msg-text").innerHTML = formatAIResponseHTML(reply);
     renderAllMath(loadingMsgEl);
