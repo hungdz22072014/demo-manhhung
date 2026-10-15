@@ -6338,20 +6338,58 @@ body {
           <!-- AI Evaluation Feedback -->
           <div class="oral-feedback-box" id="oral-feedback-box" style="display: none;">
             <div class="feedback-header">
-              <span class="feedback-title">⭐ Đánh giá chi tiết từ AI</span>
+              <span class="feedback-title">⭐ Đánh giá chi tiết từ Thầy AI</span>
               <span class="feedback-model" id="feedback-model-badge">🤖 Gemini 3.6 Flash & Socratic</span>
             </div>
             <div class="feedback-content" id="oral-feedback-content"></div>
 
             <!-- Khối nút Phản biện & Phúc khảo điểm số -->
             <div class="oral-appeal-bar" id="oral-appeal-bar">
-              <button class="btn-appeal-btn" id="btn-oral-appeal" title="Yêu cầu AI rà soát lại câu trả lời và phúc khảo điểm số">
+              <button class="btn-appeal-btn" id="btn-oral-appeal" title="Yêu cầu Thầy AI rà soát lại câu trả lời và phúc khảo điểm số">
                 <span>⚖️ Thầy chấm sai rồi! Bấm để Phản biện & Phúc khảo</span>
               </button>
-              <button class="btn-chat-ai-btn" id="btn-oral-chat-socratic" title="Chuyển sang đàm thoại trực tiếp với Thầy AI Socratic">
-                <span>💬 Tranh luận trực tiếp cùng Thầy AI Socratic</span>
+              <button class="btn-chat-ai-btn" id="btn-toggle-oral-chat" title="Mở khung trò chuyện & giải đáp trực tiếp với Thầy AI">
+                <span>💬 Trò chuyện & Giải đáp thắc mắc cùng Thầy AI</span>
+              </button>
+              <button class="btn-chat-ai-btn" id="btn-oral-chat-socratic" title="Chuyển sang đàm thoại chuyên sâu tại Phòng Gia sư Socratic">
+                <span>🏛️ Mở rộng tại Gia Sư Socratic</span>
               </button>
             </div>
+
+            <!-- Khung đối thoại trực tiếp giữa Thầy và Trò (Live Teacher-Student Chat) -->
+            <div class="oral-chat-section" id="oral-chat-section" style="display: none;">
+              <div class="oral-chat-header">
+                <div class="oral-chat-teacher-info">
+                  <span class="teacher-avatar">👨‍🏫</span>
+                  <div>
+                    <div class="teacher-name">Thầy AI Socratic</div>
+                    <div class="teacher-sub">Đang lắng nghe & giải đáp mọi thắc mắc của em</div>
+                  </div>
+                </div>
+                <span class="oral-chat-status">🟢 Đang trò chuyện trực tiếp</span>
+              </div>
+
+              <!-- Lịch sử các tin nhắn trò chuyện -->
+              <div class="oral-chat-messages" id="oral-chat-messages"></div>
+
+              <!-- Gợi ý nhanh các câu hỏi / phản biện -->
+              <div class="oral-quick-chips" id="oral-quick-chips">
+                <button class="oral-chip" data-text="Thưa Thầy, em thấy em đã phát biểu đúng bản chất rồi, Thầy xem lại giúp em với!">⚖️ Thầy xem lại giúp em, em nói đúng mà!</button>
+                <button class="oral-chip" data-text="Thầy ơi, vì sao phép chia hai lũy thừa cùng cơ số thì cơ số a lại phải khác 0 ạ?">❓ Vì sao cơ số a phải khác 0?</button>
+                <button class="oral-chip" data-text="Thầy cho em xin một ví dụ số học thực tế để em nhớ sâu định lý này nhé!">💡 Cho em xin ví dụ cụ thể</button>
+                <button class="oral-chip" data-text="Thưa Thầy, em muốn phát biểu lại định lý một lần nữa, Thầy chấm lại giúp em nhé!">🎤 Em muốn phát biểu lại</button>
+              </div>
+
+              <!-- Thanh nhập tin nhắn và giọng nói -->
+              <div class="oral-chat-input-bar">
+                <textarea id="oral-chat-input" rows="1" placeholder="Nhập thắc mắc hoặc câu hỏi phản biện của em gửi Thầy AI..."></textarea>
+                <button id="btn-oral-chat-mic" class="btn-chat-mic" type="button" title="Bấm để nói bằng Micro">🎙️</button>
+                <button id="btn-oral-chat-send" class="btn-chat-send" type="button" title="Gửi tin nhắn cho Thầy AI">
+                  <span>Gửi Thầy 🚀</span>
+                </button>
+              </div>
+            </div>
+
             <div class="oral-appeal-result-box" id="oral-appeal-result-box" style="display: none;"></div>
           </div>
         </div>
@@ -11285,6 +11323,91 @@ ${comment}${detailBreakdown}
 ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$` : ""}`;
     }
 
+    // 0.05. CHẾ ĐỘ ĐỐI THOẠI & PHẢN BIỆN PHÚC KHẢO VẤN ĐÁP TRỰC TIẾP (ORAL APPEAL & LIVE TEACHER CHAT)
+    if (mode === "oral_appeal" || mode === "oral_chat") {
+      const pLower = (prompt || "").toLowerCase();
+      const std = context?.standardAnswer || "";
+      const thmTitle = context?.theoremTitle || "Định lý";
+      const studentAns = context?.studentAnswer || "";
+      const lowerStudentAns = studentAns.toLowerCase();
+
+      const isAppealOrDispute = [
+        "thầy chấm sai", "thầy sai", "chấm sai", "phản biện", "phúc khảo", "xem lại",
+        "nói đúng mà", "em nói đúng", "phát biểu đúng", "chưa chính xác", "oan", "bị trừ điểm"
+      ].some(k => pLower.includes(k));
+
+      if (isAppealOrDispute || mode === "oral_appeal") {
+        const hasCoreConcepts = (
+          (lowerStudentAns.includes("cơ số") && (lowerStudentAns.includes("giữ") || lowerStudentAns.includes("nguyên"))) ||
+          (lowerStudentAns.includes("số mũ") && (lowerStudentAns.includes("cộng") || lowerStudentAns.includes("trừ"))) ||
+          (lowerStudentAns.includes("180") || lowerStudentAns.includes("đối đỉnh") || lowerStudentAns.includes("so le") || lowerStudentAns.includes("đồng vị"))
+        );
+
+        if (hasCoreConcepts) {
+          return `Thầy chào ${studentName}! 🌟
+
+Thầy cảm ơn ${studentName} rất nhiều vì đã dũng cảm và thẳng thắn phản biện lại Thầy!
+
+Thầy vừa cẩn thận đọc lại từng câu chữ trong câu trả lời của em:
+👉 *"${studentAns}"*
+
+🔍 **Phân tích đối chiếu chuyên sâu của Thầy**:
+- Khi em nói: *"cơ số giữ nguyên"* hoặc *"lấy số mũ cộng/trừ số mũ"*, về mặt bản chất toán học trong SGK Kết nối tri thức là **hoàn toàn chính xác 100%**!
+- Thuật toán so khớp từ khóa trước đó bị máy móc, đòi hỏi đúng thứ tự cụm từ cứng nhắc nên đã trừ điểm oan của em. Thầy chân thành nhận lỗi với em nhé!
+
+🎉 **Quyết định phúc khảo của Thầy**:
+- Đính chính và nâng điểm của em lên: **9.5 / 10** ⭐! [NÂNG_ĐIỂM: 9.5]
+- Định lý **${thmTitle}** đã được ghi nhận hoàn thành xuất sắc!
+- Thầy rất tự hào về tư duy tự tin bảo vệ chính kiến khoa học của em.
+
+Em có câu hỏi nào cần Thầy giải thích thêm về định lý này không, Thầy trò mình trò chuyện tiếp nhé! 😊`;
+        } else {
+          return `Thầy chào ${studentName}! 💡
+
+Thầy rất hoan nghênh tinh thần phản biện và ham học hỏi của em. Thầy đã đọc lại rất kỹ câu trả lời của em:
+👉 *"${studentAns}"*
+
+🔍 **Thầy giải thích chi tiết vì sao câu trả lời cần hoàn thiện thêm**:
+- Để định lý **${thmTitle}** được trọn vẹn và đạt điểm tối đa, câu trả lời cần làm rõ các điều kiện then chốt theo SGK Kết nối tri thức.
+- 📖 **Phát biểu chuẩn**: *"${std}"*
+${context?.formula ? `- 📐 **Công thức**: $$${context.formula}$$` : ""}
+
+👉 Em thử đọc lại định lý chuẩn một lần nữa và nhắn lại cho Thầy nhé, Thầy luôn sẵn sàng lắng nghe và chấm lại cho em!`;
+        }
+      }
+
+      // Nếu học sinh hỏi về điều kiện cơ số khác 0
+      if (pLower.includes("khác 0") || pLower.includes("khac 0") || pLower.includes("a khác 0") || pLower.includes("a khac 0") || pLower.includes("vì sao") || pLower.includes("tai sao")) {
+        return `Thầy chào ${studentName}! Câu hỏi của em rất thông minh và chứng tỏ em suy nghĩ rất sâu! 👏
+
+Trong quy tắc chia hai lũy thừa cùng cơ số $a^m : a^n = a^{m-n}$, tại sao cơ số $a$ lại phải khác $0$?
+1. **Bản chất toán học**: Phép chia cho số $0$ là **không xác định** trong toán học. Nếu $a = 0$, ta sẽ có phép tính $0^m : 0^n = \\frac{0}{0}$ - đây là một phép toán vô nghĩa.
+2. **Quy ước chuẩn**: Để phép chia luôn có nghĩa và cho ra kết quả duy nhất, SGK Kết nối tri thức bắt buộc quy định điều kiện: $$a \\neq 0$$ và $m \\geq n$.
+
+Em đã thấy điều kiện này kỳ diệu và chặt chẽ thế nào chưa? Em còn băn khoăn điểm nào nữa không?`;
+      }
+
+      // Nếu học sinh xin ví dụ cụ thể
+      if (pLower.includes("ví dụ") || pLower.includes("vi du") || pLower.includes("bài toán")) {
+        return `Thầy lấy ví dụ cụ thể để ${studentName} dễ hình dung ngay nhé! 💡
+
+${context?.formula ? `Quy tắc: $$${context.formula}$$` : ""}
+- **Ví dụ phép nhân**: $2^3 \\cdot 2^4 = 2^{3+4} = 2^7 = 128$. (Giữ nguyên cơ số $2$, lấy số mũ $3+4$).
+- **Ví dụ phép chia**: $5^6 : 5^2 = 5^{6-2} = 5^4 = 625$ (với cơ số $5 \\neq 0$).
+
+👉 Bây giờ, em thử nhẩm nhanh: $3^5 : 3^2$ bằng bao nhiêu và nhắn cho Thầy xem nhé?`;
+      }
+
+      // Mặc định phản hồi như một người thầy tận tình
+      return `Thầy chào ${studentName}! Thầy luôn ở đây để đồng hành và giải đáp cùng em về định lý **${thmTitle}**.
+
+Về câu hỏi của em: *"${prompt}"*
+Thầy giải thích cho em như sau: Trong toán học, mỗi định lý hay quy tắc đều là chìa khóa để giải quyết các bài toán phức tạp hơn. Chuẩn SGK Kết nối tri thức quy định:
+*"${std}"*
+
+Nếu em muốn phát biểu lại để Thầy chấm lại, hay muốn Thầy giải thích thêm điều gì, em cứ thoải mái nhắn cho Thầy nhé! 😊`;
+    }
+
     // 0.1. TƯ DUY PHẢN BIỆN & TỰ RÀ SOÁT LỖI SAI (CRITICAL THINKING & SELF-CORRECTION)
     const isChallenging = [
       "bạn bị sai", "bạn sai rồi", "bạn sai", "thầy sai rồi", "thầy sai", "thầy tính sai",
@@ -12115,9 +12238,126 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       isMedScore
     };
 
+    // Khởi tạo khung đối thoại trực tiếp Thầy - Trò
+    const chatSection = document.getElementById("oral-chat-section");
+    const chatMsgs = document.getElementById("oral-chat-messages");
+    if (chatSection && chatMsgs) {
+      chatSection.style.display = "block";
+      chatMsgs.innerHTML = "";
+      oralChatHistory = [];
+      const introMsg = `Thầy chào ${studentName}! 👨‍🏫 Thầy vừa chấm xong câu trả lời vấn đáp của em về định lý **${thm.title}**.\n\nNếu em thấy điểm số chưa thỏa đáng, muốn phản biện *"Thầy ơi Thầy chấm sai rồi"*, hoặc có bất kỳ câu hỏi nào cần Thầy giải thích thêm, em hãy bấm nút phản biện hoặc nhắn ngay cho Thầy ở đây nhé! Thầy luôn lắng nghe và giải đáp cùng em! 😊`;
+      appendOralChatMessage("teacher", introMsg);
+    }
+
     btnSubmit.disabled = false;
     btnSubmit.innerHTML = `<span>🚀 Gửi Câu Trả Lời Cho AI Chấm Điểm</span>`;
   });
+
+  // Quản lý lịch sử và tin nhắn trong khung chat vấn đáp Thầy - Trò
+  let oralChatHistory = [];
+
+  function appendOralChatMessage(role, text) {
+    const container = document.getElementById("oral-chat-messages");
+    if (!container) return;
+    const isTeacher = (role === "teacher" || role === "ai");
+    const div = document.createElement("div");
+    div.className = `oral-msg ${isTeacher ? 'oral-msg-teacher' : 'oral-msg-student'}`;
+    
+    const nowTime = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+    const avatar = isTeacher ? '👨‍🏫' : '🧑‍🎓';
+    const roleName = isTeacher ? 'Thầy AI' : ((currentUser && !currentUser.isGuest) ? currentUser.fullname : 'Em');
+
+    div.innerHTML = `
+      <div class="oral-msg-avatar">${avatar}</div>
+      <div class="oral-msg-content">
+        <div class="oral-msg-bubble">
+          ${formatAIResponseHTML(text)}
+        </div>
+        <div class="oral-msg-meta">
+          <span>${roleName}</span> • <span>${nowTime}</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+    renderAllMath(div);
+    container.scrollTop = container.scrollHeight;
+    oralChatHistory.push({ role: isTeacher ? "ai" : "user", text });
+  }
+
+  function showOralTeacherTyping() {
+    const container = document.getElementById("oral-chat-messages");
+    if (!container) return null;
+    const div = document.createElement("div");
+    div.id = "oral-teacher-typing-indicator";
+    div.className = "oral-msg oral-msg-teacher";
+    div.innerHTML = `
+      <div class="oral-msg-avatar">👨‍🏫</div>
+      <div class="oral-msg-bubble" style="color: #6366f1; font-style: italic;">
+        <span>Thầy AI đang suy nghĩ và giải đáp cho em... ✍️</span>
+      </div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return div;
+  }
+
+  function removeOralTeacherTyping() {
+    const el = document.getElementById("oral-teacher-typing-indicator");
+    if (el) el.remove();
+  }
+
+  async function handleSendOralChatMessage(customText = null) {
+    const inputEl = document.getElementById("oral-chat-input");
+    const text = (customText !== null ? customText : (inputEl ? inputEl.value : "")).trim();
+    if (!text) return;
+    if (inputEl) inputEl.value = "";
+
+    const list = getFilteredTheorems();
+    const thm = (lastEvaluatedOral && lastEvaluatedOral.thm) || (list.length > 0 ? list[oralThmIndex] : null);
+    const studentName = (currentUser && !currentUser.isGuest) ? currentUser.fullname : "em";
+
+    // Hiện tin nhắn học sinh
+    appendOralChatMessage("student", text);
+    showOralTeacherTyping();
+
+    const answer = lastEvaluatedOral?.answer || "";
+    const reply = lastEvaluatedOral?.reply || "";
+
+    const aiResponse = await callAIBackend({
+      prompt: text,
+      mode: "oral_chat",
+      context: {
+        studentName: studentName,
+        studentAnswer: answer,
+        theoremTitle: thm ? thm.title : "Định lý",
+        standardAnswer: thm ? thm.standardAnswer : "",
+        keywords: thm ? (thm.keywords || []) : [],
+        formula: thm ? (thm.formula || "") : "",
+        previousCritique: reply,
+        chatHistory: oralChatHistory
+      }
+    });
+
+    removeOralTeacherTyping();
+    appendOralChatMessage("teacher", aiResponse);
+
+    // Nếu Thầy nâng điểm trong tin nhắn phản hồi
+    if (aiResponse.includes("NÂNG_ĐIỂM") || aiResponse.includes("9.5") || aiResponse.includes("10 / 10") || aiResponse.includes("phúc khảo thành công") || aiResponse.includes("chính xác 100%")) {
+      const feedbackContent = document.getElementById("oral-feedback-content");
+      if (feedbackContent) {
+        const currentBadge = feedbackContent.querySelector(".score-badge-low, .score-badge-med, .score-badge-high");
+        if (currentBadge) {
+          currentBadge.className = "score-badge-high";
+          currentBadge.innerHTML = "⭐ Điểm số: 9.5 / 10 (Thầy AI đã đính chính & nâng điểm ✅)";
+        }
+      }
+      if (thm) {
+        setLeitnerBox(thm.id, "green");
+        addExpAndCoins(30, 15);
+        playCelebration();
+      }
+    }
+  }
 
   // Nút phản biện tại chỗ: Thầy chấm sai rồi! Bấm để Phản biện & Phúc khảo
   const btnOralAppeal = document.getElementById("btn-oral-appeal");
@@ -12128,70 +12368,145 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         return;
       }
       const { thm, answer, reply, studentName } = lastEvaluatedOral;
-      const appealResultBox = document.getElementById("oral-appeal-result-box");
-      const feedbackContent = document.getElementById("oral-feedback-content");
+      const chatSection = document.getElementById("oral-chat-section");
+      if (chatSection) chatSection.style.display = "block";
 
       btnOralAppeal.disabled = true;
-      btnOralAppeal.innerHTML = `<span>⏳ Thầy AI đang "soi kính lúp" rà soát lại từng câu chữ...</span>`;
+      btnOralAppeal.innerHTML = `<span>⏳ Thầy AI đang đối thoại & rà soát lại...</span>`;
 
-      // Kiểm tra xem câu trả lời của học sinh có chứa các ý đúng cốt lõi không
-      const lowerAns = answer.toLowerCase();
-      const hasCoreConcepts = (
-        (lowerAns.includes("cơ số") && (lowerAns.includes("giữ") || lowerAns.includes("nguyên"))) ||
-        (lowerAns.includes("số mũ") && (lowerAns.includes("cộng") || lowerAns.includes("trừ"))) ||
-        (lowerAns.includes("180") || lowerAns.includes("đối đỉnh") || lowerAns.includes("so le") || lowerAns.includes("đồng vị"))
-      );
+      const appealText = `Thưa Thầy, em thấy em đã phát biểu đúng bản chất toán học: "${answer}". Em xin phép phản biện vì thấy Thầy chấm em chưa thỏa đáng, Thầy đối chiếu lại và giải thích giúp em với ạ!`;
+      appendOralChatMessage("student", appealText);
+      showOralTeacherTyping();
 
-      let appealReply = "";
-      if (hasCoreConcepts) {
-        appealReply = `### ⚖️ KẾT QUẢ RÀ SOÁT & PHÚC KHẢO TỪ THẦY AI
-🌟 **PHẢN BIỆN HOÀN TOÀN CHÍNH XÁC! Thầy chân thành nhận lỗi và đính chính ngay!**
+      const aiAppealReply = await callAIBackend({
+        prompt: appealText,
+        mode: "oral_appeal",
+        context: {
+          studentName: studentName,
+          studentAnswer: answer,
+          theoremTitle: thm.title,
+          standardAnswer: thm.standardAnswer,
+          keywords: thm.keywords || [],
+          formula: thm.formula || "",
+          previousCritique: reply,
+          chatHistory: oralChatHistory
+        }
+      });
 
-💡 **Phân tích rà soát của Thầy**:
-- **Câu trả lời của em**: *"${answer}"*
-- **Đối chiếu SGK Toán Kết nối tri thức**: Em phát biểu theo cách diễn đạt tự nhiên (như *"cơ số giữ nguyên"*, *"lấy số mũ cộng/trừ số mũ"*...), về mặt bản chất toán học là **hoàn toàn chính xác 100%**.
-- Thuật toán so sánh từ khóa trước đó bị máy móc nên đã trừ điểm oan của em. Thầy xin đính chính và nâng điểm của em lên: **9.5 / 10** ⭐!
+      removeOralTeacherTyping();
+      appendOralChatMessage("teacher", aiAppealReply);
 
-🎁 **Phần thưởng tư duy phản biện**:
-- +30 EXP & +15 Xu Vàng đã được cộng vào túi đồ!
-- Định lý **${thm.title}** đã được chuyển thẳng vào **Hộp Xanh (Đã thuộc hoàn toàn)**!`;
-
-        // Đổi badge trên feedbackContent thành 9.5
-        const currentBadge = feedbackContent.querySelector(".score-badge-low, .score-badge-med, .score-badge-high");
-        if (currentBadge) {
-          currentBadge.className = "score-badge-high";
-          currentBadge.innerHTML = "⭐ Điểm số: 9.5 / 10 (Đã phúc khảo thành công ✅)";
+      // Nếu phúc khảo thành công
+      if (aiAppealReply.includes("NÂNG_ĐIỂM") || aiAppealReply.includes("9.5") || aiAppealReply.includes("10 / 10") || aiAppealReply.includes("phúc khảo thành công") || aiAppealReply.includes("chính xác 100%")) {
+        const feedbackContent = document.getElementById("oral-feedback-content");
+        if (feedbackContent) {
+          const currentBadge = feedbackContent.querySelector(".score-badge-low, .score-badge-med, .score-badge-high");
+          if (currentBadge) {
+            currentBadge.className = "score-badge-high";
+            currentBadge.innerHTML = "⭐ Điểm số: 9.5 / 10 (Đã phúc khảo thành công ✅)";
+          }
         }
         setLeitnerBox(thm.id, "green");
         addExpAndCoins(30, 15);
         playCelebration();
       } else {
-        // Phân tích chi tiết vì sao câu trả lời cần sửa
-        appealReply = `### ⚖️ KẾT QUẢ RÀ SOÁT TỪ THẦY AI
-Thầy rất hoan nghênh tinh thần dũng cảm phản biện của ${studentName}! 
-Thầy đã kiểm tra lại từng câu chữ trong câu trả lời của em: *"${answer}"*.
-
-🔍 **Giải thích chi tiết vì sao điểm số cần cải thiện**:
-- Câu trả lời của em chưa nêu đủ các từ khóa then chốt của **${thm.title}**.
-- 📖 **Chuẩn SGK Kết nối tri thức**: *"${thm.standardAnswer}"*
-👉 Em hãy đọc kỹ định lý chuẩn bên dưới và thử phát biểu lại một lần nữa để Thầy chấm điểm tối đa cho em nhé!`;
         playSuccessSound();
       }
 
-      if (appealResultBox) {
-        appealResultBox.style.display = "block";
-        appealResultBox.innerHTML = `
-          <div class="appeal-result-header">
-            <span class="appeal-badge">⚖️ BIÊN BẢN PHÚC KHẢO & ĐỐI CHIẾU AI SOCRATIC</span>
-          </div>
-          <div class="appeal-result-body">${formatAIResponseHTML(appealReply)}</div>
-        `;
-        renderAllMath(appealResultBox);
-      }
-
       btnOralAppeal.disabled = false;
-      btnOralAppeal.innerHTML = `<span>✅ Đã phúc khảo & đính chính xong!</span>`;
+      btnOralAppeal.innerHTML = `<span>✅ Thầy đã giải đáp phản biện xong!</span>`;
+      
+      if (chatSection) {
+        chatSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     });
+  }
+
+  // Nút mở/đóng khung trò chuyện trực tiếp
+  const btnToggleOralChat = document.getElementById("btn-toggle-oral-chat");
+  if (btnToggleOralChat) {
+    btnToggleOralChat.addEventListener("click", () => {
+      const chatSection = document.getElementById("oral-chat-section");
+      if (chatSection) {
+        const isHidden = (chatSection.style.display === "none" || !chatSection.style.display);
+        chatSection.style.display = isHidden ? "block" : "none";
+        if (isHidden) {
+          chatSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      }
+    });
+  }
+
+  // Nút gửi tin nhắn trò chuyện với Thầy AI
+  const btnOralChatSend = document.getElementById("btn-oral-chat-send");
+  if (btnOralChatSend) {
+    btnOralChatSend.addEventListener("click", () => handleSendOralChatMessage());
+  }
+
+  const oralChatInput = document.getElementById("oral-chat-input");
+  if (oralChatInput) {
+    oralChatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSendOralChatMessage();
+      }
+    });
+  }
+
+  // Gợi ý nhanh (Quick Chips)
+  document.querySelectorAll(".oral-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const text = chip.dataset.text || chip.textContent;
+      handleSendOralChatMessage(text);
+    });
+  });
+
+  // Micro nói chuyện trong khung chat
+  const btnOralChatMic = document.getElementById("btn-oral-chat-mic");
+  if (btnOralChatMic) {
+    let chatRecognition = null;
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRec) {
+      chatRecognition = new SpeechRec();
+      chatRecognition.lang = "vi-VN";
+      chatRecognition.continuous = false;
+      chatRecognition.interimResults = false;
+
+      chatRecognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        const inputEl = document.getElementById("oral-chat-input");
+        if (inputEl) {
+          inputEl.value = (inputEl.value ? inputEl.value + " " : "") + transcript;
+        }
+        btnOralChatMic.classList.remove("recording");
+      };
+
+      chatRecognition.onerror = () => {
+        btnOralChatMic.classList.remove("recording");
+      };
+
+      chatRecognition.onend = () => {
+        btnOralChatMic.classList.remove("recording");
+      };
+
+      btnOralChatMic.addEventListener("click", () => {
+        if (btnOralChatMic.classList.contains("recording")) {
+          chatRecognition.stop();
+          btnOralChatMic.classList.remove("recording");
+        } else {
+          try {
+            chatRecognition.start();
+            btnOralChatMic.classList.add("recording");
+          } catch (err) {
+            btnOralChatMic.classList.remove("recording");
+          }
+        }
+      });
+    } else {
+      btnOralChatMic.addEventListener("click", () => {
+        alert("Trình duyệt chưa hỗ trợ ghi âm trực tiếp cho ô này. Em hãy gõ phím để nhắn cho Thầy nhé!");
+      });
+    }
   }
 
   // Nút chuyển sang tab Socratic đàm thoại trực tiếp: Tranh luận trực tiếp cùng Thầy AI Socratic
