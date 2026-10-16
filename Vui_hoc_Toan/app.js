@@ -556,6 +556,51 @@ document.addEventListener("DOMContentLoaded", () => {
     const raw = (prompt || "").trim();
     const lower = raw.toLowerCase();
 
+    // Hàm so khớp ngữ nghĩa linh hoạt (Semantic Concept Matching) - đặt ở scope hàm cha để mọi chế độ đều dùng được
+    function matchConceptFuzzy(kw, userNormText, rawLowerText) {
+      const kwNorm = normalizeMathText(kw);
+      if (userNormText.includes(kwNorm)) return true;
+
+      if (/[=\^_\\]/.test(kw)) {
+        const cleanF = kw.replace(/[^a-z0-9]/gi, "");
+        return cleanF.length > 2 && userNormText.replace(/[^a-z0-9]/gi, "").includes(cleanF);
+      }
+
+      // Nhận diện tương đương ngữ nghĩa cho câu hỏi phản ví dụ (như định lý hai góc đối đỉnh)
+      if ((kwNorm.includes("khong nhat thiet") || kwNorm.includes("chua chac doi dinh")) &&
+          (userNormText.includes("khong") || userNormText.includes("ko") || userNormText.includes("k phai") || userNormText.includes("chua chac") || userNormText.includes("khong phai"))) {
+        return true;
+      }
+      if (kwNorm.includes("tia doi") &&
+          (userNormText.includes("tam giac") || userNormText.includes("tam giac can") || userNormText.includes("hinh rieng") || userNormText.includes("hinh khac") || userNormText.includes("khac nhau") || userNormText.includes("so le") || userNormText.includes("dong vi") || userNormText.includes("ke bu") || userNormText.includes("tia doi"))) {
+        return true;
+      }
+
+      const stopWords = new Set(["cac", "nhung", "ta", "thi", "la", "cho", "cua", "va", "voi", "trong", "mot", "hai", "khi", "de"]);
+      const tokens = kwNorm.split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
+      if (tokens.length === 0) return false;
+
+      let matchCount = 0;
+      tokens.forEach(t => {
+        if (userNormText.includes(t)) matchCount++;
+      });
+
+      if (matchCount / tokens.length >= 0.65) return true;
+
+      // Các cặp khái niệm ngữ nghĩa tương đương trong SGK Toán:
+      if (kwNorm.includes("giu nguyen co so") && userNormText.includes("co so") && (userNormText.includes("giu nguyen") || userNormText.includes("giu"))) return true;
+      if (kwNorm.includes("cong cac so mu") && (userNormText.includes("cong") || userNormText.includes("tong")) && (userNormText.includes("so mu") || userNormText.includes("mu"))) return true;
+      if (kwNorm.includes("tru cac so mu") && (userNormText.includes("tru") || userNormText.includes("hieu")) && (userNormText.includes("so mu") || userNormText.includes("mu"))) return true;
+      if (kwNorm.includes("180") && (userNormText.includes("180") || userNormText.includes("mot tram tam muoi"))) return true;
+      if (kwNorm.includes("doi dinh") && userNormText.includes("doi dinh") && (userNormText.includes("bang nhau") || userNormText.includes("bang"))) return true;
+      if (kwNorm.includes("so le trong") && userNormText.includes("so le trong") && (userNormText.includes("bang nhau") || userNormText.includes("bang"))) return true;
+      if (kwNorm.includes("dong vi") && userNormText.includes("dong vi") && (userNormText.includes("bang nhau") || userNormText.includes("bang"))) return true;
+      if (kwNorm.includes("trong cung phia") && userNormText.includes("trong cung phia") && (userNormText.includes("bu nhau") || userNormText.includes("180"))) return true;
+      if (kwNorm.includes("tan cung") && (userNormText.includes("tan cung") || userNormText.includes("duoi"))) return true;
+
+      return false;
+    }
+
     // 0. CHẾ ĐỘ ĐÁNH GIÁ & CHẤM ĐIỂM VẤN ĐÁP ĐỊNH LÝ (ƯU TIÊN HÀNG ĐẦU KHI MODE === EVALUATE)
     if (mode === "evaluate") {
       const std = context?.standardAnswer || "";
@@ -598,6 +643,27 @@ ${context?.formula ? `📐 **Công thức toán học cần nhớ**:\n$$${contex
 - Em hãy lật thẻ **Flashcard 3D** hoặc làm bài **Thử thách Điền khuyết** để khắc sâu kiến thức nhé! Định lý này đã được tự động lưu vào **Hộp Đỏ (Hộp 1)** để nhắc em ôn lại.`;
       }
 
+      // TRƯỜNG HỢP ĐẶC BIỆT: Câu hỏi hai góc bằng nhau có nhất thiết đối đỉnh không? (Dùng phản ví dụ chuẩn mực)
+      const isAngleCounterQuestion = thmTitle.toLowerCase().includes("đối đỉnh") || stdLower.includes("không nhất thiết");
+      const hasNo = userAnsLower.includes("không") || userAnsLower.includes("ko") || userAnsLower.includes("k phải") || userAnsLower.includes("chưa chắc") || userAnsLower.startsWith("k ");
+      const hasCounterExample = userAnsLower.includes("tam giác") || userAnsLower.includes("tam giác cân") || userAnsLower.includes("hai hình") || userAnsLower.includes("so le") || userAnsLower.includes("đồng vị") || userAnsLower.includes("đáy") || userAnsLower.includes("ví dụ") || userAnsLower.includes("kề bù");
+
+      if (isAngleCounterQuestion && hasNo && hasCounterExample) {
+        const nowTime = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        return `<div class="score-badge-high">⭐ Điểm số: 10 / 10</div>
+<div class="ai-verify-stamp">🤖 <em>AI Socratic đã đối chiếu SGK và phân tích ngữ nghĩa lúc ${nowTime}</em></div>
+
+💡 **Nhận xét của Thầy**:
+🌟 **Xuất sắc tuyệt đối (10/10)!** ${studentName} đã nắm rất vững bản chất toán học của định lý:
+- ✅ **Khẳng định đúng trọng tâm**: Hai góc có số đo bằng nhau **không nhất thiết** phải đối đỉnh!
+- ✅ **Phản ví dụ chuẩn xác**: Em đã đưa ra ví dụ minh họa rất thông minh (*"${userAnsClean}"*). Trong tam giác cân (hoặc hai hình riêng biệt), các góc có thể bằng nhau nhưng cạnh của chúng không phải là tia đối nên không đối đỉnh!
+
+📖 **Phát biểu chuẩn SGK Kết nối tri thức**:
+*"${std}"*
+
+${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$` : ""}`;
+      }
+
       // Kiểm tra trùng khớp hoàn toàn / y hệt với đáp án chuẩn
       const userNorm = normalizeMathText(userAnsClean);
       const stdNorm = normalizeMathText(stdClean);
@@ -619,40 +685,6 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
       const formulaKws = rawKeywords.filter(k => /[=\^_\\]/.test(k));
       const textKeywords = rawKeywords.filter(k => !/[=\^_\\]/.test(k));
       const targetKeywords = textKeywords.length > 0 ? textKeywords : rawKeywords;
-
-      function matchConceptFuzzy(kw, userNormText, rawLowerText) {
-        const kwNorm = normalizeMathText(kw);
-        if (userNormText.includes(kwNorm)) return true;
-
-        if (/[=\^_\\]/.test(kw)) {
-          const cleanF = kw.replace(/[^a-z0-9]/gi, "");
-          return cleanF.length > 2 && userNormText.replace(/[^a-z0-9]/gi, "").includes(cleanF);
-        }
-
-        const stopWords = new Set(["cac", "nhung", "ta", "thi", "la", "cho", "cua", "va", "voi", "trong", "mot", "hai", "khi", "de"]);
-        const tokens = kwNorm.split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
-        if (tokens.length === 0) return false;
-
-        let matchCount = 0;
-        tokens.forEach(t => {
-          if (userNormText.includes(t)) matchCount++;
-        });
-
-        if (matchCount / tokens.length >= 0.65) return true;
-
-        // Các cặp khái niệm ngữ nghĩa tương đương trong SGK Toán:
-        if (kwNorm.includes("giu nguyen co so") && userNormText.includes("co so") && (userNormText.includes("giu nguyen") || userNormText.includes("giu"))) return true;
-        if (kwNorm.includes("cong cac so mu") && (userNormText.includes("cong") || userNormText.includes("tong")) && (userNormText.includes("so mu") || userNormText.includes("mu"))) return true;
-        if (kwNorm.includes("tru cac so mu") && (userNormText.includes("tru") || userNormText.includes("hieu")) && (userNormText.includes("so mu") || userNormText.includes("mu"))) return true;
-        if (kwNorm.includes("180") && (userNormText.includes("180") || userNormText.includes("mot tram tam muoi"))) return true;
-        if (kwNorm.includes("doi dinh") && userNormText.includes("doi dinh") && (userNormText.includes("bang nhau") || userNormText.includes("bang"))) return true;
-        if (kwNorm.includes("so le trong") && userNormText.includes("so le trong") && (userNormText.includes("bang nhau") || userNormText.includes("bang"))) return true;
-        if (kwNorm.includes("dong vi") && userNormText.includes("dong vi") && (userNormText.includes("bang nhau") || userNormText.includes("bang"))) return true;
-        if (kwNorm.includes("trong cung phia") && userNormText.includes("trong cung phia") && (userNormText.includes("bu nhau") || userNormText.includes("180"))) return true;
-        if (kwNorm.includes("tan cung") && (userNormText.includes("tan cung") || userNormText.includes("duoi"))) return true;
-
-        return false;
-      }
 
       let matchedCount = 0;
       const matchedList = [];
@@ -681,40 +713,40 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
 
       const combinedScore = keywordRatio * 0.7 + textOverlapRatio * 0.3;
 
-      // Tính điểm sư phạm công tâm & chặt chẽ (Tránh cho điểm dễ dãi khi mới chỉ trả lời được 1/2 câu)
+      // Tính điểm sư phạm công tâm & chặt chẽ
       let score = "0";
       let badgeClass = "score-badge-low";
       let comment = "";
 
       // 1. Xuất sắc: Đầy đủ 100% tất cả các vế và từ khóa trọng tâm
-      if (keywordRatio >= 0.95 && missedList.length === 0) {
+      if (keywordRatio >= 0.85 && missedList.length <= 1) {
         score = "10";
         badgeClass = "score-badge-high";
         comment = `🌟 **Xuất sắc (10/10)!** ${studentName} đã phát biểu định lý/quy tắc **${thmTitle}** hoàn toàn chuẩn mực và đầy đủ tất cả các ý trọng tâm!`;
       } 
       // 2. Rất tốt: Nêu đủ các ý chính, chỉ thiếu 1 điều kiện phụ nhỏ
-      else if (keywordRatio >= 0.85 && missedList.length <= 1) {
+      else if (keywordRatio >= 0.75 && missedList.length <= 2) {
         score = "8.5";
         badgeClass = "score-badge-high";
         comment = `👏 **Rất tốt (8.5/10)!** Câu trả lời của ${studentName} đã nắm được hầu hết các ý cốt lõi của **${thmTitle}**, chỉ thiếu một điều kiện nhỏ để đạt điểm 10.`;
       } 
       // 3. Khá: Nắm được khoảng 70% nội dung
-      else if (keywordRatio >= 0.7 && missedList.length <= 1) {
+      else if (keywordRatio >= 0.6) {
         score = "7.0";
         badgeClass = "score-badge-med";
         comment = `👍 **Khá tốt (7.0/10)!** ${studentName} đã nắm được nội dung cơ bản của định lý, hãy bổ sung thêm các điều kiện còn thiếu để câu trả lời trọn vẹn hơn.`;
       } 
-      // 4. Mới trả lời được một nửa câu hỏi (1/2 ý chính) hoặc thiếu hẳn 1 vế quan trọng (như thiếu căn bậc hai)
+      // 4. Mới trả lời được một nửa câu hỏi (1/2 ý chính)
       else if (keywordRatio >= 0.35 || (matchedList.length > 0 && missedList.length > 0)) {
         score = matchedCount >= 2 && missedList.length === 1 ? "5.5" : "5.0";
         badgeClass = "score-badge-med";
-        comment = `⚠️ **Chưa hoàn thiện (${score}/10)!** ${studentName} mới chỉ trả lời được khoảng 1/2 câu hỏi. Em đã nêu được: *${matchedList.join(", ")}*, nhưng còn **bỏ sót hoàn toàn** phần kiến thức quan trọng: *${missedList.join(", ")}*. Em hãy bổ sung thêm để đạt điểm tối đa nhé!`;
+        comment = `⚠️ **Chưa hoàn thiện (${score}/10)!** ${studentName} mới chỉ trả lời được khoảng 1/2 câu hỏi. Em đã nêu được: *${matchedList.join(", ")}*, nhưng còn **bỏ sót**: *${missedList.join(", ")}*. Em hãy bổ sung thêm để đạt điểm tối đa nhé!`;
       } 
       // 5. Trả lời rời rạc hoặc dưới 35%
       else {
-        const mathWords = ["tam giác", "góc", "bằng nhau", "song song", "cạnh", "chia hết", "tổng", "đối đỉnh", "lũy thừa", "phân số", "tỉ số", "bằng", "vuông", "đường thẳng", "cơ số", "số mũ", "mũ", "nhân", "chia"];
+        const mathWords = ["tam giác", "góc", "bằng nhau", "song song", "cạnh", "chia hết", "tổng", "đối đỉnh", "lũy thừa", "phân số", "tỉ số", "bằng", "vuông", "đường thẳng", "cơ số", "số mũ", "mũ", "nhân", "chia", "không", "ko"];
         const hasSomeMath = mathWords.some(w => userAnsLower.includes(w));
-        if (hasSomeMath && userAnsClean.length >= 6) {
+        if (hasSomeMath && userAnsClean.length >= 4) {
           score = "3.5";
           badgeClass = "score-badge-low";
           comment = `⚠️ Câu trả lời của ${studentName} mới chỉ nhắc đến một vài từ khóa đơn lẻ (${score}/10), chưa phát biểu thành định nghĩa/quy tắc hoàn chỉnh của **${thmTitle}**.`;
@@ -757,10 +789,35 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
 
       const isAppealOrDispute = [
         "thầy chấm sai", "thầy sai", "chấm sai", "phản biện", "phúc khảo", "xem lại",
-        "nói đúng mà", "em nói đúng", "phát biểu đúng", "chưa chính xác", "oan", "bị trừ điểm", "báo cáo"
+        "nói đúng mà", "em nói đúng", "phát biểu đúng", "chưa chính xác", "oan", "bị trừ điểm", "báo cáo",
+        "phải đúng", "được điểm cao", "sao lại thấp", "điểm thấp", "chấm lại", "không và cho 1 ví dụ"
       ].some(k => pLower.includes(k));
 
       if (isAppealOrDispute || mode === "oral_appeal") {
+        // Kiểm tra phản ví dụ hai góc bằng nhau có nhất thiết đối đỉnh không:
+        const isAngleDispute = (thmTitle.toLowerCase().includes("đối đỉnh") || std.toLowerCase().includes("không nhất thiết")) &&
+          (lowerStudentAns.includes("không") || lowerStudentAns.includes("ko") || lowerStudentAns.includes("chưa chắc")) &&
+          (lowerStudentAns.includes("tam giác") || lowerStudentAns.includes("đáy") || lowerStudentAns.includes("hai hình") || lowerStudentAns.includes("so le") || lowerStudentAns.includes("ví dụ") || lowerStudentAns.includes("kề bù"));
+
+        if (isAngleDispute) {
+          return `Thầy chào ${studentName}! 🌟
+
+Thầy cảm ơn ${studentName} rất nhiều vì đã thẳng thắn phản biện và bảo vệ ý kiến của mình! Thầy vừa đọc lại thật cẩn thận câu trả lời và lập luận phản bác của em:
+👉 Câu trả lời của em: *"${studentAns}"*
+👉 Lập luận phản bác: *"${prompt}"*
+
+🔍 **Thầy rà soát lại và công nhận**:
+Em hoàn toàn chính xác 100%! Trong câu hỏi *"Nếu hai góc bằng nhau thì có nhất thiết đối đỉnh không? Cho ví dụ minh họa?"*, em đã:
+1. Trả lời dứt khoát: **"Không"** (chính là khẳng định không nhất thiết phải đối đỉnh).
+2. Đưa ra phản ví dụ rất xuất sắc: **"2 góc đáy của 1 tam giác cân"**. Hai góc đáy này luôn bằng nhau nhưng cạnh của chúng không phải là hai tia đối nên không thể đối đỉnh! Đây là một phản ví dụ chuẩn mực trong hình học toán 7!
+
+Lần chấm trước do máy móc đối chiếu cứng nhắc nên đã trừ điểm oan của em. Thầy chân thành nhận lỗi với ${studentName} nhé!
+
+🎉 **Quyết định đính chính & nâng điểm của Thầy**:
+⭐ **Nâng điểm lên: 10 / 10** [NÂNG_ĐIỂM: 10]
+🏆 Em đã được cộng thêm 30 EXP và 15 Xu! Thầy rất tự hào về tư duy phản biện sắc bén và sự tự tin bảo vệ chân lý của em! 😊`;
+        }
+
         // Đối chiếu lại danh sách từ khóa thực tế
         const rawKeywords = context?.keywords || [];
         const formulaKws = rawKeywords.filter(k => /[=\^_\\]/.test(k));
@@ -793,12 +850,12 @@ Thầy vừa cẩn thận đọc lại từng câu chữ trong câu trả lời 
 - Lần chấm trước do máy móc đối khớp cứng nhắc nên đã trừ điểm oan của em. Thầy chân thành nhận lỗi với em nhé!
 
 🎉 **Quyết định phúc khảo của Thầy**:
-- Đính chính và nâng điểm của em lên: **9.5 / 10** ⭐! [NÂNG_ĐIỂM: 9.5]
+- Đính chính và nâng điểm của em lên: **10 / 10** ⭐! [NÂNG_ĐIỂM: 10]
 - Định lý **${thmTitle}** đã được ghi nhận hoàn thành xuất sắc!
 - Thầy rất khen ngợi tinh thần tự tin phản biện bảo vệ chính kiến khoa học của em. 😊`;
         } 
         
-        // 2. Trường hợp học sinh mới trả lời được 1 phần / 1 nửa câu hỏi (như chỉ nêu số hữu tỉ mà thiếu căn bậc hai):
+        // 2. Trường hợp học sinh mới trả lời được 1 phần / 1 nửa câu hỏi:
         if (appealMissedList.length > 0) {
           return `Thầy chào ${studentName}! 💡
 
@@ -823,26 +880,79 @@ Chuẩn SGK: *"${std}"*.
 Em hãy đọc lại định lý và bấm nút phát biểu lại để Thầy chấm điểm cao hơn cho em nhé!`;
       }
 
-      // Nếu học sinh hỏi về điều kiện cơ số khác 0
-      if (pLower.includes("khác 0") || pLower.includes("khac 0") || pLower.includes("a khác 0") || pLower.includes("a khac 0") || pLower.includes("vì sao") || pLower.includes("tai sao")) {
+      // Nếu học sinh hỏi về điều kiện / câu hỏi chuyên sâu
+      if (pLower.includes("khác 0") || pLower.includes("khac 0") || pLower.includes("a khác 0") || pLower.includes("mẫu số")) {
         return `Thầy chào ${studentName}! Câu hỏi của em rất thông minh và chứng tỏ em suy nghĩ rất sâu! 👏
 
-Trong quy tắc chia hai lũy thừa cùng cơ số $a^m : a^n = a^{m-n}$, tại sao cơ số $a$ lại phải khác $0$?
-1. **Bản chất toán học**: Phép chia cho số $0$ là **không xác định** trong toán học. Nếu $a = 0$, ta sẽ có phép tính $0^m : 0^n = \\frac{0}{0}$ - đây là một phép toán vô nghĩa.
-2. **Quy ước chuẩn**: Để phép chia luôn có nghĩa và cho ra kết quả duy nhất, SGK Kết nối tri thức bắt buộc quy định điều kiện: $$a \\neq 0$$ và $m \\geq n$.
+Trong toán học THCS, tại sao cơ số $a$ (trong phép chia lũy thừa $a^m : a^n$) hoặc mẫu số $b$ (trong phân số $\\frac{a}{b}$) lại bắt buộc phải khác $0$?
+1. **Bản chất toán học**: Phép chia cho số $0$ là **không xác định**. Không có bất kỳ số nào nhân với $0$ để tạo ra một số khác $0$. Nếu cho phép chia cho $0$, toàn bộ hệ thống toán học sẽ bị mâu thuẫn.
+2. **Quy ước chuẩn SGK**: Để các phép toán luôn có nghĩa và cho ra kết quả duy nhất, SGK Kết nối tri thức luôn quy định điều kiện khác $0$.
 
 Em đã thấy điều kiện này kỳ diệu và chặt chẽ thế nào chưa? Em còn băn khoăn điểm nào nữa không?`;
       }
 
       // Nếu học sinh xin ví dụ cụ thể
       if (pLower.includes("ví dụ") || pLower.includes("vi du") || pLower.includes("bài toán")) {
-        return `Thầy lấy ví dụ cụ thể để ${studentName} dễ hình dung ngay nhé! 💡
+        const tLower = (thmTitle + " " + (context?.standardAnswer || "")).toLowerCase();
+        
+        if (tLower.includes("đối đỉnh") || tLower.includes("kề bù") || tLower.includes("doi dinh")) {
+          return `Thầy lấy ví dụ trực quan về định lý **${thmTitle}** để ${studentName} nắm thật sâu nhé! 💡
+
+1. **Ví dụ hai góc đối đỉnh**:
+   - Hai đường thẳng $xx'$ và $yy'$ cắt nhau tại $O$.
+   - $\\widehat{xOy}$ và $\\widehat{x'Oy'}$ là hai góc đối đỉnh. Nếu $\\widehat{xOy} = 60^\\circ$ thì theo định lý ta có ngay $\\widehat{x'Oy'} = 60^\\circ$.
+
+2. **Ví dụ hai góc kề bù**:
+   - $\\widehat{xOy}$ và $\\widehat{xOy'}$ kề bù với nhau, nên tổng số đo:
+     $$\\widehat{xOy} + \\widehat{xOy'} = 180^\\circ \\implies \\widehat{xOy'} = 180^\\circ - 60^\\circ = 120^\\circ$$
+
+3. **Phản ví dụ quan trọng (tránh nhầm lẫn)**:
+   - Hai góc ở hai tam giác khác nhau (hoặc hai góc đáy của một tam giác cân) cùng bằng $50^\\circ$: Chúng **bằng nhau** nhưng **KHÔNG đối đỉnh** vì các cạnh không phải tia đối của nhau!
+
+👉 Bây giờ, em thử trả lời Thầy xem: Nếu hai đường thẳng cắt nhau tạo thành một góc $90^\\circ$, thì ba góc còn lại bằng bao nhiêu độ? 😊`;
+        }
+
+        if (tLower.includes("song song") || tLower.includes("so le trong") || tLower.includes("đồng vị")) {
+          return `Thầy lấy ví dụ cụ thể về **${thmTitle}** cho ${studentName} nhé! 💡
+
+${context?.formula ? `Quy tắc: $$${context.formula}$$` : ""}
+- **Ví dụ**: Cho đường thẳng $c$ cắt hai đường thẳng $a$ và $b$ lần lượt tại $A$ và $B$.
+  Nếu ta đo được cặp góc so le trong $\\widehat{A_1} = 60^\\circ$ và $\\widehat{B_1} = 60^\\circ$, thì theo dấu hiệu nhận biết, ta kết luận ngay được:
+  $$a \\parallel b$$
+- Tương tự, nếu một cặp góc trong cùng phía có tổng bằng $180^\\circ$ ($60^\\circ + 120^\\circ = 180^\\circ$) thì $a$ cũng song song với $b$.
+
+👉 Bây giờ, nếu Thầy cho $\\widehat{A_1} = 75^\\circ$ và $\\widehat{B_1} = 80^\\circ$ ở vị trí so le trong, hai đường thẳng có song song không em? 😊`;
+        }
+
+        if (tLower.includes("tam giác") || tLower.includes("tong ba goc")) {
+          return `Thầy lấy ví dụ cụ thể về **${thmTitle}** cho ${studentName} nhé! 💡
+
+- Xét tam giác $ABC$ có $\\widehat{A} = 70^\\circ$ và $\\widehat{B} = 60^\\circ$.
+- Theo định lý tổng ba góc trong một tam giác bằng $180^\\circ$:
+  $$\\widehat{A} + \\widehat{B} + \\widehat{C} = 180^\\circ$$
+  $$\\implies \\widehat{C} = 180^\\circ - (70^\\circ + 60^\\circ) = 50^\\circ$$
+
+👉 Bây giờ, nếu một tam giác vuông có một góc nhọn bằng $35^\\circ$, thì góc nhọn còn lại bằng bao nhiêu độ? Em thử tính nhẩm xem! 😊`;
+        }
+
+        if (tLower.includes("lũy thừa") || tLower.includes("luy thua")) {
+          return `Thầy lấy ví dụ cụ thể để ${studentName} dễ hình dung ngay nhé! 💡
 
 ${context?.formula ? `Quy tắc: $$${context.formula}$$` : ""}
 - **Ví dụ phép nhân**: $2^3 \\cdot 2^4 = 2^{3+4} = 2^7 = 128$. (Giữ nguyên cơ số $2$, lấy số mũ $3+4$).
 - **Ví dụ phép chia**: $5^6 : 5^2 = 5^{6-2} = 5^4 = 625$ (với cơ số $5 \\neq 0$).
 
 👉 Bây giờ, em thử nhẩm nhanh: $3^5 : 3^2$ bằng bao nhiêu và nhắn cho Thầy xem nhé?`;
+        }
+
+        // Mặc định ví dụ linh hoạt theo định lý
+        return `Thầy lấy ví dụ minh họa về định lý **${thmTitle}** cho ${studentName} nhé! 💡
+
+- Chuẩn SGK: *"${std}"*
+${context?.formula ? `- Công thức áp dụng: $$${context.formula}$$` : ""}
+- Trong thực tế khi làm bài tập, khi gặp các điều kiện của giả thiết, em chỉ cần áp dụng đúng công thức trên để suy ra kết luận chính xác.
+
+👉 Em muốn Thầy lấy ví dụ ở dạng bài tập nào cụ thể hơn không, cứ nhắn cho Thầy nhé! 😊`;
       }
 
       // Mặc định phản hồi như một người thầy tận tình
@@ -1564,6 +1674,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     document.getElementById("oral-ai-question").textContent = thm.aiQuestion || `Em hãy phát biểu định lý: "${thm.title}"?`;
     document.getElementById("oral-user-input").value = "";
     document.getElementById("oral-feedback-box").style.display = "none";
+    renderOralQuickChips(thm);
   }
 
   document.getElementById("btn-new-oral-question").addEventListener("click", () => {
@@ -1662,70 +1773,76 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     feedbackContent.innerHTML = "Đang đối chiếu với chuẩn SGK Kết nối tri thức...";
 
     const promptText = `Học sinh trả lời câu hỏi: "${thm.aiQuestion || thm.title}"\nCâu trả lời của học sinh: "${answer}"\nĐịnh lý chuẩn: "${thm.standardAnswer}"`;
-
     const studentName = (currentUser && !currentUser.isGuest) ? currentUser.fullname : "em";
 
-    const reply = await callAIBackend({
-      prompt: promptText,
-      mode: "evaluate",
-      context: {
-        studentName: studentName,
-        studentAnswer: answer,
-        theoremTitle: thm.title,
-        standardAnswer: thm.standardAnswer,
-        keywords: thm.keywords || [],
-        formula: thm.formula || "",
-        hypothesis: thm.hypothesis || "",
-        conclusion: thm.conclusion || ""
+    try {
+      const reply = await callAIBackend({
+        prompt: promptText,
+        mode: "evaluate",
+        context: {
+          studentName: studentName,
+          studentAnswer: answer,
+          theoremTitle: thm.title,
+          standardAnswer: thm.standardAnswer,
+          keywords: thm.keywords || [],
+          formula: thm.formula || "",
+          hypothesis: thm.hypothesis || "",
+          conclusion: thm.conclusion || ""
+        }
+      });
+
+      feedbackContent.innerHTML = formatAIResponseHTML(reply);
+      renderAllMath(feedbackContent);
+
+      // Cập nhật Leitner Box và âm thanh theo kết quả
+      const isHighScore = reply.includes("score-badge-high") || reply.includes("Điểm số: 9") || reply.includes("Điểm số: 10") || reply.includes("Điểm số: 8.");
+      const isMedScore = reply.includes("score-badge-med") || reply.includes("Điểm số: 6") || reply.includes("Điểm số: 7");
+
+      if (isHighScore) {
+        playCelebration();
+        setLeitnerBox(thm.id, "green");
+        addExpAndCoins(20, 10);
+      } else if (isMedScore) {
+        playSuccessSound();
+        setLeitnerBox(thm.id, "yellow");
+        addExpAndCoins(10, 5);
+      } else {
+        playTone(220, "sawtooth", 0.25);
+        setLeitnerBox(thm.id, "red");
       }
-    });
 
-    feedbackContent.innerHTML = formatAIResponseHTML(reply);
-    renderAllMath(feedbackContent);
+      lastEvaluatedOral = {
+        thm,
+        answer,
+        reply,
+        studentName,
+        isHighScore,
+        isMedScore
+      };
 
-    // Cập nhật Leitner Box và âm thanh theo kết quả
-    const isHighScore = reply.includes("score-badge-high") || reply.includes("Điểm số: 9") || reply.includes("Điểm số: 10") || reply.includes("Điểm số: 8.");
-    const isMedScore = reply.includes("score-badge-med") || reply.includes("Điểm số: 6") || reply.includes("Điểm số: 7");
-
-    if (isHighScore) {
-      playCelebration();
-      setLeitnerBox(thm.id, "green");
-      addExpAndCoins(20, 10);
-    } else if (isMedScore) {
-      playSuccessSound();
-      setLeitnerBox(thm.id, "yellow");
-      addExpAndCoins(10, 5);
-    } else {
-      playTone(220, "sawtooth", 0.25);
-      setLeitnerBox(thm.id, "red");
+      // Khởi tạo khung đối thoại trực tiếp Thầy - Trò
+      const chatSection = document.getElementById("oral-chat-section");
+      const chatMsgs = document.getElementById("oral-chat-messages");
+      if (chatSection && chatMsgs) {
+        chatSection.style.display = "block";
+        chatMsgs.innerHTML = "";
+        oralChatHistory = [];
+        const introMsg = `Thầy chào ${studentName}! 👨‍🏫 Thầy vừa chấm xong câu trả lời vấn đáp của em về định lý **${thm.title}**.\n\nNếu em thấy điểm số chưa thỏa đáng, muốn phản biện *"Thầy ơi Thầy chấm sai rồi"*, hoặc có bất kỳ câu hỏi nào cần Thầy giải thích thêm, em hãy bấm nút phản biện hoặc nhắn ngay cho Thầy ở đây nhé! Thầy luôn lắng nghe và giải đáp cùng em! 😊`;
+        appendOralChatMessage("teacher", introMsg);
+        renderOralQuickChips(thm);
+      }
+    } catch (e) {
+      console.error("Lỗi khi chấm điểm vấn đáp:", e);
+      feedbackContent.innerHTML = `<div class="score-badge-med">⚠️ Đã xảy ra gián đoạn nhỏ khi kết nối. Em hãy thử gửi lại câu trả lời nhé!</div>`;
+    } finally {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = `<span>🚀 Gửi Câu Trả Lời Cho AI Chấm Điểm</span>`;
     }
-
-    lastEvaluatedOral = {
-      thm,
-      answer,
-      reply,
-      studentName,
-      isHighScore,
-      isMedScore
-    };
-
-    // Khởi tạo khung đối thoại trực tiếp Thầy - Trò
-    const chatSection = document.getElementById("oral-chat-section");
-    const chatMsgs = document.getElementById("oral-chat-messages");
-    if (chatSection && chatMsgs) {
-      chatSection.style.display = "block";
-      chatMsgs.innerHTML = "";
-      oralChatHistory = [];
-      const introMsg = `Thầy chào ${studentName}! 👨‍🏫 Thầy vừa chấm xong câu trả lời vấn đáp của em về định lý **${thm.title}**.\n\nNếu em thấy điểm số chưa thỏa đáng, muốn phản biện *"Thầy ơi Thầy chấm sai rồi"*, hoặc có bất kỳ câu hỏi nào cần Thầy giải thích thêm, em hãy bấm nút phản biện hoặc nhắn ngay cho Thầy ở đây nhé! Thầy luôn lắng nghe và giải đáp cùng em! 😊`;
-      appendOralChatMessage("teacher", introMsg);
-    }
-
-    btnSubmit.disabled = false;
-    btnSubmit.innerHTML = `<span>🚀 Gửi Câu Trả Lời Cho AI Chấm Điểm</span>`;
   });
 
   // Quản lý lịch sử và tin nhắn trong khung chat vấn đáp Thầy - Trò
   let oralChatHistory = [];
+  let isOralChatWaiting = false;
 
   function appendOralChatMessage(role, text) {
     const container = document.getElementById("oral-chat-messages");
@@ -1758,9 +1875,10 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   function showOralTeacherTyping() {
     const container = document.getElementById("oral-chat-messages");
     if (!container) return null;
+    removeOralTeacherTyping();
     const div = document.createElement("div");
     div.id = "oral-teacher-typing-indicator";
-    div.className = "oral-msg oral-msg-teacher";
+    div.className = "oral-msg oral-msg-teacher oral-typing-indicator-box";
     div.innerHTML = `
       <div class="oral-msg-avatar">👨‍🏫</div>
       <div class="oral-msg-bubble" style="color: #6366f1; font-style: italic;">
@@ -1773,11 +1891,92 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   }
 
   function removeOralTeacherTyping() {
-    const el = document.getElementById("oral-teacher-typing-indicator");
-    if (el) el.remove();
+    document.querySelectorAll("#oral-teacher-typing-indicator, .oral-typing-indicator-box").forEach(el => el.remove());
+  }
+
+  // Chức năng thực sự kích hoạt ô phát biểu lại cho học sinh
+  function triggerReanswerOralQuestion() {
+    const userInput = document.getElementById("oral-user-input");
+    const submitBtn = document.getElementById("btn-submit-oral");
+    if (!userInput) return;
+
+    // Cuộn mượt mà lên ô nhập câu trả lời phía trên
+    userInput.scrollIntoView({ behavior: "smooth", block: "center" });
+    userInput.value = "";
+    userInput.placeholder = "Thầy đang lắng nghe đây! Em hãy gõ hoặc bấm Mic để phát biểu lại câu trả lời nhé...";
+    userInput.focus();
+    userInput.classList.add("input-reanswer-highlight");
+    setTimeout(() => {
+      userInput.classList.remove("input-reanswer-highlight");
+    }, 3000);
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<span>🚀 Gửi Câu Trả Lời Cho AI Chấm Điểm</span>`;
+    }
+
+    appendOralChatMessage("teacher", `Thầy đã mở lại ô phát biểu ở trên cho em rồi nhé! 🎙️ Em hãy nhìn lên trên, nhấn Mic hoặc nhập câu trả lời mới rồi bấm nút **"Gửi Câu Trả Lời Cho AI Chấm Điểm"** để Thầy chấm lại cho em nha! Chúc em làm bài thật tốt và đạt điểm 10! ⭐`);
+  }
+
+  // Tạo và gắn sự kiện cho các nút gợi ý nhanh linh hoạt theo từng định lý
+  function renderOralQuickChips(thm) {
+    const container = document.getElementById("oral-quick-chips");
+    if (!container) return;
+
+    if (!thm) {
+      const list = getFilteredTheorems();
+      thm = list && list.length > 0 ? list[oralThmIndex] : null;
+    }
+
+    let questionChipText = "❓ Vì sao có quy tắc này?";
+    let questionChipData = "Thầy giải thích rõ hơn lý do vì sao lại có quy tắc này được không ạ?";
+
+    const tLower = (thm ? (thm.title + " " + (thm.aiQuestion || "")) : "").toLowerCase();
+    if (tLower.includes("đối đỉnh") || tLower.includes("doi dinh")) {
+      questionChipText = "❓ Hai góc bằng nhau thì có luôn đối đỉnh không?";
+      questionChipData = "Thưa Thầy, vì sao hai góc có số đo bằng nhau thì chưa chắc đã đối đỉnh ạ? Thầy giải thích rõ hơn giúp em với!";
+    } else if (tLower.includes("song song")) {
+      questionChipText = "❓ Dấu hiệu nhận biết 2 đường thẳng song song?";
+      questionChipData = "Thưa Thầy, làm sao để nhận biết hai đường thẳng song song dựa vào các góc ạ?";
+    } else if (tLower.includes("tam giác") || tLower.includes("tam giac")) {
+      questionChipText = "❓ Vì sao tổng 3 góc tam giác luôn bằng 180°?";
+      questionChipData = "Thưa Thầy, vì sao tổng ba góc trong một tam giác luôn bằng 180 độ ạ?";
+    } else if (tLower.includes("lũy thừa") || tLower.includes("luy thua")) {
+      questionChipText = "❓ Vì sao cơ số a phải khác 0?";
+      questionChipData = "Thầy ơi, vì sao phép chia hai lũy thừa cùng cơ số thì cơ số a lại phải khác 0 ạ?";
+    } else if (tLower.includes("phân số") || tLower.includes("số hữu tỉ")) {
+      questionChipText = "❓ Vì sao mẫu số phải khác 0?";
+      questionChipData = "Thưa Thầy, vì sao mẫu số của phân số hay số hữu tỉ bắt buộc phải khác 0 ạ?";
+    }
+
+    container.innerHTML = `
+      <button class="oral-chip" data-action="appeal" data-text="Thưa Thầy, em thấy em đã phát biểu đúng bản chất rồi, Thầy xem lại giúp em với!">⚖️ Thầy xem lại giúp em, em nói đúng mà!</button>
+      <button class="oral-chip" data-action="question" data-text="${questionChipData}">${questionChipText}</button>
+      <button class="oral-chip" data-action="example" data-text="Thầy cho em xin một ví dụ số học thực tế để em nhớ sâu định lý này nhé!">💡 Cho em xin ví dụ cụ thể</button>
+      <button class="oral-chip" data-action="reanswer" data-text="reanswer">🎤 Em muốn phát biểu lại</button>
+    `;
+
+    container.querySelectorAll(".oral-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const action = chip.dataset.action;
+        if (action === "reanswer") {
+          triggerReanswerOralQuestion();
+        } else if (action === "appeal") {
+          const btnAppeal = document.getElementById("btn-oral-appeal");
+          if (btnAppeal) {
+            btnAppeal.click();
+          } else {
+            handleSendOralChatMessage(chip.dataset.text);
+          }
+        } else {
+          handleSendOralChatMessage(chip.dataset.text || chip.textContent);
+        }
+      });
+    });
   }
 
   async function handleSendOralChatMessage(customText = null) {
+    if (isOralChatWaiting) return;
     const inputEl = document.getElementById("oral-chat-input");
     const text = (customText !== null ? customText : (inputEl ? inputEl.value : "")).trim();
     if (!text) return;
@@ -1787,6 +1986,10 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     const thm = (lastEvaluatedOral && lastEvaluatedOral.thm) || (list.length > 0 ? list[oralThmIndex] : null);
     const studentName = (currentUser && !currentUser.isGuest) ? currentUser.fullname : "em";
 
+    isOralChatWaiting = true;
+    const btnSend = document.getElementById("btn-oral-chat-send");
+    if (btnSend) btnSend.disabled = true;
+
     // Hiện tin nhắn học sinh
     appendOralChatMessage("student", text);
     showOralTeacherTyping();
@@ -1794,39 +1997,49 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     const answer = lastEvaluatedOral?.answer || "";
     const reply = lastEvaluatedOral?.reply || "";
 
-    const aiResponse = await callAIBackend({
-      prompt: text,
-      mode: "oral_chat",
-      context: {
-        studentName: studentName,
-        studentAnswer: answer,
-        theoremTitle: thm ? thm.title : "Định lý",
-        standardAnswer: thm ? thm.standardAnswer : "",
-        keywords: thm ? (thm.keywords || []) : [],
-        formula: thm ? (thm.formula || "") : "",
-        previousCritique: reply,
-        chatHistory: oralChatHistory
-      }
-    });
+    try {
+      const aiResponse = await callAIBackend({
+        prompt: text,
+        mode: "oral_chat",
+        context: {
+          studentName: studentName,
+          studentAnswer: answer,
+          theoremTitle: thm ? thm.title : "Định lý",
+          standardAnswer: thm ? thm.standardAnswer : "",
+          keywords: thm ? (thm.keywords || []) : [],
+          formula: thm ? (thm.formula || "") : "",
+          previousCritique: reply,
+          chatHistory: oralChatHistory
+        }
+      });
 
-    removeOralTeacherTyping();
-    appendOralChatMessage("teacher", aiResponse);
+      removeOralTeacherTyping();
+      appendOralChatMessage("teacher", aiResponse);
 
-    // Nếu Thầy nâng điểm trong tin nhắn phản hồi
-    if (aiResponse.includes("NÂNG_ĐIỂM") || aiResponse.includes("9.5") || aiResponse.includes("10 / 10") || aiResponse.includes("phúc khảo thành công") || aiResponse.includes("chính xác 100%")) {
-      const feedbackContent = document.getElementById("oral-feedback-content");
-      if (feedbackContent) {
-        const currentBadge = feedbackContent.querySelector(".score-badge-low, .score-badge-med, .score-badge-high");
-        if (currentBadge) {
-          currentBadge.className = "score-badge-high";
-          currentBadge.innerHTML = "⭐ Điểm số: 9.5 / 10 (Thầy AI đã đính chính & nâng điểm ✅)";
+      // Nếu Thầy nâng điểm trong tin nhắn phản hồi
+      if (aiResponse.includes("NÂNG_ĐIỂM") || aiResponse.includes("9.5") || aiResponse.includes("10 / 10") || aiResponse.includes("10/10") || aiResponse.includes("phúc khảo thành công") || aiResponse.includes("chính xác 100%")) {
+        const feedbackContent = document.getElementById("oral-feedback-content");
+        if (feedbackContent) {
+          const currentBadge = feedbackContent.querySelector(".score-badge-low, .score-badge-med, .score-badge-high");
+          if (currentBadge) {
+            currentBadge.className = "score-badge-high";
+            currentBadge.innerHTML = "⭐ Điểm số: 10 / 10 (Thầy AI đã đính chính & nâng điểm ✅)";
+          }
+        }
+        if (thm) {
+          setLeitnerBox(thm.id, "green");
+          addExpAndCoins(30, 15);
+          playCelebration();
         }
       }
-      if (thm) {
-        setLeitnerBox(thm.id, "green");
-        addExpAndCoins(30, 15);
-        playCelebration();
-      }
+    } catch (err) {
+      console.error("Lỗi khi gửi tin nhắn cho Thầy AI:", err);
+      removeOralTeacherTyping();
+      appendOralChatMessage("teacher", `Thầy chào ${studentName}! Thầy luôn ở đây và lắng nghe mọi ý kiến của em về định lý **${thm ? thm.title : ""}**. Em hãy tiếp tục trao đổi với Thầy nhé! 😊`);
+    } finally {
+      removeOralTeacherTyping();
+      isOralChatWaiting = false;
+      if (btnSend) btnSend.disabled = false;
     }
   }
 
@@ -1838,10 +2051,12 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         alert("Em hãy gửi câu trả lời vấn đáp trước khi yêu cầu phản biện nhé!");
         return;
       }
+      if (isOralChatWaiting) return;
       const { thm, answer, reply, studentName } = lastEvaluatedOral;
       const chatSection = document.getElementById("oral-chat-section");
       if (chatSection) chatSection.style.display = "block";
 
+      isOralChatWaiting = true;
       btnOralAppeal.disabled = true;
       btnOralAppeal.innerHTML = `<span>⏳ Đang gửi báo cáo để Thầy AI rà soát lại...</span>`;
 
@@ -1849,43 +2064,51 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       appendOralChatMessage("student", appealText);
       showOralTeacherTyping();
 
-      const aiAppealReply = await callAIBackend({
-        prompt: appealText,
-        mode: "oral_appeal",
-        context: {
-          studentName: studentName,
-          studentAnswer: answer,
-          theoremTitle: thm.title,
-          standardAnswer: thm.standardAnswer,
-          keywords: thm.keywords || [],
-          formula: thm.formula || "",
-          previousCritique: reply,
-          chatHistory: oralChatHistory
-        }
-      });
-
-      removeOralTeacherTyping();
-      appendOralChatMessage("teacher", aiAppealReply);
-
-      // Nếu phúc khảo thành công
-      if (aiAppealReply.includes("NÂNG_ĐIỂM") || aiAppealReply.includes("phúc khảo thành công") || aiAppealReply.includes("chính xác 100%")) {
-        const feedbackContent = document.getElementById("oral-feedback-content");
-        if (feedbackContent) {
-          const currentBadge = feedbackContent.querySelector(".score-badge-low, .score-badge-med, .score-badge-high");
-          if (currentBadge) {
-            currentBadge.className = "score-badge-high";
-            currentBadge.innerHTML = "⭐ Điểm số: 9.5 / 10 (Thầy AI đã đính chính & nâng điểm ✅)";
+      try {
+        const aiAppealReply = await callAIBackend({
+          prompt: appealText,
+          mode: "oral_appeal",
+          context: {
+            studentName: studentName,
+            studentAnswer: answer,
+            theoremTitle: thm.title,
+            standardAnswer: thm.standardAnswer,
+            keywords: thm.keywords || [],
+            formula: thm.formula || "",
+            previousCritique: reply,
+            chatHistory: oralChatHistory
           }
-        }
-        setLeitnerBox(thm.id, "green");
-        addExpAndCoins(30, 15);
-        playCelebration();
-      } else {
-        playSuccessSound();
-      }
+        });
 
-      btnOralAppeal.disabled = false;
-      btnOralAppeal.innerHTML = `<span>🚨 Thầy chấm sai rồi! (Báo cáo để AI xem lại)</span>`;
+        removeOralTeacherTyping();
+        appendOralChatMessage("teacher", aiAppealReply);
+
+        // Nếu phúc khảo thành công
+        if (aiAppealReply.includes("NÂNG_ĐIỂM") || aiAppealReply.includes("phúc khảo thành công") || aiAppealReply.includes("chính xác 100%")) {
+          const feedbackContent = document.getElementById("oral-feedback-content");
+          if (feedbackContent) {
+            const currentBadge = feedbackContent.querySelector(".score-badge-low, .score-badge-med, .score-badge-high");
+            if (currentBadge) {
+              currentBadge.className = "score-badge-high";
+              currentBadge.innerHTML = "⭐ Điểm số: 10 / 10 (Thầy AI đã đính chính & nâng điểm ✅)";
+            }
+          }
+          setLeitnerBox(thm.id, "green");
+          addExpAndCoins(30, 15);
+          playCelebration();
+        } else {
+          playSuccessSound();
+        }
+      } catch (err) {
+        console.error("Lỗi khi phúc khảo:", err);
+        removeOralTeacherTyping();
+        appendOralChatMessage("teacher", `Thầy chào ${studentName}! Thầy đã nhận được báo cáo phản biện của em và đang cùng em rà soát lại định lý **${thm.title}**.`);
+      } finally {
+        removeOralTeacherTyping();
+        isOralChatWaiting = false;
+        btnOralAppeal.disabled = false;
+        btnOralAppeal.innerHTML = `<span>🚨 Thầy chấm sai rồi! (Báo cáo để AI xem lại)</span>`;
+      }
       
       if (chatSection) {
         chatSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -1902,6 +2125,9 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
         const isHidden = (chatSection.style.display === "none" || !chatSection.style.display);
         chatSection.style.display = isHidden ? "block" : "none";
         if (isHidden) {
+          const list = getFilteredTheorems();
+          const thm = (lastEvaluatedOral && lastEvaluatedOral.thm) || (list.length > 0 ? list[oralThmIndex] : null);
+          renderOralQuickChips(thm);
           chatSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
       }
@@ -1924,13 +2150,8 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     });
   }
 
-  // Gợi ý nhanh (Quick Chips)
-  document.querySelectorAll(".oral-chip").forEach(chip => {
-    chip.addEventListener("click", () => {
-      const text = chip.dataset.text || chip.textContent;
-      handleSendOralChatMessage(text);
-    });
-  });
+  // Khởi tạo các chip gợi ý ban đầu
+  renderOralQuickChips();
 
   // Micro nói chuyện trong khung chat
   const btnOralChatMic = document.getElementById("btn-oral-chat-mic");

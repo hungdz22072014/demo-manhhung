@@ -299,7 +299,7 @@ const THEOREMS_DATA = [
     },
     aiQuestion: "Nếu hai góc có số đo bằng nhau thì chúng có nhất thiết phải đối đỉnh không? Cho ví dụ minh họa?",
     standardAnswer: "Không nhất thiết. Hai góc bằng nhau chưa chắc đối đỉnh vì các cạnh của chúng có thể không phải là tia đối của nhau. Ví dụ hai góc ở hai hình riêng biệt cùng bằng 45 độ.",
-    keywords: ["không nhất thiết", "tia đối", "hai góc bằng nhau chưa chắc đối đỉnh"]
+    keywords: ["không nhất thiết", "không", "tia đối", "hai góc bằng nhau chưa chắc đối đỉnh", "tam giác cân", "hai hình riêng biệt", "so le trong"]
   },
   {
     id: "toan7-hk1-song-song-dau-hieu",
