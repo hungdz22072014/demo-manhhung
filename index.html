@@ -6343,10 +6343,10 @@ body {
             </div>
             <div class="feedback-content" id="oral-feedback-content"></div>
 
-            <!-- Khối nút Phản biện & Phúc khảo điểm số -->
+            <!-- Khối nút Báo cáo Thầy chấm sai rồi & Phúc khảo -->
             <div class="oral-appeal-bar" id="oral-appeal-bar">
-              <button class="btn-appeal-btn" id="btn-oral-appeal" title="Yêu cầu Thầy AI rà soát lại câu trả lời và phúc khảo điểm số">
-                <span>⚖️ Thầy chấm sai rồi! Bấm để Phản biện & Phúc khảo</span>
+              <button class="btn-appeal-btn btn-appeal-prominent" id="btn-oral-appeal" title="Báo cáo câu trả lời để Thầy AI rà soát và phúc khảo lại">
+                <span>🚨 Thầy chấm sai rồi! (Báo cáo để AI xem lại)</span>
               </button>
               <button class="btn-chat-ai-btn" id="btn-toggle-oral-chat" title="Mở khung trò chuyện & giải đáp trực tiếp với Thầy AI">
                 <span>💬 Trò chuyện & Giải đáp thắc mắc cùng Thầy AI</span>
@@ -6354,6 +6354,12 @@ body {
               <button class="btn-chat-ai-btn" id="btn-oral-chat-socratic" title="Chuyển sang đàm thoại chuyên sâu tại Phòng Gia sư Socratic">
                 <span>🏛️ Mở rộng tại Gia Sư Socratic</span>
               </button>
+            </div>
+
+            <!-- Dòng chữ nhỏ lưu ý về AI -->
+            <div class="oral-ai-disclaimer" id="oral-ai-disclaimer">
+              <span class="disclaimer-icon">ℹ️</span>
+              <span class="disclaimer-text">Lưu ý: AI có thể mắc sai sót hoặc chấm chưa tuyệt đối chính xác trong một số trường hợp. Em hãy luôn kiểm tra, đối chiếu lại với SGK Kết nối tri thức và bấm nút <strong>"Thầy chấm sai rồi"</strong> nếu cần báo cáo để AI xem lại nhé!</span>
             </div>
 
             <!-- Khung đối thoại trực tiếp giữa Thầy và Trò (Live Teacher-Student Chat) -->
@@ -11270,34 +11276,47 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
 
       const combinedScore = keywordRatio * 0.7 + textOverlapRatio * 0.3;
 
-      // Tính điểm sư phạm công tâm
-      let score = 0;
+      // Tính điểm sư phạm công tâm & chặt chẽ (Tránh cho điểm dễ dãi khi mới chỉ trả lời được 1/2 câu)
+      let score = "0";
       let badgeClass = "score-badge-low";
       let comment = "";
 
-      if (keywordRatio >= 0.85 || combinedScore >= 0.8) {
+      // 1. Xuất sắc: Đầy đủ 100% tất cả các vế và từ khóa trọng tâm
+      if (keywordRatio >= 0.95 && missedList.length === 0) {
         score = "10";
         badgeClass = "score-badge-high";
-        comment = `🌟 **Xuất sắc 10/10!** ${studentName} đã phát biểu định lý/quy tắc **${thmTitle}** rất chính xác, đầy đủ toàn bộ ý và từ khóa trọng tâm!`;
-      } else if (keywordRatio >= 0.6 || combinedScore >= 0.6) {
-        score = "9.5";
+        comment = `🌟 **Xuất sắc (10/10)!** ${studentName} đã phát biểu định lý/quy tắc **${thmTitle}** hoàn toàn chuẩn mực và đầy đủ tất cả các ý trọng tâm!`;
+      } 
+      // 2. Rất tốt: Nêu đủ các ý chính, chỉ thiếu 1 điều kiện phụ nhỏ
+      else if (keywordRatio >= 0.85 && missedList.length <= 1) {
+        score = "8.5";
         badgeClass = "score-badge-high";
-        comment = `🌟 **Rất xuất sắc (9.5/10)!** Câu trả lời của ${studentName} đã nắm rất vững bản chất toán học của **${thmTitle}**!`;
-      } else if (keywordRatio >= 0.4 || combinedScore >= 0.4) {
-        score = "7.5";
+        comment = `👏 **Rất tốt (8.5/10)!** Câu trả lời của ${studentName} đã nắm được hầu hết các ý cốt lõi của **${thmTitle}**, chỉ thiếu một điều kiện nhỏ để đạt điểm 10.`;
+      } 
+      // 3. Khá: Nắm được khoảng 70% nội dung
+      else if (keywordRatio >= 0.7 && missedList.length <= 1) {
+        score = "7.0";
         badgeClass = "score-badge-med";
-        comment = `👍 **Khá tốt (7.5/10)!** ${studentName} đã nắm được các ý chính của định lý, hãy bổ sung thêm các điều kiện để câu trả lời trọn vẹn hơn nhé.`;
-      } else {
+        comment = `👍 **Khá tốt (7.0/10)!** ${studentName} đã nắm được nội dung cơ bản của định lý, hãy bổ sung thêm các điều kiện còn thiếu để câu trả lời trọn vẹn hơn.`;
+      } 
+      // 4. Mới trả lời được một nửa câu hỏi (1/2 ý chính) hoặc thiếu hẳn 1 vế quan trọng (như thiếu căn bậc hai)
+      else if (keywordRatio >= 0.35 || (matchedList.length > 0 && missedList.length > 0)) {
+        score = matchedCount >= 2 && missedList.length === 1 ? "5.5" : "5.0";
+        badgeClass = "score-badge-med";
+        comment = `⚠️ **Chưa hoàn thiện (${score}/10)!** ${studentName} mới chỉ trả lời được khoảng 1/2 câu hỏi. Em đã nêu được: *${matchedList.join(", ")}*, nhưng còn **bỏ sót hoàn toàn** phần kiến thức quan trọng: *${missedList.join(", ")}*. Em hãy bổ sung thêm để đạt điểm tối đa nhé!`;
+      } 
+      // 5. Trả lời rời rạc hoặc dưới 35%
+      else {
         const mathWords = ["tam giác", "góc", "bằng nhau", "song song", "cạnh", "chia hết", "tổng", "đối đỉnh", "lũy thừa", "phân số", "tỉ số", "bằng", "vuông", "đường thẳng", "cơ số", "số mũ", "mũ", "nhân", "chia"];
         const hasSomeMath = mathWords.some(w => userAnsLower.includes(w));
-        if (hasSomeMath && userAnsClean.length >= 8) {
-          score = "5.0";
-          badgeClass = "score-badge-med";
-          comment = `⚠️ ${studentName} có đề cập đến một số khái niệm toán học nhưng cách diễn đạt còn thiếu một số ý cốt lõi của **${thmTitle}**.`;
+        if (hasSomeMath && userAnsClean.length >= 6) {
+          score = "3.5";
+          badgeClass = "score-badge-low";
+          comment = `⚠️ Câu trả lời của ${studentName} mới chỉ nhắc đến một vài từ khóa đơn lẻ (${score}/10), chưa phát biểu thành định nghĩa/quy tắc hoàn chỉnh của **${thmTitle}**.`;
         } else {
           score = "1.0";
           badgeClass = "score-badge-low";
-          comment = `❌ Câu trả lời của ${studentName} chưa đúng trọng tâm của định lý **${thmTitle}**.`;
+          comment = `❌ Câu trả lời của ${studentName} chưa đúng trọng tâm của định lý **${thmTitle}** (${score}/10).`;
         }
       }
 
@@ -11312,7 +11331,7 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
       const nowTime = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
       return `<div class="${badgeClass}">⭐ Điểm số: ${score} / 10</div>
-<div class="ai-verify-stamp">🤖 <em>AI Socratic đã phân tích ngữ nghĩa tự nhiên lúc ${nowTime}</em></div>
+<div class="ai-verify-stamp">🤖 <em>AI Socratic đã đối chiếu SGK và phân tích ngữ nghĩa lúc ${nowTime}</em></div>
 
 💡 **Nhận xét của Thầy**:
 ${comment}${detailBreakdown}
@@ -11333,47 +11352,70 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
 
       const isAppealOrDispute = [
         "thầy chấm sai", "thầy sai", "chấm sai", "phản biện", "phúc khảo", "xem lại",
-        "nói đúng mà", "em nói đúng", "phát biểu đúng", "chưa chính xác", "oan", "bị trừ điểm"
+        "nói đúng mà", "em nói đúng", "phát biểu đúng", "chưa chính xác", "oan", "bị trừ điểm", "báo cáo"
       ].some(k => pLower.includes(k));
 
       if (isAppealOrDispute || mode === "oral_appeal") {
-        const hasCoreConcepts = (
-          (lowerStudentAns.includes("cơ số") && (lowerStudentAns.includes("giữ") || lowerStudentAns.includes("nguyên"))) ||
-          (lowerStudentAns.includes("số mũ") && (lowerStudentAns.includes("cộng") || lowerStudentAns.includes("trừ"))) ||
-          (lowerStudentAns.includes("180") || lowerStudentAns.includes("đối đỉnh") || lowerStudentAns.includes("so le") || lowerStudentAns.includes("đồng vị"))
-        );
+        // Đối chiếu lại danh sách từ khóa thực tế
+        const rawKeywords = context?.keywords || [];
+        const formulaKws = rawKeywords.filter(k => /[=\^_\\]/.test(k));
+        const textKeywords = rawKeywords.filter(k => !/[=\^_\\]/.test(k));
+        const targetKeywords = textKeywords.length > 0 ? textKeywords : rawKeywords;
 
-        if (hasCoreConcepts) {
+        let appealMatched = 0;
+        const appealMatchedList = [];
+        const appealMissedList = [];
+        targetKeywords.forEach(kw => {
+          if (matchConceptFuzzy(kw, normalizeMathText(studentAns), lowerStudentAns)) {
+            appealMatched++;
+            appealMatchedList.push(kw);
+          } else {
+            appealMissedList.push(kw);
+          }
+        });
+
+        // 1. Trường hợp học sinh đã trả lời đầy đủ (hoặc do đảo ngữ câu chữ bị trừ oan):
+        if (appealMissedList.length === 0 && appealMatched > 0) {
           return `Thầy chào ${studentName}! 🌟
 
-Thầy cảm ơn ${studentName} rất nhiều vì đã dũng cảm và thẳng thắn phản biện lại Thầy!
+Thầy cảm ơn ${studentName} rất nhiều vì đã thẳng thắn bấm nút báo cáo để Thầy rà soát lại!
 
 Thầy vừa cẩn thận đọc lại từng câu chữ trong câu trả lời của em:
 👉 *"${studentAns}"*
 
-🔍 **Phân tích đối chiếu chuyên sâu của Thầy**:
-- Khi em nói: *"cơ số giữ nguyên"* hoặc *"lấy số mũ cộng/trừ số mũ"*, về mặt bản chất toán học trong SGK Kết nối tri thức là **hoàn toàn chính xác 100%**!
-- Thuật toán so khớp từ khóa trước đó bị máy móc, đòi hỏi đúng thứ tự cụm từ cứng nhắc nên đã trừ điểm oan của em. Thầy chân thành nhận lỗi với em nhé!
+🔍 **Kết quả đối chiếu lại của Thầy**:
+- Em đã phát biểu chuẩn xác và bao quát đầy đủ tất cả các ý chính của định lý **${thmTitle}** (${appealMatchedList.join(", ")}).
+- Lần chấm trước do máy móc đối khớp cứng nhắc nên đã trừ điểm oan của em. Thầy chân thành nhận lỗi với em nhé!
 
 🎉 **Quyết định phúc khảo của Thầy**:
 - Đính chính và nâng điểm của em lên: **9.5 / 10** ⭐! [NÂNG_ĐIỂM: 9.5]
 - Định lý **${thmTitle}** đã được ghi nhận hoàn thành xuất sắc!
-- Thầy rất tự hào về tư duy tự tin bảo vệ chính kiến khoa học của em.
-
-Em có câu hỏi nào cần Thầy giải thích thêm về định lý này không, Thầy trò mình trò chuyện tiếp nhé! 😊`;
-        } else {
+- Thầy rất khen ngợi tinh thần tự tin phản biện bảo vệ chính kiến khoa học của em. 😊`;
+        } 
+        
+        // 2. Trường hợp học sinh mới trả lời được 1 phần / 1 nửa câu hỏi (như chỉ nêu số hữu tỉ mà thiếu căn bậc hai):
+        if (appealMissedList.length > 0) {
           return `Thầy chào ${studentName}! 💡
 
-Thầy rất hoan nghênh tinh thần phản biện và ham học hỏi của em. Thầy đã đọc lại rất kỹ câu trả lời của em:
+Thầy rất hoan nghênh em đã bấm nút báo cáo để Thầy trò mình cùng rà soát lại thật công tâm. Thầy đã đọc lại rất kỹ câu trả lời của em:
 👉 *"${studentAns}"*
 
-🔍 **Thầy giải thích chi tiết vì sao câu trả lời cần hoàn thiện thêm**:
-- Để định lý **${thmTitle}** được trọn vẹn và đạt điểm tối đa, câu trả lời cần làm rõ các điều kiện then chốt theo SGK Kết nối tri thức.
-- 📖 **Phát biểu chuẩn**: *"${std}"*
+🔍 **Thầy giải thích chi tiết vì sao điểm số hiện tại là hoàn toàn chuẩn xác theo SGK**:
+- ✅ **Phần em đã làm đúng**: Em đã nêu đúng kiến thức về: **${appealMatchedList.length > 0 ? appealMatchedList.join(", ") : "một số ý cơ bản"}**.
+- ⚠️ **Phần em còn thiếu**: Câu hỏi yêu cầu đầy đủ các nội dung trong bài, nhưng em **chưa trả lời phần: ${appealMissedList.join(", ")}**.
+- 📖 **Phát biểu đầy đủ SGK Kết nối tri thức**: *"${std}"*
 ${context?.formula ? `- 📐 **Công thức**: $$${context.formula}$$` : ""}
 
-👉 Em thử đọc lại định lý chuẩn một lần nữa và nhắn lại cho Thầy nhé, Thầy luôn sẵn sàng lắng nghe và chấm lại cho em!`;
+🎯 **Kết luận của Thầy**:
+Vì câu trả lời của em mới chỉ hoàn thành khoảng 1/2 yêu cầu nên mức điểm 5.0 - 5.5/10 là hoàn toàn chính xác và công bằng để giúp em học toàn diện, không bị hổng kiến thức.
+
+👉 Em hãy bấm nút **"🎤 Em muốn phát biểu lại"** ở ngay bên dưới để bổ sung nốt phần còn thiếu nhé! Thầy luôn sẵn sàng lắng nghe và chấm điểm 10 cho em! 😊`;
         }
+
+        // Mặc định
+        return `Thầy chào ${studentName}! Thầy đã rà soát lại toàn bộ câu trả lời của em về định lý **${thmTitle}**.
+Chuẩn SGK: *"${std}"*.
+Em hãy đọc lại định lý và bấm nút phát biểu lại để Thầy chấm điểm cao hơn cho em nhé!`;
       }
 
       // Nếu học sinh hỏi về điều kiện cơ số khác 0
@@ -12396,9 +12438,9 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       if (chatSection) chatSection.style.display = "block";
 
       btnOralAppeal.disabled = true;
-      btnOralAppeal.innerHTML = `<span>⏳ Thầy AI đang đối thoại & rà soát lại...</span>`;
+      btnOralAppeal.innerHTML = `<span>⏳ Đang gửi báo cáo để Thầy AI rà soát lại...</span>`;
 
-      const appealText = `Thưa Thầy, em thấy em đã phát biểu đúng bản chất toán học: "${answer}". Em xin phép phản biện vì thấy Thầy chấm em chưa thỏa đáng, Thầy đối chiếu lại và giải thích giúp em với ạ!`;
+      const appealText = `Thưa Thầy, em xin phép báo cáo: Em thấy Thầy chấm câu này chưa chính xác (hoặc Thầy chấm nhầm/chưa thỏa đáng). Câu trả lời của em là: "${answer}". Thầy rà soát lại cẩn thận đối chiếu với định lý "${thm.title}" xem câu trả lời của em có đúng không và giải thích giúp em với ạ!`;
       appendOralChatMessage("student", appealText);
       showOralTeacherTyping();
 
@@ -12421,13 +12463,13 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       appendOralChatMessage("teacher", aiAppealReply);
 
       // Nếu phúc khảo thành công
-      if (aiAppealReply.includes("NÂNG_ĐIỂM") || aiAppealReply.includes("9.5") || aiAppealReply.includes("10 / 10") || aiAppealReply.includes("phúc khảo thành công") || aiAppealReply.includes("chính xác 100%")) {
+      if (aiAppealReply.includes("NÂNG_ĐIỂM") || aiAppealReply.includes("phúc khảo thành công") || aiAppealReply.includes("chính xác 100%")) {
         const feedbackContent = document.getElementById("oral-feedback-content");
         if (feedbackContent) {
           const currentBadge = feedbackContent.querySelector(".score-badge-low, .score-badge-med, .score-badge-high");
           if (currentBadge) {
             currentBadge.className = "score-badge-high";
-            currentBadge.innerHTML = "⭐ Điểm số: 9.5 / 10 (Đã phúc khảo thành công ✅)";
+            currentBadge.innerHTML = "⭐ Điểm số: 9.5 / 10 (Thầy AI đã đính chính & nâng điểm ✅)";
           }
         }
         setLeitnerBox(thm.id, "green");
@@ -12438,7 +12480,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       }
 
       btnOralAppeal.disabled = false;
-      btnOralAppeal.innerHTML = `<span>✅ Thầy đã giải đáp phản biện xong!</span>`;
+      btnOralAppeal.innerHTML = `<span>🚨 Thầy chấm sai rồi! (Báo cáo để AI xem lại)</span>`;
       
       if (chatSection) {
         chatSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
