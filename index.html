@@ -9311,7 +9311,7 @@ const THEOREMS_DATA = [
     fillBlank: {
       question: "Để tìm ƯCLN của hai hay nhiều số, ta chọn ra các thừa số nguyên tố {blank1} với số mũ {blank2}.",
       answers: ["chung", "nhỏ nhất"],
-      hints: ["Cùng xuất hiện ở các số", "Số mũ bé nhất"]
+      hints: ["Thừa số xuất hiện ở tất cả các số (thừa số chung hay riêng?)", "Tìm ước LỚN NHẤT thì lấy số mũ lớn hay nhỏ?"]
     },
     aiQuestion: "Nêu các bước tìm ƯCLN của hai hay nhiều số tự nhiên lớn hơn 1?",
     standardAnswer: "Bước 1: Phân tích mỗi số ra thừa số nguyên tố. Bước 2: Chọn ra các thừa số nguyên tố chung. Bước 3: Lập tích các thừa số đã chọn, mỗi thừa số lấy với số mũ nhỏ nhất của nó.",
@@ -11551,20 +11551,30 @@ Thầy đã rà soát lại toàn bộ nội dung hướng dẫn trước đó:
 
       let stepGuide = "";
       if (numbers.length >= 2) {
-        const sumGiven = numbers[0] + numbers[1];
-        const remaining = 180 - sumGiven;
-        stepGuide = `\n\n🔍 **Hướng dẫn tính cho bài toán của ${studentName}**:
-- Đề bài đã cho 2 góc có số đo lần lượt là $${numbers[0]}^\\circ$ và $${numbers[1]}^\\circ$.
-- Tổng hai góc đã biết: $${numbers[0]}^\\circ + ${numbers[1]}^\\circ = ${sumGiven}^\\circ$.
-- Góc còn lại cần tìm (góc $x$):
-$$x = 180^\\circ - (${numbers[0]}^\\circ + ${numbers[1]}^\\circ) = 180^\\circ - ${sumGiven}^\\circ = \\mathbf{${remaining}^\\circ}$$`;
+        stepGuide = `\n\n🔍 **Gợi ý từng bước tư duy cho ${studentName} (Phương pháp Socratic)**:
+- 📌 **Dữ kiện đã cho**: Đề bài cho số đo 2 góc là $${numbers[0]}^\\circ$ và $${numbers[1]}^\\circ$.
+- 💡 **Bước 1 (Tính tổng 2 góc đã biết)**: Em hãy tính nhẩm hoặc đặt bút tính: Tổng số đo của hai góc đã biết này là bao nhiêu độ? ($${numbers[0]}^\\circ + ${numbers[1]}^\\circ = ?$)
+- 💡 **Bước 2 (Tìm góc còn lại)**: Áp dụng định lý trên, tổng 3 góc luôn bằng $180^\\circ$. Vậy muốn tìm góc $x$ còn lại, em sẽ lấy $180^\\circ$ trừ đi tổng vừa tính được ở Bước 1 đúng không nào?
+- ❓ **Thử thách cho ${studentName}**: Em hãy nháp thật nhanh và nhắn cho Thầy: **Góc $x$ có số đo bằng bao nhiêu độ** nhé! Thầy đang chờ đáp án chính xác từ chính tư duy của em!`;
       } else if (numbers.length === 1) {
-        stepGuide = `\n\n🔍 **Hướng dẫn**: Đề bài cho một góc bằng $${numbers[0]}^\\circ$. Nếu đây là tam giác vuông (có 1 góc $90^\\circ$), góc nhọn còn lại sẽ là $90^\\circ - ${numbers[0]}^\\circ = ${90 - numbers[0]}^\\circ$.`;
+        stepGuide = `\n\n🔍 **Gợi ý từng bước tư duy cho ${studentName} (Phương pháp Socratic)**:
+- 📌 **Dữ kiện đã cho**: Đề bài cho một góc bằng $${numbers[0]}^\\circ$.
+- 💡 **Bước gợi mở**:
+  + Nếu đây là **tam giác vuông** (có 1 góc vuông $90^\\circ$), em hãy nhớ tính chất: *"Trong tam giác vuông, hai góc nhọn phụ nhau (tổng bằng $90^\\circ$)"*. Vậy góc nhọn còn lại sẽ tính thế nào với số $90^\\circ$?
+  + Nếu là tam giác thường, em hãy kiểm tra lại đề bài xem còn dữ kiện nào khác (như tam giác cân hay góc còn lại) không nhé!
+- ❓ **Thử thách cho ${studentName}**: Em hãy kiểm tra lại đề bài và nhắn cho Thầy suy nghĩ của em nhé!`;
+      } else {
+        stepGuide = `\n\n🔍 **Gợi ý từng bước tư duy cho ${studentName} (Phương pháp Socratic)**:
+- 💡 Để tính góc trong tam giác, em hãy xác định:
+  1. Đề bài đã cho số đo của những góc nào rồi?
+  2. Áp dụng định lý: Lấy $180^\\circ$ trừ đi tổng các góc đã biết để tìm góc còn lại.
+- ❓ **Thử thách cho ${studentName}**: Em hãy gửi số đo các góc cụ thể trong bài của em để Thầy gợi ý em tự tính nhé!`;
       }
 
-      return `Chào ${studentName}! Thầy AI Socratic hướng dẫn em bài toán này nhé:
+      return `Chào ${studentName}! Thầy AI Socratic đồng hành gợi mở cùng em bài toán này nhé!
+*(Thầy sẽ không giải bài hộ hay cho thẳng đáp án đâu, mà sẽ hướng dẫn từng bước để ${studentName} tự tư duy và tìm ra đáp số chuẩn xác nhất!)*
 
-### 🎯 Định lý trọng tâm cần áp dụng:
+### 🎯 Bí kíp định lý cần áp dụng:
 Để tính số đo góc trong tam giác, em hãy áp dụng ngay **Định lý Tổng ba góc trong một tam giác** (SGK Toán 7 - Bộ sách Kết nối tri thức với cuộc sống):
 
 1. 📖 **Nội dung định lý**:
@@ -11573,9 +11583,7 @@ $$x = 180^\\circ - (${numbers[0]}^\\circ + ${numbers[1]}^\\circ) = 180^\\circ - 
 
 2. 💡 **Các tính chất mở rộng cần nhớ**:
    - **Định lý góc ngoài**: Góc ngoài của tam giác bằng tổng của hai góc trong không kề với nó ($\\widehat{A}_{ngoài} = \\widehat{B} + \\widehat{C}$).
-   - **Trong tam giác vuông**: Hai góc nhọn phụ nhau (tổng bằng $90^\\circ$).${stepGuide}
-
-❓ **Câu hỏi cho ${studentName}**: Em hãy kiểm tra lại hình vẽ/đề bài và nhắn cho Thầy kết quả của em nhé!`;
+   - **Trong tam giác vuông**: Hai góc nhọn phụ nhau (tổng bằng $90^\\circ$).${stepGuide}`;
     }
 
     // 2. Phân tích bài toán về Hai đường thẳng song song
@@ -11596,12 +11604,14 @@ Theo SGK Toán 7 (Kết nối tri thức), khi một đường thẳng cắt hai
 
     // 3. Phân tích bài toán về Hai góc đối đỉnh
     if (lower.includes("đối đỉnh") || lower.includes("doi dinh")) {
-      return `Chào ${studentName}! Về **Góc đối đỉnh**, em hãy nhớ nguyên lý vàng:
+      return `Chào ${studentName}! Về **Góc đối đỉnh**, Thầy gợi mở nguyên lý vàng để em tự suy luận nhé:
 
-### 📌 Định lý Hai góc đối đỉnh
+### 📌 Định lý Hai góc đối đỉnh (SGK Toán 7):
 - Hai góc đối đỉnh là hai góc mà mỗi cạnh của góc này là tia đối của một cạnh góc kia.
 - **Định lý**: *Hai góc đối đỉnh thì bằng nhau* ($\\widehat{xOy} = \\widehat{x'Oy'}$).
-- **Lưu ý quan trọng**: Hai góc bằng nhau *chưa chắc* đã đối đỉnh (cần kiểm tra xem các cạnh có phải tia đối nhau không nhé)!`;
+- **Lưu ý quan trọng**: Hai góc bằng nhau *chưa chắc* đã đối đỉnh (cần kiểm tra xem các cạnh có phải tia đối nhau không nhé)!
+
+❓ **Câu hỏi dẫn dắt cho ${studentName}**: Em hãy quan sát hình vẽ: Hai góc em đang xét có chung đỉnh không, và các tia tạo thành chúng có đối nhau không? Nhắn cho Thầy biết nhé!`;
     }
 
     // 4. Phân tích bài toán về Tam giác bằng nhau
@@ -11634,14 +11644,21 @@ Theo SGK Toán 7 (Kết nối tri thức), khi một đường thẳng cắt hai
       if (isNaN(degree) || !degree) degree = 2;
       let val = parseFloat(rootMatch[2].replace(/,/g, "."));
       if (!isNaN(val) && val >= 0) {
-        const rootVal = Math.pow(val, 1 / degree);
-        const rounded5 = Math.round(rootVal * 100000) / 100000;
-        return `Chào ${studentName}! Thầy tính toán chi tiết cho em phép tính này nhé:
+        const isSquare = degree === 2;
+        return `Chào ${studentName}! Thầy AI Socratic hướng dẫn em tư duy tìm căn bậc ${degree} của $${val}$ nhé!
+*(Thầy không cho thẳng đáp số đâu, em hãy cùng Thầy tư duy từng bước nhé!)*
 
-### 📐 Bài toán: Tính $\\sqrt[${degree}]{${val}}$ (Căn bậc ${degree} của ${val})
-1. **Công thức toán học:** $\\sqrt[${degree}]{${val}} = ${val}^{\\frac{1}{${degree}}}$
-2. **Kết quả tính toán chính xác:** $\\sqrt[${degree}]{${val}} \\approx \\mathbf{${rounded5}}$
-3. **Kiểm tra lại:** $(${rounded5})^{${degree}} \\approx ${val}$.`;
+### 📖 Bản chất toán học (SGK Toán 7):
+- **Định nghĩa**: Căn bậc ${degree} của một số $a \\ge 0$ là số $x \\ge 0$ sao cho:
+  $$x^{${degree}} = a$$
+- Áp dụng vào bài của em: Em cần tìm một số $x$ không âm sao cho:
+  $$x^{${degree}} = ${val}$$
+
+💡 **Gợi mở tư duy**:
+${isSquare ? `- Em hãy tự đặt câu hỏi: *"Số nào không âm khi nhân với chính nó ($x \\times x$) sẽ ra đúng bằng $${val}$?"*` : `- Em hãy tự đặt câu hỏi: *"Số nào không âm khi lũy thừa ${degree} ($x^{${degree}}$) sẽ ra đúng bằng $${val}$?"*`}
+- Bật mí: Em hãy nhẩm nhanh bảng cửu chương hoặc bảng bình phương các số tự nhiên (1, 2, 3, 4, 5...) xem số nào bình phương lên bằng $${val}$ nhé!
+
+❓ **Thử thách cho ${studentName}**: Em đoán hoặc tính nhẩm ra số $x$ đó bằng bao nhiêu? Hãy nhắn ngay cho Thầy để Thầy kiểm tra nhé!`;
       }
     }
 
@@ -11651,9 +11668,16 @@ Theo SGK Toán 7 (Kết nối tri thức), khi một đường thẳng cắt hai
       const base = parseFloat(powMatch[1].replace(/,/g, "."));
       const exp = parseFloat(powMatch[2].replace(/,/g, "."));
       if (!isNaN(base) && !isNaN(exp)) {
-        const pRes = Math.pow(base, exp);
-        return `Chào ${studentName}! Thầy tính nhanh phép lũy thừa cho em nhé:
-### ⚡ Phép tính: $${base}^{${exp}} = \\mathbf{${pRes}}$`;
+        return `Chào ${studentName}! Về phép tính lũy thừa $${base}^{${exp}}$, Thầy AI Socratic nhắc em bản chất để em tự tính nhé:
+
+### ⚡ Bản chất lũy thừa (SGK Toán 6 - Kết nối tri thức):
+$$a^n = \\underbrace{a \\cdot a \\dots a}_{n\\text{ thừa số } a}$$
+- Cơ số là **$${base}$**, số mũ là **$${exp}$**.
+- Nghĩa là em cần lấy **$${exp}$** thừa số **$${base}$** nhân lại với nhau.
+
+💡 **Lưu ý quan trọng**: Rất nhiều bạn thường nhầm phép tính lũy thừa $${base}^{${exp}}$ thành phép nhân $${base} \\times ${exp}$. Em chú ý đừng để mắc bẫy này nhé!
+
+❓ **Thử thách cho ${studentName}**: Em hãy đặt bút tính tích của $${exp}$ thừa số $${base}$ và nhắn kết quả cho Thầy xem em tính ra bao nhiêu nhé!`;
       }
     }
 
@@ -11698,7 +11722,7 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     try {
       let enrichedPrompt = prompt;
       if (mode === "socratic") {
-        enrichedPrompt = `[THÔNG TIN HỌC SINH]: Tên em là "${studentName}", học sinh lớp ${grade} (Sách Kết nối tri thức). Cấp độ: Lv.${appState.playerLevel} (${appState.playerTitle}).\n[CÂU HỎI CỦA EM]: ${prompt}\n(Thầy hãy xưng Thầy và gọi tên em là "${studentName}" một cách thân mật, dẫn dắt từng bước gợi mở, CHỈ RÕ ĐỊNH LÝ CỤ THỂ như Định lý Tổng ba góc trong tam giác, Hai đường thẳng song song... và công thức KaTeX nhé!)`;
+        enrichedPrompt = `[THÔNG TIN HỌC SINH]: Tên em là "${studentName}", học sinh lớp ${grade} (Sách Kết nối tri thức). Cấp độ: Lv.${appState.playerLevel} (${appState.playerTitle}).\n[CÂU HỎI CỦA EM]: ${prompt}\n(NGUYÊN TẮC BẤT DI BẤT DỊCH: Thầy xưng Thầy và gọi tên em là "${studentName}". Thầy áp dụng triệt để phương pháp Socratic: TUYỆT ĐỐI KHÔNG GIẢI HỘ, KHÔNG TÍNH SẴN KẾT QUẢ SỐ HỌC, KHÔNG ĐƯA RA ĐÁP ÁN CUỐI CÙNG. Thầy chỉ nêu giả thiết, định lý/công thức SGK Kết nối tri thức và gợi mở câu hỏi từng bước để em tự lấy giấy nháp tính ra và nhắn lại cho Thầy!)`;
       }
 
       const chatHistory = context.chatHistory || (typeof socraticChatHistory !== "undefined" ? socraticChatHistory : []);

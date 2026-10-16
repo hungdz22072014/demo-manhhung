@@ -89,7 +89,7 @@ const THEOREMS_DATA = [
     fillBlank: {
       question: "Để tìm ƯCLN của hai hay nhiều số, ta chọn ra các thừa số nguyên tố {blank1} với số mũ {blank2}.",
       answers: ["chung", "nhỏ nhất"],
-      hints: ["Cùng xuất hiện ở các số", "Số mũ bé nhất"]
+      hints: ["Thừa số xuất hiện ở tất cả các số (thừa số chung hay riêng?)", "Tìm ước LỚN NHẤT thì lấy số mũ lớn hay nhỏ?"]
     },
     aiQuestion: "Nêu các bước tìm ƯCLN của hai hay nhiều số tự nhiên lớn hơn 1?",
     standardAnswer: "Bước 1: Phân tích mỗi số ra thừa số nguyên tố. Bước 2: Chọn ra các thừa số nguyên tố chung. Bước 3: Lập tích các thừa số đã chọn, mỗi thừa số lấy với số mũ nhỏ nhất của nó.",
