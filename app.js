@@ -880,89 +880,121 @@ Chuẩn SGK: *"${std}"*.
 Em hãy đọc lại định lý và bấm nút phát biểu lại để Thầy chấm điểm cao hơn cho em nhé!`;
       }
 
-      // Nếu học sinh hỏi về điều kiện / câu hỏi chuyên sâu
-      if (pLower.includes("khác 0") || pLower.includes("khac 0") || pLower.includes("a khác 0") || pLower.includes("mẫu số")) {
-        return `Thầy chào ${studentName}! Câu hỏi của em rất thông minh và chứng tỏ em suy nghĩ rất sâu! 👏
+      // 1. Phản hồi câu hỏi về câu đố / 3 góc nào / góc nào / ở đâu
+      if (pLower.includes("3 góc") || pLower.includes("ba góc") || pLower.includes("góc nào") || pLower.includes("goc nao") || pLower.includes("ở đâu") || pLower.includes("o dau") || pLower.includes("chỗ nào")) {
+        return `Chính là 3 góc xung quanh điểm cắt nhau đó em! 🎯
 
-Trong toán học THCS, tại sao cơ số $a$ (trong phép chia lũy thừa $a^m : a^n$) hoặc mẫu số $b$ (trong phân số $\\frac{a}{b}$) lại bắt buộc phải khác $0$?
-1. **Bản chất toán học**: Phép chia cho số $0$ là **không xác định**. Không có bất kỳ số nào nhân với $0$ để tạo ra một số khác $0$. Nếu cho phép chia cho $0$, toàn bộ hệ thống toán học sẽ bị mâu thuẫn.
-2. **Quy ước chuẩn SGK**: Để các phép toán luôn có nghĩa và cho ra kết quả duy nhất, SGK Kết nối tri thức luôn quy định điều kiện khác $0$.
+- **1 góc đối diện** với nó: bằng ngay $90^\\circ$ (vì là **hai góc đối đỉnh**).
+- **2 góc nằm kề hai bên**: lấy $180^\\circ - 90^\\circ = 90^\\circ$ (vì **kề bù**).
 
-Em đã thấy điều kiện này kỳ diệu và chặt chẽ thế nào chưa? Em còn băn khoăn điểm nào nữa không?`;
+👉 Như vậy **cả 4 góc đều bằng $90^\\circ$** tạo thành dấu cộng $(+)$ vuông góc hoàn hảo! Em đã hình dung ra 3 góc đó nằm ở đâu chưa? 😊`;
       }
 
-      // Nếu học sinh xin ví dụ cụ thể
+      // 2. Học sinh trả lời câu đố của Thầy (trả lời 90 / 90 độ / vuông)
+      if (/^(bằng\s*)?90(\s*độ|\s*do)?$/i.test(pLower.trim()) || pLower.includes("đều bằng 90") || pLower.includes("đều 90") || pLower.includes("cùng bằng 90")) {
+        return `Chuẩn xác 100%! Xuất sắc lắm ${studentName}! 🌟
+
+Cả 3 góc còn lại đều bằng **$90^\\circ$** luôn:
+- Góc đối diện bằng $90^\\circ$ do **đối đỉnh**.
+- Hai góc kề 2 bên lấy $180^\\circ - 90^\\circ = 90^\\circ$ do **kề bù**.
+Em tư duy hình học cực kỳ sắc bén và nhanh nhẹn! 👏`;
+      }
+
+      // 3. Học sinh hỏi về "còn trường hợp nào nữa không" / "tất cả các trường hợp" / "các trường hợp khác"
+      if (pLower.includes("còn trường hợp") || pLower.includes("trường hợp nào") || pLower.includes("tất cả các trường hợp") || pLower.includes("trường hợp khác") || pLower.includes("truong hop")) {
+        return `Có 3 trường hợp rất quen thuộc mà 2 góc bằng nhau nhưng **không đối đỉnh** nè ${studentName}: 💡
+
+1. **Hai góc ở hai hình rời nhau**: Vẽ góc $50^\\circ$ ở trang nháp này và góc $50^\\circ$ ở trang nháp kia (hoàn toàn không chung đỉnh).
+2. **Hai góc đáy tam giác cân**: Có số đo bằng nhau, chung cạnh đáy nhưng hai cạnh bên không phải là tia đối.
+3. **Hai góc so le trong hoặc đồng vị**: Tạo bởi hai đường thẳng song song (nằm ở hai đỉnh khác nhau).
+
+👉 **Mẹo nhớ cực nhanh**: Cứ không cắt nhau tạo thành **hình chữ X** thì dù số đo có bằng nhau cũng không bao giờ đối đỉnh! Em thấy dễ nhớ hơn chưa? 😊`;
+      }
+
+      // 4. Học sinh hỏi "vì sao chưa chắc" / "vì sao hai góc bằng nhau chưa chắc đối đỉnh" / "tại sao không đối đỉnh" / "giải thích rõ hơn"
+      if (pLower.includes("vì sao") || pLower.includes("tại sao") || pLower.includes("chưa chắc") || pLower.includes("chua chac") || pLower.includes("không đối đỉnh") || pLower.includes("khong doi dinh") || pLower.includes("giải thích rõ")) {
+        // Nếu hỏi riêng về lũy thừa
+        if (pLower.includes("khác 0") || pLower.includes("a khác 0") || pLower.includes("mẫu số")) {
+          return `Rất dễ hiểu em nhé! 💡
+Phép chia cho số $0$ là **không xác định** trong toán học. Nếu cơ số $a = 0$ thì $0^m : 0^n = \\frac{0}{0}$ là phép toán vô nghĩa. Vì vậy SGK luôn quy định bắt buộc $a \\neq 0$ để công thức luôn đúng và có nghĩa!`;
+        }
+
+        return `Để hai góc đối đỉnh thì bắt buộc phải có **đủ 2 điều kiện**: 💡
+1. **Phải chung đỉnh**.
+2. **Cạnh góc này phải là tia đối của cạnh góc kia** (tạo thành hình chữ X).
+
+👉 Nếu chỉ bằng nhau về số đo (ví dụ cùng $50^\\circ$) mà nằm ở 2 hình riêng biệt hoặc ở 2 góc đáy tam giác cân thì cạnh của chúng **không phải tia đối**, nên **chắc chắn không đối đỉnh**!
+Nó giống như 2 mũi kéo tách rời nhau vậy đó. Em đã phân biệt rõ được chưa nào? 😊`;
+      }
+
+      // 5. Học sinh nói đã hiểu / cảm ơn / khen
+      if (pLower.includes("hiểu rồi") || pLower.includes("hieu roi") || pLower.includes("cảm ơn") || pLower.includes("cam on") || pLower.includes("dễ hiểu") || pLower.includes("ok thầy") || pLower.includes("da hieu")) {
+        return `Thầy rất vui vì ${studentName} đã nắm trọn vẹn bản chất! 🌟 
+Hiểu sâu như thế này thì làm bài tập hình học sẽ cực kỳ nhẹ nhàng và chắc chắn đạt điểm 10. Em có muốn thử sức thêm với định lý nào nữa không? 😊`;
+      }
+
+      // 6. Học sinh xin ví dụ cụ thể
       if (pLower.includes("ví dụ") || pLower.includes("vi du") || pLower.includes("bài toán")) {
         const tLower = (thmTitle + " " + (context?.standardAnswer || "")).toLowerCase();
         
         if (tLower.includes("đối đỉnh") || tLower.includes("kề bù") || tLower.includes("doi dinh")) {
-          return `Thầy lấy ví dụ trực quan về định lý **${thmTitle}** để ${studentName} nắm thật sâu nhé! 💡
+          return `Thầy lấy ví dụ thực tế quanh em ngay nhé! 💡
 
-1. **Ví dụ hai góc đối đỉnh**:
-   - Hai đường thẳng $xx'$ và $yy'$ cắt nhau tại $O$.
-   - $\\widehat{xOy}$ và $\\widehat{x'Oy'}$ là hai góc đối đỉnh. Nếu $\\widehat{xOy} = 60^\\circ$ thì theo định lý ta có ngay $\\widehat{x'Oy'} = 60^\\circ$.
+- **Chiếc kéo học sinh**: Hai lưỡi kéo và hai tay cầm cắt nhau tạo thành 2 góc đối đỉnh. Khi tay cầm mở rộng $40^\\circ$ thì góc lưỡi kéo cũng mở đúng $40^\\circ$.
+- **Mặt bàn phẳng ($180^\\circ$)**: Đặt cái thước kẻ tạo góc $50^\\circ$ với mép bàn, góc kề bù còn lại bên cạnh sẽ là:
+  $$180^\\circ - 50^\\circ = 130^\\circ$$
 
-2. **Ví dụ hai góc kề bù**:
-   - $\\widehat{xOy}$ và $\\widehat{xOy'}$ kề bù với nhau, nên tổng số đo:
-     $$\\widehat{xOy} + \\widehat{xOy'} = 180^\\circ \\implies \\widehat{xOy'} = 180^\\circ - 60^\\circ = 120^\\circ$$
-
-3. **Phản ví dụ quan trọng (tránh nhầm lẫn)**:
-   - Hai góc ở hai tam giác khác nhau (hoặc hai góc đáy của một tam giác cân) cùng bằng $50^\\circ$: Chúng **bằng nhau** nhưng **KHÔNG đối đỉnh** vì các cạnh không phải tia đối của nhau!
-
-👉 Bây giờ, em thử trả lời Thầy xem: Nếu hai đường thẳng cắt nhau tạo thành một góc $90^\\circ$, thì ba góc còn lại bằng bao nhiêu độ? 😊`;
+👉 Em đã thấy góc đối đỉnh và kề bù xuất hiện ngay trên chiếc kéo và mặt bàn học chưa nào? 😊`;
         }
 
         if (tLower.includes("song song") || tLower.includes("so le trong") || tLower.includes("đồng vị")) {
-          return `Thầy lấy ví dụ cụ thể về **${thmTitle}** cho ${studentName} nhé! 💡
-
-${context?.formula ? `Quy tắc: $$${context.formula}$$` : ""}
-- **Ví dụ**: Cho đường thẳng $c$ cắt hai đường thẳng $a$ và $b$ lần lượt tại $A$ và $B$.
-  Nếu ta đo được cặp góc so le trong $\\widehat{A_1} = 60^\\circ$ và $\\widehat{B_1} = 60^\\circ$, thì theo dấu hiệu nhận biết, ta kết luận ngay được:
-  $$a \\parallel b$$
-- Tương tự, nếu một cặp góc trong cùng phía có tổng bằng $180^\\circ$ ($60^\\circ + 120^\\circ = 180^\\circ$) thì $a$ cũng song song với $b$.
-
-👉 Bây giờ, nếu Thầy cho $\\widehat{A_1} = 75^\\circ$ và $\\widehat{B_1} = 80^\\circ$ ở vị trí so le trong, hai đường thẳng có song song không em? 😊`;
+          return `Ví dụ thực tế siêu dễ nhớ nè em: 💡
+Hai thanh ray tàu hỏa là hai đường thẳng song song. Đặt một thanh gỗ chéo ngang qua:
+- Cặp góc chéo nhau (**so le trong**) sẽ bằng nhau chằn chặn.
+- Cặp góc cùng nhìn về một hướng (**đồng vị**) cũng bằng nhau luôn!
+Nếu một góc là $60^\\circ$ thì góc so le trong cũng bằng đúng $60^\\circ$. Em hình dung ra đường ray tàu chưa? 😊`;
         }
 
         if (tLower.includes("tam giác") || tLower.includes("tong ba goc")) {
-          return `Thầy lấy ví dụ cụ thể về **${thmTitle}** cho ${studentName} nhé! 💡
-
-- Xét tam giác $ABC$ có $\\widehat{A} = 70^\\circ$ và $\\widehat{B} = 60^\\circ$.
-- Theo định lý tổng ba góc trong một tam giác bằng $180^\\circ$:
-  $$\\widehat{A} + \\widehat{B} + \\widehat{C} = 180^\\circ$$
-  $$\\implies \\widehat{C} = 180^\\circ - (70^\\circ + 60^\\circ) = 50^\\circ$$
-
-👉 Bây giờ, nếu một tam giác vuông có một góc nhọn bằng $35^\\circ$, thì góc nhọn còn lại bằng bao nhiêu độ? Em thử tính nhẩm xem! 😊`;
+          return `Ví dụ siêu ngắn gọn nè em: 💡
+Một tam giác có $\\widehat{A} = 70^\\circ$ và $\\widehat{B} = 60^\\circ$.
+Vì tổng 3 góc luôn bằng $180^\\circ$, nên góc $\\widehat{C}$ còn lại là:
+$$180^\\circ - (70^\\circ + 60^\\circ) = 50^\\circ$$
+Cứ lấy $180^\\circ$ trừ đi 2 góc đã biết là ra góc thứ ba ngay! Em thấy nhanh không? 😊`;
         }
 
         if (tLower.includes("lũy thừa") || tLower.includes("luy thua")) {
-          return `Thầy lấy ví dụ cụ thể để ${studentName} dễ hình dung ngay nhé! 💡
-
-${context?.formula ? `Quy tắc: $$${context.formula}$$` : ""}
-- **Ví dụ phép nhân**: $2^3 \\cdot 2^4 = 2^{3+4} = 2^7 = 128$. (Giữ nguyên cơ số $2$, lấy số mũ $3+4$).
-- **Ví dụ phép chia**: $5^6 : 5^2 = 5^{6-2} = 5^4 = 625$ (với cơ số $5 \\neq 0$).
-
-👉 Bây giờ, em thử nhẩm nhanh: $3^5 : 3^2$ bằng bao nhiêu và nhắn cho Thầy xem nhé?`;
+          return `Ví dụ cụ thể dễ nhớ nè em: 💡
+- **Nhân cùng cơ số**: $2^3 \\cdot 2^4 = 2^{3+4} = 2^7 = 128$ (giữ nguyên $2$, cộng số mũ $3+4$).
+- **Chia cùng cơ số**: $5^6 : 5^2 = 5^{6-2} = 5^4 = 625$ (giữ nguyên $5$, trừ số mũ $6-2$, với cơ số $5 \\neq 0$).
+👉 Em thử nhẩm nhanh: $3^4 : 3^2$ bằng bao nhiêu nè? 😊`;
         }
 
-        // Mặc định ví dụ linh hoạt theo định lý
-        return `Thầy lấy ví dụ minh họa về định lý **${thmTitle}** cho ${studentName} nhé! 💡
-
-- Chuẩn SGK: *"${std}"*
-${context?.formula ? `- Công thức áp dụng: $$${context.formula}$$` : ""}
-- Trong thực tế khi làm bài tập, khi gặp các điều kiện của giả thiết, em chỉ cần áp dụng đúng công thức trên để suy ra kết luận chính xác.
-
-👉 Em muốn Thầy lấy ví dụ ở dạng bài tập nào cụ thể hơn không, cứ nhắn cho Thầy nhé! 😊`;
+        return `Thầy lấy ví dụ ngắn gọn cho định lý **${thmTitle}** nhé! 💡
+Khi làm bài, em chỉ cần tìm đúng giả thiết đề bài cho rồi áp dụng công thức để rút ra kết luận. Em đang gặp khó ở bài toán cụ thể nào, cứ nhắn đề bài cho Thầy hướng dẫn nhé! 😊`;
       }
 
-      // Mặc định phản hồi như một người thầy tận tình
-      return `Thầy chào ${studentName}! Thầy luôn ở đây để đồng hành và giải đáp cùng em về định lý **${thmTitle}**.
+      // 7. Học sinh hỏi về "tia đối"
+      if (pLower.includes("tia đối") || pLower.includes("tia doi")) {
+        return `Tia đối cực kỳ đơn giản em nhé! 📏
+Hai tia chung gốc nhưng **kéo thẳng về hai phía ngược nhau** tạo thành một đường thẳng tắp thì gọi là hai tia đối nhau. 
+Ví dụ: Điểm $O$ ở giữa, tia $Ox$ sang trái, tia $Oy$ sang phải $\\implies Ox$ và $Oy$ là hai tia đối nhau! Rất dễ nhớ đúng không? 😊`;
+      }
 
-Về câu hỏi của em: *"${prompt}"*
-Thầy giải thích cho em như sau: Trong toán học, mỗi định lý hay quy tắc đều là chìa khóa để giải quyết các bài toán phức tạp hơn. Chuẩn SGK Kết nối tri thức quy định:
-*"${std}"*
+      // 8. Học sinh hỏi về "kề bù"
+      if (pLower.includes("kề bù") || pLower.includes("ke bu")) {
+        return `Góc kề bù em chỉ cần nhớ mẹo này: 💡
+**Vừa nằm sát cạnh nhau (kề) vừa tạo thành một đường thẳng $180^\\circ$ (bù)**.
+Biết một góc rồi, muốn tìm góc kia em chỉ cần lấy $180^\\circ$ trừ đi là xong ngay! 🎯`;
+      }
 
-Nếu em muốn phát biểu lại để Thầy chấm lại, hay muốn Thầy giải thích thêm điều gì, em cứ thoải mái nhắn cho Thầy nhé! 😊`;
+      // 9. Phản hồi mặc định: Trực tiếp, ngắn gọn, ấm áp (TUYỆT ĐỐI KHÔNG COPY VĂN MẪU SGK)
+      return `Thầy giải đáp trực tiếp cho ${studentName} câu này nhé! 💡
+
+Về câu hỏi của em: *"${raw}"*
+${thmTitle.includes("đối đỉnh") ? `Trong phần góc đối đỉnh và kề bù, mấu chốt là **hình chữ X (hai tia đối nhau)**. Nếu hai góc đối diện nhau trên chữ X thì luôn bằng nhau; còn hai góc kề nhau trên một đường thẳng thì tổng luôn là $180^\\circ$.` : `Ở định lý **${thmTitle}**, em chỉ cần bám sát điều kiện cốt lõi để giải quyết bài toán thật nhanh gọn.`}
+
+👉 Em còn băn khoăn điểm nào nữa không, hãy nhắn ngay cho Thầy nhé! 😊`;
     }
 
     // 0.1. TƯ DUY PHẢN BIỆN & TỰ RÀ SOÁT LỖI SAI (CRITICAL THINKING & SELF-CORRECTION)
