@@ -11211,6 +11211,31 @@ document.addEventListener("DOMContentLoaded", () => {
         const hasExp = userNoTone.includes("so mu") || userNoTone.includes("mu");
         return hasMul && hasExp;
       }
+      // Số mũ nhỏ nhất (ƯCLN)
+      if (kwNoTone.includes("nho nhat") || (kwNoTone.includes("so mu") && kwNoTone.includes("nho"))) {
+        const hasMin = userNoTone.includes("nho nhat") || userNoTone.includes("nho") || userNoTone.includes("be nhat") || userNoTone.includes("be");
+        const hasMax = userNoTone.includes("lon nhat") || userNoTone.includes("lon") || userNoTone.includes("cao nhat");
+        if (hasMax && !hasMin) return false;
+        return hasMin;
+      }
+      // Số mũ lớn nhất (BCNN)
+      if (kwNoTone.includes("lon nhat") || (kwNoTone.includes("so mu") && kwNoTone.includes("lon"))) {
+        const hasMax = userNoTone.includes("lon nhat") || userNoTone.includes("lon") || userNoTone.includes("cao nhat");
+        const hasMin = userNoTone.includes("nho nhat") || userNoTone.includes("nho") || userNoTone.includes("be nhat") || userNoTone.includes("be");
+        if (hasMin && !hasMax) return false;
+        return hasMax;
+      }
+      // Thừa số chung (ƯCLN)
+      if (kwNoTone.includes("thua so chung") || (kwNoTone.includes("thua so") && kwNoTone.includes("chung") && !kwNoTone.includes("rieng"))) {
+        const hasCommon = userNoTone.includes("chung");
+        const onlyUnique = userNoTone.includes("rieng") && !hasCommon;
+        if (onlyUnique) return false;
+        return hasCommon;
+      }
+      // Thừa số chung và riêng (BCNN)
+      if (kwNoTone.includes("chung va rieng") || (kwNoTone.includes("thua so") && kwNoTone.includes("rieng"))) {
+        return userNoTone.includes("rieng") || (userNoTone.includes("chung") && userNoTone.includes("rieng"));
+      }
       if (kwNoTone.includes("180") && (userNoTone.includes("180") || userNoTone.includes("mot tram tam muoi"))) return true;
       if (kwNoTone.includes("doi dinh") && userNoTone.includes("doi dinh") && (userNoTone.includes("bang nhau") || userNoTone.includes("bang"))) return true;
       if (kwNoTone.includes("so le trong") && userNoTone.includes("so le trong") && (userNoTone.includes("bang nhau") || userNoTone.includes("bang"))) return true;
@@ -11222,6 +11247,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const stopWords = new Set(["cac", "nhung", "ta", "thi", "la", "cho", "cua", "va", "voi", "trong", "mot", "hai", "khi", "de"]);
       const tokens = kwNoTone.split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
       if (tokens.length === 0) return false;
+
+      // RÀNG BUỘC PHẢI KHỚP TỪ TƯƠNG PHẢN (ANTONYM/POLARITY CHECK):
+      if ((tokens.includes("nho") || tokens.includes("be")) && (userNoTone.includes("lon") || userNoTone.includes("cao")) && !userNoTone.includes("nho") && !userNoTone.includes("be")) return false;
+      if ((tokens.includes("lon") || tokens.includes("cao")) && (userNoTone.includes("nho") || userNoTone.includes("be")) && !userNoTone.includes("lon") && !userNoTone.includes("cao")) return false;
+      if (tokens.includes("chung") && !tokens.includes("rieng") && userNoTone.includes("rieng") && !userNoTone.includes("chung")) return false;
 
       // Nếu từ khóa chứa động từ cốt lõi (cong, tru, nhan, chia, giu) mà câu của học sinh không có động từ đó thì TUYỆT ĐỐI KHÔNG MATCH
       if (tokens.includes("tru") && !userNoTone.includes("tru") && !userNoTone.includes("hieu")) return false;
@@ -11462,6 +11492,126 @@ ${context?.formula ? `📐 **Công thức toán học chuẩn mực**:\n$$${cont
         }
       }
 
+      // -------------------------------------------------------------------------
+      // LỖI SAI BẢN CHẤT: NHẦM LẪN TAI HẠI GIỮA ƯCLN VÀ BCNN (GCD vs LCM CONFUSION)
+      // -------------------------------------------------------------------------
+      const qContextLower = ((context?.aiQuestion || "") + " " + (context?.question || "") + " " + thmTitle + " " + prompt).toLowerCase();
+      const qContextNoTone = removeVietnameseTones(qContextLower);
+      const userAnsNoTone = removeVietnameseTones(userAnsClean).toLowerCase();
+
+      // Kiểm tra đề bài có đang hỏi về ƯCLN (Ước chung lớn nhất) hay không
+      const isQuestionAskingUcln = (
+        qContextNoTone.includes("ucln") ||
+        qContextNoTone.includes("uoc chung lon nhat") ||
+        (stdLower.includes("thừa số chung") && stdLower.includes("số mũ nhỏ nhất"))
+      ) && !qContextNoTone.includes("bcnn") && !qContextNoTone.includes("boi chung nho nhat");
+
+      // Kiểm tra đề bài có đang hỏi về BCNN (Bội chung nhỏ nhất) hay không
+      const isQuestionAskingBcnn = (
+        qContextNoTone.includes("bcnn") ||
+        qContextNoTone.includes("boi chung nho nhat") ||
+        (stdLower.includes("chung va rieng") && stdLower.includes("số mũ lớn nhất"))
+      ) && !qContextNoTone.includes("ucln") && !qContextNoTone.includes("uoc chung lon nhat");
+
+      if (isQuestionAskingUcln) {
+        // Học sinh trả lời quy tắc của BCNN:
+        // 1. Lấy số mũ lớn nhất
+        const hasMaxExp = (
+          userAnsNoTone.includes("lon nhat") || 
+          userAnsNoTone.includes("so mu lon") || 
+          userAnsNoTone.includes("mu lon nhat") || 
+          userAnsNoTone.includes("mu lon")
+        ) && !userAnsNoTone.includes("khong lay lon nhat") && !userAnsNoTone.includes("khong phai lon nhat") && !userAnsNoTone.includes("nho nhat");
+
+        // 2. Lấy thừa số riêng / thừa số chung và riêng
+        const hasSeparateFactors = (
+          userAnsNoTone.includes("thua so rieng") ||
+          userAnsNoTone.includes("nguyen to rieng") ||
+          userAnsNoTone.includes("thua so nguyen to rieng") ||
+          userAnsNoTone.includes("chung va rieng") ||
+          (userAnsNoTone.includes("rieng") && !userAnsNoTone.includes("khong lay rieng") && !userAnsNoTone.includes("khong co rieng") && !userAnsNoTone.includes("khong chon rieng"))
+        );
+
+        // 3. Đích danh nói BCNN thay vì ƯCLN
+        const mentionsBcnnExplicitly = userAnsNoTone.includes("bcnn") || userAnsNoTone.includes("boi chung nho nhat");
+
+        if (hasMaxExp || hasSeparateFactors || mentionsBcnnExplicitly) {
+          const nowTime = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          let detailMistake = [];
+          if (hasSeparateFactors) {
+            detailMistake.push(`chọn các thừa số nguyên tố **riêng** (hoặc **chung và riêng**)`);
+          }
+          if (hasMaxExp) {
+            detailMistake.push(`lấy số mũ **lớn nhất**`);
+          }
+          if (mentionsBcnnExplicitly) {
+            detailMistake.push(`phát biểu quy tắc của **BCNN** thay vì **ƯCLN**`);
+          }
+
+          const fatalDesc = `Đề bài yêu cầu nêu các bước tìm **ƯCLN (Ước chung lớn nhất)**, nhưng em lại nêu: *${detailMistake.join(" và ")}*. Đây là **lỗi sai hoàn toàn bản chất toán học** do nhầm lẫn sang quy tắc tìm **BCNN (Bội chung nhỏ nhất)**!`;
+
+          return `<div class="score-badge-low">⭐ Điểm số: 0 / 10 (Sai hoàn toàn bản chất toán học)</div>
+<div class="ai-verify-stamp">🤖 <em>AI Socratic đã đối chiếu SGK và phân tích ngữ nghĩa lúc ${nowTime}</em></div>
+
+💡 **Nhận xét của Thầy**:
+Thầy chào ${studentName}! Câu trả lời của em bị **sai hoàn toàn bản chất toán học**, Thầy phân tích cụ thể để em không bao giờ bị nhầm lẫn giữa ƯCLN và BCNN nhé:
+
+- ❌ **Lỗi sai toán học nghiêm trọng**: ${fatalDesc}
+- 📐 **Bản chất toán học chuẩn SGK Kết nối tri thức**:
+  + **ƯCLN (Ước chung lớn nhất)**: Bắt buộc CHỈ CHỌN các thừa số nguyên tố **CHUNG** và mỗi thừa số lấy với số mũ **NHỎ NHẤT**.
+  + **BCNN (Bội chung nhỏ nhất)**: Mới chọn các thừa số nguyên tố **CHUNG VÀ RIÊNG** với số mũ **LỚN NHẤT**.
+- 🔢 **Chứng minh sai lầm bằng con số thực tế**:
+  Ví dụ tìm ƯCLN của $12 = 2^2 \\cdot 3$ và $18 = 2 \\cdot 3^2$:
+  * **Cách làm đúng (ƯCLN)**: Thừa số chung là 2 và 3, lấy số mũ nhỏ nhất $\\Rightarrow 2^1 \\cdot 3^1 = 6$ ($6$ là ước chung lớn nhất của 12 và 18).
+  * **Cách làm theo câu trả lời của em (lấy mũ lớn nhất/thừa số riêng)**: $2^2 \\cdot 3^2 = 36$. Con số 36 là **BCNN**, không thể là ước của 12 và 18 được vì $36 > 12$ và $36 > 18$!
+
+📖 **Quy tắc chuẩn SGK Kết nối tri thức**:
+*"${std}"*
+
+${context?.formula ? `📐 **Công thức toán học chuẩn mực**:\n$$${context.formula}$$` : ""}
+
+👉 Em hãy bấm nút **"🎤 Em muốn phát biểu lại"** ở ngay bên dưới, nói lại thật chuẩn 3 bước tìm ƯCLN: *"Bước 1: Phân tích mỗi số ra thừa số nguyên tố. Bước 2: Chọn ra các thừa số nguyên tố chung. Bước 3: Lập tích các thừa số đã chọn, mỗi thừa số lấy với số mũ nhỏ nhất của nó"* để Thầy chấm điểm 10 tuyệt đối cho em nhé! Thầy tin em sửa lại sẽ xuất sắc ngay! 😊`;
+        }
+      }
+
+      if (isQuestionAskingBcnn) {
+        // Học sinh trả lời quy tắc của ƯCLN:
+        // 1. Lấy số mũ nhỏ nhất
+        const hasMinExp = (
+          userAnsNoTone.includes("nho nhat") || 
+          userAnsNoTone.includes("so mu nho") || 
+          userAnsNoTone.includes("mu nho nhat") || 
+          userAnsNoTone.includes("mu nho")
+        ) && !userAnsNoTone.includes("lon nhat") && !userAnsNoTone.includes("mu lon");
+
+        // 2. Chỉ lấy thừa số chung mà không có thừa số riêng
+        const onlyCommonFactors = (
+          userAnsNoTone.includes("thua so chung") &&
+          !userAnsNoTone.includes("rieng")
+        );
+
+        if (hasMinExp || onlyCommonFactors) {
+          const nowTime = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          return `<div class="score-badge-low">⭐ Điểm số: 0 / 10 (Sai hoàn toàn bản chất toán học)</div>
+<div class="ai-verify-stamp">🤖 <em>AI Socratic đã đối chiếu SGK và phân tích ngữ nghĩa lúc ${nowTime}</em></div>
+
+💡 **Nhận xét của Thầy**:
+Thầy chào ${studentName}! Câu trả lời của em bị **sai hoàn toàn bản chất toán học** do nhầm lẫn sang quy tắc tìm **ƯCLN**:
+
+- ❌ **Lỗi sai toán học nghiêm trọng**: Đề bài yêu cầu nêu các bước tìm **BCNN (Bội chung nhỏ nhất)**, nhưng em lại nêu: *${hasMinExp ? "lấy số mũ nhỏ nhất" : "chỉ lấy thừa số chung"}*. Đây là quy tắc tìm **ƯCLN**!
+- 📐 **Bản chất toán học chuẩn SGK Kết nối tri thức**:
+  + Để tìm **BCNN**: Bắt buộc phải chọn các thừa số nguyên tố **CHUNG VÀ RIÊNG**, mỗi thừa số lấy với số mũ **LỚN NHẤT**.
+  + Nếu chỉ lấy thừa số chung với số mũ nhỏ nhất thì kết quả tìm được sẽ là ước chứ không phải bội!
+
+📖 **Quy tắc chuẩn SGK Kết nối tri thức**:
+*"${std}"*
+
+${context?.formula ? `📐 **Công thức toán học chuẩn mực**:\n$$${context.formula}$$` : ""}
+
+👉 Em hãy bấm nút **"🎤 Em muốn phát biểu lại"** ở ngay bên dưới, nói lại thật chuẩn quy tắc BCNN để Thầy chấm điểm 10 tuyệt đối cho em nhé!`;
+        }
+      }
+
       // Kiểm tra trùng khớp hoàn toàn / y hệt với đáp án chuẩn
       const userNorm = normalizeMathText(userAnsClean);
       const stdNorm = normalizeMathText(stdClean);
@@ -11535,14 +11685,14 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
         badgeClass = "score-badge-high";
         comment = `👏 **Rất tốt (8.5/10)!** Câu trả lời của ${studentName} đã nắm được hầu hết các ý cốt lõi của **${thmTitle}**, chỉ thiếu một điều kiện nhỏ để đạt điểm 10.`;
       } 
-      // 3. Khá: Nắm được khoảng 70% nội dung (nhưng không được thiếu hẳn 1 vế lớn)
+      // 3. Khá: Nắm được khoảng 60% - 70% nội dung (nhưng không được thiếu hẳn 1 vế lớn)
       else if (keywordRatio >= 0.6 && !isMultiPartQuestion) {
         score = "7.0";
         badgeClass = "score-badge-med";
         comment = `👍 **Khá tốt (7.0/10)!** ${studentName} đã nắm được nội dung cơ bản của định lý, hãy bổ sung thêm các điều kiện còn thiếu để câu trả lời trọn vẹn hơn.`;
       } 
-      // 4. Mới trả lời được một nửa câu hỏi (1/2 ý chính)
-      else if (isMultiPartQuestion || keywordRatio >= 0.35 || (matchedList.length > 0 && missedList.length > 0)) {
+      // 4. Mới trả lời được một nửa câu hỏi (đạt từ 50% trở lên)
+      else if (isMultiPartQuestion || keywordRatio >= 0.5) {
         score = isMultiPartQuestion ? "5.0" : (matchedCount >= 2 && missedList.length === 1 ? "5.5" : "5.0");
         badgeClass = "score-badge-med";
         if (isMultiPartQuestion) {
@@ -11551,14 +11701,14 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
           comment = `⚠️ **Chưa hoàn thiện (${score}/10)!** ${studentName} mới chỉ trả lời được khoảng 1/2 câu hỏi. Em đã nêu được: *${matchedList.join(", ")}*, nhưng còn **bỏ sót**: *${missedList.join(", ")}*. Em hãy bổ sung thêm để đạt điểm tối đa nhé!`;
         }
       } 
-      // 5. Trả lời rời rạc hoặc dưới 35%
+      // 5. Trả lời rời rạc hoặc dưới 50%
       else {
-        const mathWords = ["tam giác", "góc", "bằng nhau", "song song", "cạnh", "chia hết", "tổng", "đối đỉnh", "lũy thừa", "phân số", "tỉ số", "bằng", "vuông", "đường thẳng", "cơ số", "số mũ", "mũ", "nhân", "chia", "không", "ko"];
+        const mathWords = ["tam giác", "góc", "bằng nhau", "song song", "cạnh", "chia hết", "tổng", "đối đỉnh", "lũy thừa", "phân số", "tỉ số", "bằng", "vuông", "đường thẳng", "cơ số", "số mũ", "mũ", "nhân", "chia", "không", "ko", "ucln", "bcnn", "thừa số", "nguyên tố", "ước chung", "bội chung"];
         const hasSomeMath = mathWords.some(w => userAnsLower.includes(w));
-        if (hasSomeMath && userAnsClean.length >= 4) {
-          score = "3.5";
+        if (matchedList.length > 0 || (hasSomeMath && userAnsClean.length >= 10)) {
+          score = matchedList.length > 0 ? "3.0" : "2.0";
           badgeClass = "score-badge-low";
-          comment = `⚠️ Câu trả lời của ${studentName} mới chỉ nhắc đến một vài từ khóa đơn lẻ (${score}/10), chưa phát biểu thành định nghĩa/quy tắc hoàn chỉnh của **${thmTitle}**.`;
+          comment = `⚠️ **Chưa đạt yêu cầu (${score}/10)!** Câu trả lời của ${studentName} còn thiếu phần lớn các ý trọng tâm của **${thmTitle}** (chưa đạt quá nửa định lý). ${matchedList.length > 0 ? `Em mới chỉ nhắc được: *${matchedList.join(", ")}*, còn thiếu hẳn: *${missedList.join(", ")}*.` : "Em cần bám sát câu hỏi và định lý hơn nữa."}`;
         } else {
           score = "1.0";
           badgeClass = "score-badge-low";
@@ -11600,10 +11750,42 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
         "thầy chấm sai", "thầy sai", "chấm sai", "phản biện", "phúc khảo", "xem lại",
         "nói đúng mà", "em nói đúng", "phát biểu đúng", "chưa chính xác", "oan", "bị trừ điểm", "báo cáo",
         "phải đúng", "được điểm cao", "sao lại thấp", "điểm thấp", "chấm lại", "không và cho 1 ví dụ",
-        "nhân số mũ", "nhân cơ số", "7đ", "7 điểm", "sai hoàn toàn", "tại sao"
+        "nhân số mũ", "nhân cơ số", "7đ", "7 điểm", "sai hoàn toàn", "tại sao", "ucln", "bcnn", "ưcln", "5đ", "5 điểm", "bám sát", "thừa số riêng", "mũ lớn nhất"
       ].some(k => pLower.includes(k));
 
       if (isAppealOrDispute || mode === "oral_appeal") {
+        // Phản ánh về lỗi chấm điểm ƯCLN vs BCNN (ví dụ: hỏi ƯCLN mà trả lời BCNN lại được 5 điểm)
+        const isUclnBcnnThm = thmTitle.toLowerCase().includes("ước chung") || thmTitle.toLowerCase().includes("bội chung") || 
+                              thmTitle.toLowerCase().includes("ưcln") || thmTitle.toLowerCase().includes("bcnn") ||
+                              std.toLowerCase().includes("ước chung") || std.toLowerCase().includes("bội chung");
+        const mentionsUclnBcnnDispute = (
+          (pLower.includes("ucln") || pLower.includes("ưcln") || pLower.includes("ước chung")) &&
+          (pLower.includes("bcnn") || pLower.includes("bội chung"))
+        ) || (
+          (pLower.includes("ucln") || pLower.includes("ưcln") || pLower.includes("bcnn")) &&
+          (pLower.includes("5đ") || pLower.includes("5 điểm") || pLower.includes("sai hoàn toàn") || pLower.includes("bám sát") || pLower.includes("0 điểm") || pLower.includes("thừa số riêng") || pLower.includes("mũ lớn nhất"))
+        ) || (
+          pLower.includes("hỏi ưcln") || pLower.includes("hỏi ucln") || (pLower.includes("trả lời") && pLower.includes("bcnn"))
+        );
+
+        if (isUclnBcnnThm && (mentionsUclnBcnnDispute || lowerStudentAns.includes("riêng") || lowerStudentAns.includes("mũ lớn nhất") || lowerStudentAns.includes("số mũ lớn nhất"))) {
+          return `Thầy chào ${studentName}! 💡
+Thầy cảm ơn ${studentName} rất nhiều vì đã phát hiện và phản ánh cực kỳ chuẩn xác và sắc bén!
+
+🔍 **Thầy hoàn toàn đồng ý 100% với phân tích của em**:
+- Đề bài yêu cầu nêu các bước tìm **ƯCLN (Ước chung lớn nhất)**.
+- Nhưng trong câu trả lời trước: *"${studentAns}"*, học sinh lại nêu: chọn thừa số nguyên tố riêng và lấy số mũ lớn nhất nhân lại với nhau. Đây chính là quy tắc tìm **BCNN (Bội chung nhỏ nhất)**!
+- Việc nhầm lẫn giữa ƯCLN và BCNN là **SAI HOÀN TOÀN BẢN CHẤT TOÁN HỌC**! Tìm ƯCLN mà làm theo cách này sẽ ra một số bội chung lớn hơn cả các số ban đầu (không thể là ước được)!
+- Vì vậy, câu trả lời này **BẮT BUỘC PHẢI BỊ 0 ĐIỂM**, tuyệt đối không thể được 5.0 điểm!
+- Lần chấm trước do cơ chế tính điểm từ khóa bị lỏng lẻo nên đã cho 5.0 điểm chưa thỏa đáng. Thầy đã lập tức chấn chỉnh và cập nhật thuật toán: từ nay hệ thống sẽ chấm bám sát từng chữ của câu hỏi, nghiêm cấm việc trả lời quy tắc BCNN cho bài toán ƯCLN (hoặc ngược lại) mà vẫn được điểm!
+
+👉 Em có tư duy toán học rất vững và tinh thần học tập vô cùng trung thực, đáng khen ngợi! Bây giờ em hãy bấm nút **"🎤 Em muốn phát biểu lại"** ở ngay bên dưới, nói lại thật chuẩn 3 bước tìm ƯCLN SGK Kết nối tri thức:
+1. Phân tích mỗi số ra thừa số nguyên tố.
+2. Chọn ra các thừa số nguyên tố **chung**.
+3. Lập tích các thừa số đã chọn, mỗi thừa số lấy với số mũ **nhỏ nhất** của nó.
+để Thầy chấm điểm 10 tuyệt đối cho em nhé! Thầy tin em sẽ đạt điểm 10 ngay! 😊`;
+        }
+
         // Phản ánh về lỗi chấm điểm quy tắc lũy thừa (ví dụ: nhân hai cơ số, nhân số mũ mà lại được 7 điểm)
         const isPowerThm = thmTitle.toLowerCase().includes("lũy thừa") || std.toLowerCase().includes("lũy thừa");
         const mentionsPowerError = pLower.includes("nhân số mũ") || pLower.includes("nhân hai cơ số") || pLower.includes("nhân cơ số") || pLower.includes("7đ") || pLower.includes("7 điểm") || pLower.includes("sai hoàn toàn") || pLower.includes("nhân 2 cơ số") || (isPowerThm && (pLower.includes("sai") || pLower.includes("lỗi")));
@@ -11873,6 +12055,39 @@ ${thmTitle.includes("đối đỉnh") ? `Trong phần góc đối đỉnh và k�
 👉 Em còn băn khoăn điểm nào nữa không, hãy nhắn ngay cho Thầy nhé! 😊`;
     }
 
+    // 0. KHAI THÁC LỊCH SỬ HỘI THOẠI (CHAT HISTORY) ĐỂ BÁM SÁT MẠCH ĐỐI THOẠI
+    const history = (context && context.chatHistory) || (typeof socraticChatHistory !== "undefined" ? socraticChatHistory : []);
+    const prevMsgs = history.filter(m => (m.text || "").trim() !== raw);
+    let lastAiMsg = null;
+    let lastUserMsg = null;
+    let prevMathUserMsg = null;
+
+    for (let i = prevMsgs.length - 1; i >= 0; i--) {
+      const m = prevMsgs[i];
+      const isUser = m.role === "user" || m.sender === "user";
+      const isAi = m.role === "ai" || m.sender === "ai";
+      if (!lastUserMsg && isUser) lastUserMsg = m;
+      if (!lastAiMsg && isAi) lastAiMsg = m;
+      if (!prevMathUserMsg && isUser) {
+        const tLower = (m.text || "").toLowerCase();
+        const isAnswerOnly = /^(?:x\s*=\s*)?(?:góc\s*[a-c]?\s*=\s*)?(?:bằng\s*)?(\d+)(?:\s*(?:độ|do|°))?$/i.test((m.text || "").trim());
+        if (!isAnswerOnly && (
+          tLower.includes("tam giác") || tLower.includes("tam giac") || tLower.includes("góc") || tLower.includes("goc") ||
+          tLower.includes("song song") || tLower.includes("đối đỉnh") || tLower.includes("doi dinh") ||
+          tLower.includes("lũy thừa") || tLower.includes("luy thua") || tLower.includes("căn bậc") || tLower.includes("can bac") ||
+          tLower.includes("bằng bao nhiêu") || tLower.includes("tính") || tLower.includes("tinh") ||
+          (tLower.length >= 10 && /\b\d+\b/.test(tLower))
+        )) {
+          prevMathUserMsg = m;
+        }
+      }
+    }
+
+    const prevUserText = lastUserMsg ? lastUserMsg.text : "";
+    const prevAiText = lastAiMsg ? lastAiMsg.text : "";
+    const prevMathText = prevMathUserMsg ? prevMathUserMsg.text : prevUserText;
+    const prevMathLower = prevMathText.toLowerCase();
+
     // 0.1. TƯ DUY PHẢN BIỆN & TỰ RÀ SOÁT LỖI SAI (CRITICAL THINKING & SELF-CORRECTION)
     const isChallenging = [
       "bạn bị sai", "bạn sai rồi", "bạn sai", "thầy sai rồi", "thầy sai", "thầy tính sai",
@@ -11882,21 +12097,6 @@ ${thmTitle.includes("đối đỉnh") ? `Trong phần góc đối đỉnh và k�
     ].some(phrase => lower.includes(phrase));
 
     if (isChallenging) {
-      const history = (context && context.chatHistory) || (typeof socraticChatHistory !== "undefined" ? socraticChatHistory : []);
-      const prevMsgs = history.filter(m => (m.text || "").trim() !== raw);
-      let lastAiMsg = null;
-      let lastUserMsg = null;
-      for (let i = prevMsgs.length - 1; i >= 0; i--) {
-        if (!lastAiMsg && (prevMsgs[i].role === "ai" || prevMsgs[i].sender === "ai")) {
-          lastAiMsg = prevMsgs[i];
-        } else if (lastAiMsg && !lastUserMsg && (prevMsgs[i].role === "user" || prevMsgs[i].sender === "user")) {
-          lastUserMsg = prevMsgs[i];
-          break;
-        }
-      }
-
-      const prevUserText = lastUserMsg ? lastUserMsg.text : "";
-      const prevAiText = lastAiMsg ? lastAiMsg.text : "";
       const prevLower = (prevUserText + " " + prevAiText).toLowerCase();
 
       // Nếu chưa có tương tác bài toán nào trước đó
@@ -11926,8 +12126,8 @@ Tuy nhiên, Thầy trò mình vừa bắt đầu phiên trò chuyện và chưa 
 
           if (studentProposedNum !== null && studentProposedNum === correctRemaining) {
             return `Chào ${studentName}! Thầy trò mình cùng đối chiếu lại nhé:
-🎯 Kết quả của góc cần tìm chính xác là: **$${correctRemaining}^\\circ$**!
-Thầy và em đã hoàn toàn thống nhất về kết quả chuẩn mực này theo **Định lý Tổng ba góc trong tam giác** ($180^\\circ - ${sumKnown}^\\circ = ${correctRemaining}^\\circ$). Em đã nắm rất vững kiến thức!`;
+🎯 Kết quả của góc cần tìm chính xác là: **$${correctRemaining}^\circ$**!
+Thầy và em đã hoàn toàn thống nhất về kết quả chuẩn mực này theo **Định lý Tổng ba góc trong tam giác** ($180^\circ - ${sumKnown}^\circ = ${correctRemaining}^\circ$). Em đã nắm rất vững kiến thức!`;
           }
 
           if (studentProposedNum !== null && studentProposedNum !== correctRemaining) {
@@ -11937,56 +12137,55 @@ Thầy đã "soi kính lúp" kiểm tra lại toàn bộ các bước tính toá
 Để em hiểu thật rõ bản chất vì sao lại như vậy, Thầy giải thích chi tiết từng bước cho em nhé:
 
 ### 🔍 Bước 1: Rà soát lại Giả thiết & Dữ kiện
-- Đề bài cho tam giác có 2 góc đã biết số đo: $${nums[0]}^\\circ$ và $${nums[1]}^\\circ$.
+- Đề bài cho tam giác có 2 góc đã biết số đo: $${nums[0]}^\circ$ và $${nums[1]}^\circ$.
 - Góc thứ ba cần tìm: góc $x$.
 
-### 📖 Bước 2: Định lý SGK Toán 7 Kết nối tri thức
+### 💡 Bước 2: Định lý SGK Toán 7 Kết nối tri thức
 - Áp dụng **Định lý Tổng ba góc trong một tam giác**:
-  $$\\widehat{A} + \\widehat{B} + \\widehat{C} = 180^\\circ$$
-  *(Tổng số đo ba góc trong bất kỳ tam giác nào cũng luôn luôn bằng đúng $180^\\circ$).*
+  $\widehat{A} + \widehat{B} + \widehat{C} = 180^\circ$
+  *(Tổng số đo ba góc trong bất kỳ tam giác nào cũng luôn luôn bằng đúng $180^\circ$).*
 
-### ⚡ Bước 3: Kiểm chứng phép tính từng bước
+### 🧠 Bước 3: Kiểm chứng phép tính từng bước
 1. Tổng số đo hai góc đã biết:
-   $$${nums[0]}^\\circ + ${nums[1]}^\\circ = ${sumKnown}^\\circ$$
+   $${nums[0]}^\circ + ${nums[1]}^\circ = ${sumKnown}^\circ$
 2. Số đo góc còn lại $x$:
-   $$x = 180^\\circ - ${sumKnown}^\\circ = \\mathbf{${correctRemaining}^\\circ}$$
+   $x = 180^\circ - ${sumKnown}^\circ = \mathbf{${correctRemaining}^\circ}$
 
-💡 **Điểm mấu chốt em dễ bị nhầm lẫn**:
-- Em đang nghĩ kết quả là $${studentProposedNum}^\\circ$. Có thể em đã:
-  + Nhầm phép trừ ($180 - ${sumKnown}$).
-  + Hoặc nhầm lẫn với tính chất của tam giác vuông (tổng 2 góc nhọn bằng $90^\\circ$).
-👉 Kết quả chuẩn xác theo toán học bắt buộc phải là $\\mathbf{${correctRemaining}^\\circ}$. Em hãy lấy giấy nháp kiểm tra lại phép cộng $${nums[0]}^\\circ + ${nums[1]}^\\circ + ${correctRemaining}^\\circ$ xem có đúng bằng đúng $180^\\circ$ không nhé!`;
+💡 **Vì sao kết quả của em có thể bị lệch?**
+- Có thể em đã nhầm lẫn khi cộng nhẩm hai góc ban đầu, hoặc thực hiện phép trừ $180 - ${sumKnown}$ bị sót nhớ.
+- Hoặc nhầm lẫn với tính chất của tam giác vuông (tổng 2 góc nhọn bằng $90^\circ$).
+
+👉 Em hãy lấy giấy nháp kiểm tra lại phép tính trừ: $180 - ${sumKnown}$ xem có đúng bằng $${correctRemaining}$ không nhé! Thầy luôn trân trọng tinh thần học hỏi và dám lên tiếng phản biện của em! 😊`;
           }
 
-          return `Chào ${studentName}! Thầy rất hoan nghênh tinh thần phản biện của em! Khi học Toán, việc nghi ngờ và kiểm tra lại là thói quen của các nhà toán học thực thụ.
-
+          return `Chào ${studentName}! Thầy rất trân trọng và ghi nhận phản hồi của em!
 Thầy vừa rà soát lại toàn bộ quá trình giải bài toán góc trong tam giác:
-1. 📖 **Định lý chuẩn SGK**: Tổng ba góc trong tam giác luôn bằng $180^\\circ$.
-2. 🔍 **Dữ kiện**: Hai góc đề bài cho là $${nums[0]}^\\circ$ và $${nums[1]}^\\circ$ (tổng bằng $${sumKnown}^\\circ$).
-3. ⚡ **Kết quả chính xác**: Góc còn lại $x = 180^\\circ - ${sumKnown}^\\circ = \\mathbf{${correctRemaining}^\\circ}$.
+1. 💡 **Định lý chuẩn SGK**: Tổng ba góc trong tam giác luôn bằng $180^\circ$.
+2. 🔍 **Dữ kiện**: Hai góc đề bài cho là $${nums[0]}^\circ$ và $${nums[1]}^\circ$ (tổng bằng $${sumKnown}^\circ$).
+3. 🎯 **Kết quả chính xác**: Góc còn lại $x = 180^\circ - ${sumKnown}^\circ = \mathbf{${correctRemaining}^\circ}$.
 
 Thầy kiểm tra lại thì từng bước lập luận và phép tính trên đều hoàn toàn chính xác. 
-❓ ${studentName} đang thấy điểm nào chưa hợp lý, hoặc em tính ra kết quả bao nhiêu độ? Hãy chia sẻ cho Thầy biết để Thầy hướng dẫn chi tiết cho em nhé!`;
+👉 ${studentName} đang thấy điểm nào chưa hợp lý, hoặc em tính ra kết quả bao nhiêu độ? Hãy chia sẻ cho Thầy biết để Thầy hướng dẫn chi tiết cho em nhé!`;
         }
       }
 
       // 2. Phân tích bài toán về Căn bậc n
-      const prevRootMatch = prevLower.match(/căn\s*bậc\s*(\d+)?\s*(?:của)?\s*([0-9\.\,]+)/) || prevLower.match(/căn\s*([0-9\.\,]+)/);
+      const prevRootMatch = prevLower.match(/can\s*b?c\s*(\d+)?\s*(?:c?a)?\s*([0-9\.\,]+)/) || prevLower.match(/can\s*([0-9\.\,]+)/);
       if (prevRootMatch || prevAiText.includes("\\sqrt")) {
         return `Chào ${studentName}! Thầy rất hoan nghênh tinh thần phản biện của em!
 Thầy đã kiểm tra lại phép tính căn bậc hai / căn bậc n vừa rồi. 
-- **Định nghĩa căn bậc hai số học**: Căn bậc hai số học của một số $a \\ge 0$ là số $x \\ge 0$ sao cho $x^2 = a$.
-- **Điểm học sinh hay nhầm lẫn**: Nhiều bạn nhầm lẫn căn bậc hai $\\sqrt{a}$ với phép chia cho 2 ($a : 2$). Ví dụ: $\\sqrt{16} = 4$ (vì $4^2 = 16$), chứ không phải $16 : 2 = 8$.
+- **Định nghĩa căn bậc hai số học**: Căn bậc hai số học của một số $a \ge 0$ là số $x \ge 0$ sao cho $x^2 = a$.
+- **Điểm học sinh hay nhầm lẫn**: Nhiều bạn nhầm lẫn căn bậc hai $\sqrt{a}$ với phép chia cho 2 ($a : 2$). Ví dụ: $\sqrt{16} = 4$ (vì $4^2 = 16$), chứ không phải $16 : 2 = 8$.
 
 Em đang tính ra kết quả khác là bao nhiêu? Hãy nhắn cho Thầy để Thầy giải thích cặn kẽ cho em nhé!`;
       }
 
       // 3. Phân tích bài toán về Lũy thừa
-      if (prevLower.includes("lũy thừa") || prevLower.includes("mũ") || prevLower.includes("^")) {
+      if (prevLower.includes("luy thừa") || prevLower.includes("mu") || prevLower.includes("^")) {
         return `Chào ${studentName}! Thầy rất khen ngợi tinh thần phản biện của em!
 Thầy đã rà soát lại phép tính lũy thừa vừa rồi.
-- **Quy tắc tính lũy thừa**: $a^n = \\underbrace{a \\cdot a \\dots a}_{n\\text{ thừa số } a}$.
-- **Điểm bẫy phổ biến**: Rất nhiều bạn thường nhầm lũy thừa $a^n$ thành phép nhân $a \\times n$ (ví dụ: $2^3 = 2 \\times 2 \\times 2 = 8$, nhiều bạn nhầm thành $2 \\times 3 = 6$).
+- **Quy tắc tính lũy thừa**: $a^n = \\underbrace{a \cdot a \dots a}_{n\text{ thừa số } a}$.
+- **Điểm bẫy phổ biến**: Rất nhiều bạn thường nhầm lũy thừa $a^n$ thành phép nhân $a \times n$ (ví dụ: $2^3 = 2 \times 2 \times 2 = 8$, nhiều bạn nhầm thành $2 \times 3 = 6$).
 
 Em thấy chỗ nào chưa đúng hoặc em đang tính ra kết quả nào? Hãy nhắn cho Thầy biết nhé!`;
       }
@@ -11997,7 +12196,127 @@ Trong Toán học, việc dám đặt câu hỏi ngược lại: *"Tại sao l�
 
 Thầy đã rà soát lại toàn bộ nội dung hướng dẫn trước đó:
 - Các bước lập luận và định lý Thầy đưa ra hoàn toàn bám sát theo chuẩn chương trình **SGK Toán 6 - 7 Kết nối tri thức với cuộc sống**.
-- Thầy luôn sẵn lòng giải thích chi tiết hơn nữa: Em đang thấy bước nào trong bài giải chưa rõ ràng hoặc đáp án nào em cho là chưa đúng? Em hãy nhắn lại cụ thể suy nghĩ của em, Thầy trò mình sẽ cùng 'mổ xẻ' từng chi tiết nhé!`;
+- Thầy luôn sẵn sàng giải thích chi tiết hơn nữa: Em đang thấy bước nào trong bài giải chưa rõ ràng hoặc đáp án nào em cho là chưa đúng? Em hãy nhắn lại cụ thể suy nghĩ của em, Thầy trò mình sẽ cùng 'mổ xẻ' từng chi tiết nhé!`;
+    }
+
+    // 0.2. XỬ LÝ KHI HỌC SINH ĐÒI ĐÁP ÁN HOẶC LƯỜI TÍNH ("cho em đáp án luôn", "giải luôn đi", "tính hộ em"...)
+    const isDemandingAnswer = [
+      "cho em đáp án luôn", "cho em dap an", "dap an luon", "đáp án luôn", "cho đáp án luôn", "cho đáp số",
+      "cho dap so", "giải luôn", "giai luon", "giải hộ", "giai ho", "tính luôn", "tinh luon", "tính hộ",
+      "tinh ho", "cho kết quả", "kết quả luôn", "đáp số", "đáp án là gì", "kết quả là bao nhiêu", "bằng bao nhiêu",
+      "thầy tính đi", "thầy làm đi", "làm hộ", "lam ho", "tính giúp", "giải giúp", "nói luôn đi", "nói đáp án",
+      "em lười", "lười tính", "cho luôn", "đáp án đi", "cho đáp án", "thầy giải luôn"
+    ].some(k => lower.includes(k));
+
+    // 0.3. XỬ LÝ KHI HỌC SINH GẶP KHÓ KHĂN HOẶC HỎI BƯỚC TIẾP ("không biết làm", "khó quá", "hướng dẫn tiếp"...)
+    const isAskingHelpOrStuck = [
+      "không biết làm", "ko biet lam", "k biet lam", "chưa biết làm", "khó quá", "kho qua",
+      "không hiểu", "ko hieu", "k hieu", "chưa hiểu", "làm sao nữa", "tiếp theo", "bước tiếp theo",
+      "hướng dẫn tiếp", "làm thế nào", "tính thế nào", "sao nữa thầy", "rồi sao nữa", "tiếp đi thầy"
+    ].some(k => lower.includes(k));
+
+    // 0.4. XỬ LÝ KHI HỌC SINH TRẢ LỜI SỐ HỌC SAU GỢI Ý CỦA THẦY ("60", "60 độ", "x = 60", "bằng 60")
+    const numOnlyMatch = raw.trim().match(/^(?:x\s*=\s*)?(?:góc\s*[a-c]?\s*=\s*)?(?:bằng\s*)?(\d+)(?:\s*(?:độ|do|°))?$/i);
+
+    if (isDemandingAnswer || isAskingHelpOrStuck) {
+      // Bám sát bài toán ở tin nhắn trước của học sinh
+      if (prevMathLower.includes("tam giác") || prevMathLower.includes("tam giac") || prevMathLower.includes("góc") || prevMathLower.includes("goc")) {
+        const nums = [];
+        const matches = prevMathText.match(/\b\d+\b/g);
+        if (matches) {
+          matches.forEach(n => {
+            const num = parseInt(n);
+            if (num > 0 && num < 180) nums.push(num);
+          });
+        }
+
+        if (nums.length >= 2) {
+          const sumKnown = nums[0] + nums[1];
+          const correctRemaining = 180 - sumKnown;
+          if (isDemandingAnswer) {
+            return `Thầy chào ${studentName}! 🌟
+
+Thầy rất hiểu cảm giác em đang muốn có ngay đáp số cuối cùng cho bài toán tính góc tam giác ở trên. Tuy nhiên, theo phương pháp Socratic, **Thầy tuyệt đối không cho thẳng đáp án số học** hay giải hộ! Nếu Thầy tính hộ thì em sẽ mất đi cơ hội rèn luyện khả năng tư duy độc lập của chính mình.
+
+Thầy tin 100% bài toán này hoàn toàn nằm trong tầm tay của em. Em chỉ cần làm đúng 1 phép tính cuối cùng thôi:
+🔍 **Dữ kiện bài toán ở trên**: Tam giác có 2 góc đã biết là $${nums[0]}^\circ$ và $${nums[1]}^\circ$.
+💡 **Định lý Tổng ba góc**: Tổng 3 góc trong một tam giác luôn bằng $180^\circ$.
+🧠 **Chỉ còn 1 phép tính trừ duy nhất**:
+1. Tổng 2 góc đã biết: $${nums[0]}^\circ + ${nums[1]}^\circ = ${sumKnown}^\circ$.
+2. Muốn tìm góc còn lại, em chỉ việc lấy: $180^\circ - ${sumKnown}^\circ = ?$
+
+👉 Phép trừ này em chỉ mất 5 giây thôi! Em hãy nhẩm hoặc đặt bút tính rồi nhắn ngay kết quả góc bằng bao nhiêu độ cho Thầy kiểm tra nhé! Thầy đang chờ đáp án từ em! 🚀`;
+          } else {
+            return `Thầy ở đây để đồng hành cùng ${studentName} đây, đừng lo lắng nhé! 🌟
+Về bài toán tính góc tam giác chúng ta đang làm ở trên:
+- Đề bài cho 2 góc là $${nums[0]}^\circ$ và $${nums[1]}^\circ$.
+- Bước 1 em cộng 2 góc này lại: $${nums[0]}^\circ + ${nums[1]}^\circ = ${sumKnown}^\circ$.
+- Bước 2 vì tổng 3 góc luôn bằng $180^\circ$, em lấy $180^\circ - ${sumKnown}^\circ$.
+
+👉 Em hãy thực hiện phép trừ này và nhắn kết quả cho Thầy nhé!`;
+          }
+        }
+      }
+
+      // Nếu bài trước là lũy thừa
+      if (prevMathLower.includes("lũy thừa") || prevMathLower.includes("luy thua") || prevMathLower.includes("^") || prevMathLower.includes("mũ")) {
+        const powMatch = prevMathText.match(/([0-9\.\,]+)\s*(?:\^|mũ|lũy\s*thừa)\s*([0-9\.\,]+)/i);
+        if (powMatch) {
+          const base = powMatch[1];
+          const exp = powMatch[2];
+          return `Thầy chào ${studentName}! 🌟
+Thầy rất hiểu em muốn biết ngay đáp án của $${base}^{${exp}}$. Nhưng nếu Thầy tính hộ thì em sẽ mất cơ hội tự rèn tư duy!
+Em nhớ lại bản chất nhé: $${base}^{${exp}}$ chính là tích của $${exp}$ thừa số $${base}$ nhân lại với nhau.
+👉 Em hãy lấy giấy nháp nhân tích này ra và nhắn kết quả cho Thầy nhé! Thầy tin em làm được ngay!`;
+        }
+      }
+
+      // Nếu bài trước là căn bậc hai
+      if (prevMathLower.includes("căn") || prevMathLower.includes("can bac")) {
+        return `Thầy chào ${studentName}! 🌟
+Thầy hiểu em đang muốn biết ngay đáp số. Nhưng để hiểu bản chất, em hãy nhớ: Căn bậc hai số học của $a$ là số $x \ge 0$ sao cho $x^2 = a$.
+👉 Em hãy thử nhẩm xem số không âm nào khi bình phương lên (nhân với chính nó) sẽ bằng số trong bài toán ở trên, rồi nhắn cho Thầy nhé!`;
+      }
+
+      // Nếu có bài toán chung ở trên
+      if (prevMathUserMsg && prevMathUserMsg.text && prevMathUserMsg.text.length > 5) {
+        return `Thầy chào ${studentName}! 🌟
+Thầy rất hiểu mong muốn có đáp án ngay của em. Tuy nhiên về bài toán ở trên: *"${prevMathUserMsg.text}"*, Thầy không thể cho ngay kết quả cuối cùng mà muốn đồng hành gợi mở từng bước.
+Em đang vướng mắc ở bước nào hoặc chưa hiểu phép tính nào? Hãy nhắn cho Thầy để Thầy gợi ý tiếp nhé!`;
+      }
+
+      // Nếu chưa có bài toán nào trước đó
+      return `Thầy chào ${studentName}! 🌟
+Thầy rất sẵn lòng hỗ trợ em, nhưng hiện tại em **chưa gửi đề bài** cho Thầy nè!
+👉 Em hãy nhắn đề bài toán mà em đang muốn tìm đáp án để Thầy hướng dẫn từng bước giúp em tự giải ra nhé! 🌟`;
+    }
+
+    // Xử lý khi học sinh gửi đáp số sau khi Thầy gợi ý
+    if (numOnlyMatch && (prevMathLower.includes("tam giác") || prevMathLower.includes("tam giac") || prevMathLower.includes("góc") || prevMathLower.includes("goc"))) {
+      const nums = [];
+      const matches = prevMathText.match(/\b\d+\b/g);
+      if (matches) {
+        matches.forEach(n => {
+          const num = parseInt(n);
+          if (num > 0 && num < 180) nums.push(num);
+        });
+      }
+      if (nums.length >= 2) {
+        const studentNum = parseInt(numOnlyMatch[1]);
+        const sumKnown = nums[0] + nums[1];
+        const correctRemaining = 180 - sumKnown;
+        if (studentNum === correctRemaining) {
+          return `🎉 **CHÍNH XÁC 10/10! XUẤT SẮC LẮM ${studentName}!** 🌟
+Kết quả góc cần tìm đúng là **$${correctRemaining}^\circ$**! ($180^\circ - ${sumKnown}^\circ = ${correctRemaining}^\circ$).
+Em thấy không, chỉ cần em tự nhẩm một chút là đã tự mình tìm ra đáp án mà không cần ai giải hộ rồi. Em làm rất giỏi, Thầy rất tự hào về em! 👏`;
+        } else {
+          return `Thầy rất khen ngợi tinh thần tự đặt bút tính của ${studentName}! 💡
+Tuy nhiên kết quả $${studentNum}^\circ$ chưa chính xác. Em hãy kiểm tra lại phép tính trừ nhé:
+- Tổng 2 góc đã biết: $${nums[0]}^\circ + ${nums[1]}^\circ = ${sumKnown}^\circ$.
+- Góc còn lại: $180^\circ - ${sumKnown}^\circ = ?$
+Em nhẩm lại phép tính này xem ra bao nhiêu độ rồi nhắn lại cho Thầy nhé!`;
+        }
+      }
     }
 
     // 1. Phân tích bài toán về Góc và Tam giác (Định lý Tổng ba góc trong tam giác)
@@ -12170,6 +12489,12 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
     }
 
     // 9. Phản hồi Socratic dẫn dắt
+    if (prevMathUserMsg && prevMathUserMsg.text && prevMathUserMsg.text.length > 5) {
+      return `Thầy đang lắng nghe ${studentName} đây! 🌟
+Về bài toán chúng ta đang cùng nhau giải ở trên: *"${prevMathUserMsg.text}"*
+Em đang băn khoăn ở bước nào hay muốn Thầy hướng dẫn thêm chi tiết nào? Em cứ nhắn cụ thể để Thầy đồng hành cùng em nhé!`;
+    }
+
     return `Chào ${studentName}! Thầy AI Socratic luôn đồng hành cùng em trong chương trình Toán 6 - 7 Kết nối tri thức.
 
 1. 🔍 **Bước 1 (Giả thiết)**: Em hãy đọc kỹ đề bài và xem bài toán đã cho những yếu tố nào (số đo góc, cạnh song song, tỉ lệ thức...).
@@ -12191,13 +12516,31 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
       }
 
       const chatHistory = context.chatHistory || (typeof socraticChatHistory !== "undefined" ? socraticChatHistory : []);
-      const res = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: enrichedPrompt, mode, context: { ...context, studentName, grade, chatHistory } })
-      });
-      if (!res.ok) throw new Error("Backend response not ok");
+      // Thử gọi /api/chat trước (chuẩn Vercel Serverless Function), fallback sang /api/ai/chat
+      let res;
+      try {
+        res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: enrichedPrompt, mode, context: { ...context, studentName, grade, chatHistory } })
+        });
+        if (!res.ok && (res.status === 404 || res.status === 405)) {
+          res = await fetch("/api/ai/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: enrichedPrompt, mode, context: { ...context, studentName, grade, chatHistory } })
+          });
+        }
+      } catch (netErr) {
+        res = await fetch("/api/ai/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: enrichedPrompt, mode, context: { ...context, studentName, grade, chatHistory } })
+        });
+      }
+      if (!res.ok) throw new Error("Backend response not ok: " + res.status);
       const data = await res.json();
+      if (!data || !data.reply) throw new Error("Empty backend reply");
       return data.reply;
     } catch (err) {
       console.warn("Direct backend request failed, using intelligent fallback:", err);
@@ -12208,10 +12551,16 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
   // Kiểm tra trạng thái Backend
   async function checkBackendHealth() {
     const badge = document.getElementById("backend-status");
+    if (!badge) return;
     try {
-      const res = await fetch("/api/health");
+      let res = await fetch("/api/health");
+      if (!res.ok) {
+        res = await fetch("/api/chat", { method: "OPTIONS" });
+      }
       if (res.ok) {
-        badge.innerHTML = `<span class="status-dot"></span><span class="status-label">AI Sẵn Sàng (3.6 Flash)</span>`;
+        badge.innerHTML = `<span class="status-dot"></span><span class="status-label">AI Sẵn Sàng</span>`;
+      } else {
+        throw new Error("Health check failed");
       }
     } catch (e) {
       badge.innerHTML = `<span class="status-dot" style="background:#f59e0b"></span><span class="status-label">Chế Độ Linh Hoạt</span>`;
@@ -12691,6 +13040,8 @@ ${foundThm.formula ? `$$${foundThm.formula}$$` : `$$${foundThm.standardAnswer}$$
           studentName: studentName,
           studentAnswer: answer,
           theoremTitle: thm.title,
+          aiQuestion: thm.aiQuestion || thm.title,
+          question: thm.aiQuestion || thm.title,
           standardAnswer: thm.standardAnswer,
           keywords: thm.keywords || [],
           formula: thm.formula || "",
