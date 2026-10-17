@@ -468,6 +468,15 @@ document.addEventListener("DOMContentLoaded", () => {
       .trim();
   }
 
+  function removeVietnameseTones(str) {
+    if (!str) return "";
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D");
+  }
+
   const SYNONYMS_MAP = [
     { keys: ["90 độ", "90", "vuông", "góc vuông"], canonical: "90 độ" },
     { keys: ["180 độ", "180", "hai góc vuông"], canonical: "180 độ" },
@@ -561,44 +570,82 @@ document.addEventListener("DOMContentLoaded", () => {
       const kwNorm = normalizeMathText(kw);
       if (userNormText.includes(kwNorm)) return true;
 
+      const kwNoTone = removeVietnameseTones(kwNorm).toLowerCase();
+      const userNoTone = removeVietnameseTones(userNormText).toLowerCase();
+      if (userNoTone.includes(kwNoTone)) return true;
+
       if (/[=\^_\\]/.test(kw)) {
         const cleanF = kw.replace(/[^a-z0-9]/gi, "");
         return cleanF.length > 2 && userNormText.replace(/[^a-z0-9]/gi, "").includes(cleanF);
       }
 
       // Nhận diện tương đương ngữ nghĩa cho câu hỏi phản ví dụ (như định lý hai góc đối đỉnh)
-      if ((kwNorm.includes("khong nhat thiet") || kwNorm.includes("chua chac doi dinh")) &&
-          (userNormText.includes("khong") || userNormText.includes("ko") || userNormText.includes("k phai") || userNormText.includes("chua chac") || userNormText.includes("khong phai"))) {
+      if ((kwNoTone.includes("khong nhat thiet") || kwNoTone.includes("chua chac doi dinh")) &&
+          (userNoTone.includes("khong") || userNoTone.includes("ko") || userNoTone.includes("k phai") || userNoTone.includes("chua chac") || userNoTone.includes("khong phai"))) {
         return true;
       }
-      if (kwNorm.includes("tia doi") &&
-          (userNormText.includes("tam giac") || userNormText.includes("tam giac can") || userNormText.includes("hinh rieng") || userNormText.includes("hinh khac") || userNormText.includes("khac nhau") || userNormText.includes("so le") || userNormText.includes("dong vi") || userNormText.includes("ke bu") || userNormText.includes("tia doi"))) {
+      if (kwNoTone.includes("tia doi") &&
+          (userNoTone.includes("tam giac") || userNoTone.includes("tam giac can") || userNoTone.includes("hinh rieng") || userNoTone.includes("hinh khac") || userNoTone.includes("khac nhau") || userNoTone.includes("so le") || userNoTone.includes("dong vi") || userNoTone.includes("ke bu") || userNoTone.includes("tia doi"))) {
         return true;
       }
 
+      // 1. CÁC CẶP KHÁI NIỆM NGỮ NGHĨA TOÁN HỌC CỐT LÕI (BẮT BUỘC KIỂM TRA ĐỘNG TỪ HÀNH ĐỘNG TRÊN BẢN BỎ DẤU):
+      // Giữ nguyên cơ số
+      if (kwNoTone.includes("giu nguyen co so")) {
+        const hasChangeBase = userNoTone.includes("nhan co so") || userNoTone.includes("nhan hai co so") || 
+                              userNoTone.includes("chia co so") || userNoTone.includes("chia hai co so") || 
+                              userNoTone.includes("cong co so") || userNoTone.includes("cong hai co so");
+        if (hasChangeBase) return false;
+        return (userNoTone.includes("giu nguyen") || userNoTone.includes("giu") || userNoTone.includes("khong doi") || userNoTone.includes("co dinh")) && userNoTone.includes("co so");
+      }
+      // Cộng các số mũ
+      if (kwNoTone.includes("cong cac so mu")) {
+        const hasAdd = userNoTone.includes("cong") || userNoTone.includes("tong");
+        const hasExp = userNoTone.includes("so mu") || userNoTone.includes("mu");
+        return hasAdd && hasExp;
+      }
+      // Trừ các số mũ (BẮT BUỘC PHẢI CÓ TỪ CHỈ PHÉP TRỪ)
+      if (kwNoTone.includes("tru cac so mu")) {
+        const hasSub = userNoTone.includes("tru") || userNoTone.includes("hieu");
+        const hasExp = userNoTone.includes("so mu") || userNoTone.includes("mu");
+        return hasSub && hasExp;
+      }
+      // Nhân các số mũ (chỉ dùng trong lũy thừa của lũy thừa)
+      if (kwNoTone.includes("nhan cac so mu")) {
+        const hasMul = userNoTone.includes("nhan") || userNoTone.includes("tich");
+        const hasExp = userNoTone.includes("so mu") || userNoTone.includes("mu");
+        return hasMul && hasExp;
+      }
+      if (kwNoTone.includes("180") && (userNoTone.includes("180") || userNoTone.includes("mot tram tam muoi"))) return true;
+      if (kwNoTone.includes("doi dinh") && userNoTone.includes("doi dinh") && (userNoTone.includes("bang nhau") || userNoTone.includes("bang"))) return true;
+      if (kwNoTone.includes("so le trong") && userNoTone.includes("so le trong") && (userNoTone.includes("bang nhau") || userNoTone.includes("bang"))) return true;
+      if (kwNoTone.includes("dong vi") && userNoTone.includes("dong vi") && (userNoTone.includes("bang nhau") || userNoTone.includes("bang"))) return true;
+      if (kwNoTone.includes("trong cung phia") && userNoTone.includes("trong cung phia") && (userNoTone.includes("bu nhau") || userNoTone.includes("180"))) return true;
+      if (kwNoTone.includes("tan cung") && (userNoTone.includes("tan cung") || userNoTone.includes("duoi"))) return true;
+
+      // 2. SO KHỚP TỪ KHÓA CHUNG (GENERAL TOKEN OVERLAP) VỚI RÀNG BUỘC CHẶT CHẼ
       const stopWords = new Set(["cac", "nhung", "ta", "thi", "la", "cho", "cua", "va", "voi", "trong", "mot", "hai", "khi", "de"]);
-      const tokens = kwNorm.split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
+      const tokens = kwNoTone.split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
       if (tokens.length === 0) return false;
+
+      // Nếu từ khóa chứa động từ cốt lõi (cong, tru, nhan, chia, giu) mà câu của học sinh không có động từ đó thì TUYỆT ĐỐI KHÔNG MATCH
+      if (tokens.includes("tru") && !userNoTone.includes("tru") && !userNoTone.includes("hieu")) return false;
+      if (tokens.includes("cong") && !userNoTone.includes("cong") && !userNoTone.includes("tong")) return false;
+      if (tokens.includes("nhan") && !userNoTone.includes("nhan") && !userNoTone.includes("tich")) return false;
+      if (tokens.includes("chia") && !userNoTone.includes("chia") && !userNoTone.includes("thuong")) return false;
+      if (tokens.includes("giu") && !userNoTone.includes("giu") && !userNoTone.includes("khong doi")) return false;
 
       let matchCount = 0;
       tokens.forEach(t => {
-        if (userNormText.includes(t)) matchCount++;
+        if (userNoTone.includes(t)) matchCount++;
       });
 
-      if (matchCount / tokens.length >= 0.65) return true;
+      // Với cụm từ ngắn (<= 3 tokens), đòi hỏi phải khớp toàn bộ 100% tokens quan trọng
+      if (tokens.length <= 3) {
+        return matchCount === tokens.length;
+      }
 
-      // Các cặp khái niệm ngữ nghĩa tương đương trong SGK Toán:
-      if (kwNorm.includes("giu nguyen co so") && userNormText.includes("co so") && (userNormText.includes("giu nguyen") || userNormText.includes("giu"))) return true;
-      if (kwNorm.includes("cong cac so mu") && (userNormText.includes("cong") || userNormText.includes("tong")) && (userNormText.includes("so mu") || userNormText.includes("mu"))) return true;
-      if (kwNorm.includes("tru cac so mu") && (userNormText.includes("tru") || userNormText.includes("hieu")) && (userNormText.includes("so mu") || userNormText.includes("mu"))) return true;
-      if (kwNorm.includes("180") && (userNormText.includes("180") || userNormText.includes("mot tram tam muoi"))) return true;
-      if (kwNorm.includes("doi dinh") && userNormText.includes("doi dinh") && (userNormText.includes("bang nhau") || userNormText.includes("bang"))) return true;
-      if (kwNorm.includes("so le trong") && userNormText.includes("so le trong") && (userNormText.includes("bang nhau") || userNormText.includes("bang"))) return true;
-      if (kwNorm.includes("dong vi") && userNormText.includes("dong vi") && (userNormText.includes("bang nhau") || userNormText.includes("bang"))) return true;
-      if (kwNorm.includes("trong cung phia") && userNormText.includes("trong cung phia") && (userNormText.includes("bu nhau") || userNormText.includes("180"))) return true;
-      if (kwNorm.includes("tan cung") && (userNormText.includes("tan cung") || userNormText.includes("duoi"))) return true;
-
-      return false;
+      return matchCount / tokens.length >= 0.75;
     }
 
     // 0. CHẾ ĐỘ ĐÁNH GIÁ & CHẤM ĐIỂM VẤN ĐÁP ĐỊNH LÝ (ƯU TIÊN HÀNG ĐẦU KHI MODE === EVALUATE)
@@ -646,22 +693,178 @@ ${context?.formula ? `📐 **Công thức toán học cần nhớ**:\n$$${contex
       // TRƯỜNG HỢP ĐẶC BIỆT: Câu hỏi hai góc bằng nhau có nhất thiết đối đỉnh không? (Dùng phản ví dụ chuẩn mực)
       const isAngleCounterQuestion = thmTitle.toLowerCase().includes("đối đỉnh") || stdLower.includes("không nhất thiết");
       const hasNo = userAnsLower.includes("không") || userAnsLower.includes("ko") || userAnsLower.includes("k phải") || userAnsLower.includes("chưa chắc") || userAnsLower.startsWith("k ");
-      const hasCounterExample = userAnsLower.includes("tam giác") || userAnsLower.includes("tam giác cân") || userAnsLower.includes("hai hình") || userAnsLower.includes("so le") || userAnsLower.includes("đồng vị") || userAnsLower.includes("đáy") || userAnsLower.includes("ví dụ") || userAnsLower.includes("kề bù");
 
-      if (isAngleCounterQuestion && hasNo && hasCounterExample) {
+      if (isAngleCounterQuestion && hasNo) {
         const nowTime = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-        return `<div class="score-badge-high">⭐ Điểm số: 10 / 10</div>
+
+        // 1. LỖI SAI BẢN CHẤT TOÁN HỌC: Lấy ví dụ "2 góc của 1 tam giác bất kỳ" hoặc "tam giác thường" hoặc "tam giác" không có chữ cân/đều
+        const mentionsArbitraryTriangle = (
+          userAnsLower.includes("bất kỳ") || 
+          userAnsLower.includes("bat ky") || 
+          userAnsLower.includes("bất kì") || 
+          userAnsLower.includes("bat ki") || 
+          userAnsLower.includes("thường") || 
+          userAnsLower.includes("1 tam giác") || 
+          userAnsLower.includes("một tam giác") ||
+          (userAnsLower.includes("tam giác") && !userAnsLower.includes("cân") && !userAnsLower.includes("đều") && !userAnsLower.includes("hai tam giác") && !userAnsLower.includes("2 tam giác"))
+        ) && !userAnsLower.includes("cân") && !userAnsLower.includes("đều");
+
+        if (mentionsArbitraryTriangle) {
+          return `<div class="score-badge-med">⭐ Điểm số: 5.0 / 10 (Cần sửa lỗi bản chất toán học)</div>
 <div class="ai-verify-stamp">🤖 <em>AI Socratic đã đối chiếu SGK và phân tích ngữ nghĩa lúc ${nowTime}</em></div>
 
 💡 **Nhận xét của Thầy**:
-🌟 **Xuất sắc tuyệt đối (10/10)!** ${studentName} đã nắm rất vững bản chất toán học của định lý:
-- ✅ **Khẳng định đúng trọng tâm**: Hai góc có số đo bằng nhau **không nhất thiết** phải đối đỉnh!
-- ✅ **Phản ví dụ chuẩn xác**: Em đã đưa ra ví dụ minh họa rất thông minh (*"${userAnsClean}"*). Trong tam giác cân (hoặc hai hình riêng biệt), các góc có thể bằng nhau nhưng cạnh của chúng không phải là tia đối nên không đối đỉnh!
+Thầy chào ${studentName}! Câu trả lời của em đã có ý đúng nhưng phần ví dụ minh họa đang bị **sai bản chất toán học**, Thầy chỉ rõ ngay để em nắm chắc nhé:
+
+- ✅ **Khẳng định đúng trọng tâm**: Em đã trả lời rất chuẩn xác là **"Không nhất thiết"** (hai góc có số đo bằng nhau thì chưa chắc đã đối đỉnh).
+- ❌ **Lỗi sai toán học cần sửa ngay**: Em lấy ví dụ *"2 góc của 1 tam giác bất kỳ"* là **chưa đúng**! Trong một tam giác bất kỳ (tam giác thường), các góc có số đo hoàn toàn khác nhau (ví dụ: $40^\\circ, 60^\\circ, 80^\\circ$) chứ **không hề bằng nhau**. Đề bài yêu cầu lấy ví dụ về hai góc **có số đo bằng nhau** nhưng không đối đỉnh!
+- 💡 **Cách sửa lại chuẩn xác để ghi điểm 10**:
+  1. Phải là **hai góc ở đáy của tam giác CÂN** (hoặc tam giác đều), vì chỉ tam giác cân mới có hai góc bằng nhau!
+  2. Hoặc **hai góc ở hai hình riêng biệt** cùng bằng một số đo (ví dụ: cùng bằng $45^\\circ$ hoặc $50^\\circ$).
+  3. Hoặc **cặp góc so le trong / đồng vị** khi hai đường thẳng song song.
+
+👉 Em hãy bấm nút **"🎤 Em muốn phát biểu lại"** ở ngay bên dưới, sửa lại ví dụ thành *"hai góc đáy của tam giác cân"* để Thầy chấm điểm 10 tuyệt đối cho em nhé! Thầy tin em sửa lại sẽ xuất sắc ngay! 😊
 
 📖 **Phát biểu chuẩn SGK Kết nối tri thức**:
 *"${std}"*
 
 ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$` : ""}`;
+        }
+
+        // 2. PHẢN VÍ DỤ CHUẨN XÁC (tam giác cân, tam giác đều, 2 hình riêng biệt...)
+        const hasValidCounterExample = (
+          (userAnsLower.includes("tam giác") && (userAnsLower.includes("cân") || userAnsLower.includes("đều") || userAnsLower.includes("đáy"))) ||
+          userAnsLower.includes("tam giác cân") ||
+          userAnsLower.includes("tam giác đều") ||
+          userAnsLower.includes("hai hình") ||
+          userAnsLower.includes("2 hình") ||
+          userAnsLower.includes("riêng biệt") ||
+          userAnsLower.includes("rời nhau") ||
+          userAnsLower.includes("khác nhau") ||
+          userAnsLower.includes("so le") ||
+          userAnsLower.includes("đồng vị") ||
+          (userAnsLower.includes("cùng bằng") && (userAnsLower.includes("độ") || userAnsLower.includes("°")))
+        );
+
+        if (hasValidCounterExample) {
+          return `<div class="score-badge-high">⭐ Điểm số: 10 / 10</div>
+<div class="ai-verify-stamp">🤖 <em>AI Socratic đã đối chiếu SGK và phân tích ngữ nghĩa lúc ${nowTime}</em></div>
+
+💡 **Nhận xét của Thầy**:
+🌟 **Xuất sắc tuyệt đối (10/10)!** ${studentName} đã nắm rất vững bản chất toán học của định lý:
+- ✅ **Khẳng định đúng trọng tâm**: Hai góc có số đo bằng nhau **không nhất thiết** phải đối đỉnh!
+- ✅ **Phản ví dụ chuẩn xác**: Em đã đưa ra ví dụ minh họa rất chính xác (*"${userAnsClean}"*). Ở tam giác cân (hoặc hai hình riêng biệt), các góc có số đo bằng nhau nhưng cạnh của chúng không phải là tia đối nên không đối đỉnh!
+
+📖 **Phát biểu chuẩn SGK Kết nối tri thức**:
+*"${std}"*
+
+${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$` : ""}`;
+        }
+
+        // 3. Nếu mới chỉ nói "Không" mà chưa có ví dụ cụ thể
+        return `<div class="score-badge-med">⭐ Điểm số: 5.5 / 10 (Thiếu ví dụ minh họa)</div>
+<div class="ai-verify-stamp">🤖 <em>AI Socratic đã đối chiếu SGK và phân tích ngữ nghĩa lúc ${nowTime}</em></div>
+
+💡 **Nhận xét của Thầy**:
+Thầy chào ${studentName}! 
+- ✅ **Phần em đã làm đúng**: Em đã khẳng định rất chuẩn xác: Hai góc có số đo bằng nhau **không nhất thiết** phải đối đỉnh!
+- 🔍 **Phần em còn thiếu**: Đề bài yêu cầu có cả **ví dụ minh họa**, nhưng em chưa đưa ví dụ cụ thể.
+- 💡 **Gợi ý ví dụ cho em**: Ví dụ hai góc ở đáy của một tam giác cân, hoặc hai góc ở hai hình riêng biệt cùng bằng $45^\\circ$ (chúng bằng nhau nhưng các cạnh không phải tia đối của nhau nên không đối đỉnh).
+
+👉 Em hãy bấm nút **"🎤 Em muốn phát biểu lại"** ở bên dưới để bổ sung ví dụ minh họa và nhận điểm 10 trọn vẹn từ Thầy nhé! 😊
+
+📖 **Phát biểu chuẩn SGK Kết nối tri thức**:
+*"${std}"*
+
+${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$` : ""}`;
+      }
+
+      // =========================================================================
+      // KIỂM TRA LỖI SAI BẢN CHẤT TOÁN HỌC TRẦM TRỌNG (FATAL MATHEMATICAL ERRORS)
+      // =========================================================================
+      const isPowerTheorem = thmTitle.toLowerCase().includes("lũy thừa") || stdLower.includes("lũy thừa");
+      if (isPowerTheorem) {
+        // Lỗi 1: Học sinh nhân cơ số với nhau (thay vì giữ nguyên cơ số)
+        const hasMultiplyBases = (
+          (userAnsLower.includes("nhân hai cơ số") || 
+           userAnsLower.includes("nhân 2 cơ số") || 
+           userAnsLower.includes("nhân cơ số") || 
+           userAnsLower.includes("nhân các cơ số") ||
+           userAnsLower.includes("nhan hai co so") ||
+           userAnsLower.includes("nhan co so") ||
+           userAnsLower.includes("lấy cơ số nhân") ||
+           userAnsLower.includes("lấy hai cơ số nhân") ||
+           userAnsLower.includes("nhân các cơ số lại") ||
+           userAnsLower.includes("nhân hai cơ số lại")) &&
+          !userAnsLower.includes("không nhân cơ số") &&
+          !userAnsLower.includes("ko nhân cơ số")
+        );
+
+        // Lỗi 2: Học sinh nhân các số mũ với nhau khi nhân hai lũy thừa cùng cơ số
+        const isNotPowerOfPower = !thmTitle.toLowerCase().includes("lũy thừa của lũy thừa") && !stdLower.includes("(a^m)^n");
+        const hasMultiplyExponents = isNotPowerOfPower && (
+          userAnsLower.includes("nhân hai số mũ") ||
+          userAnsLower.includes("nhân 2 số mũ") ||
+          userAnsLower.includes("nhân các số mũ") ||
+          userAnsLower.includes("nhân số mũ") ||
+          userAnsLower.includes("nhan hai so mu") ||
+          userAnsLower.includes("nhan cac so mu") ||
+          userAnsLower.includes("nhan so mu") ||
+          userAnsLower.includes("lấy số mũ nhân") ||
+          userAnsLower.includes("lấy hai số mũ nhân") ||
+          userAnsLower.includes("nhân các số mũ lại") ||
+          userAnsLower.includes("nhân số mũ với nhau")
+        ) && !userAnsLower.includes("cộng các số mũ") && !userAnsLower.includes("cộng số mũ");
+
+        // Lỗi 3: Chia cơ số hoặc cộng cơ số
+        const hasDivideOrAddBases = (
+          userAnsLower.includes("chia hai cơ số") || 
+          userAnsLower.includes("chia 2 cơ số") || 
+          userAnsLower.includes("chia cơ số") || 
+          userAnsLower.includes("cộng hai cơ số") || 
+          userAnsLower.includes("cộng cơ số")
+        ) && !userAnsLower.includes("giữ nguyên cơ số");
+
+        if (hasMultiplyBases || hasMultiplyExponents || hasDivideOrAddBases) {
+          const nowTime = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          let fatalErrorDesc = "";
+          let mathProofExample = "";
+          
+          if (hasMultiplyBases) {
+            fatalErrorDesc = `Em phát biểu: *"nhân hai cơ số với nhau"*. Đây là **lỗi sai hoàn toàn về bản chất toán học**! Khi nhân hai lũy thừa cùng cơ số, quy tắc bắt buộc là phải **GIỮ NGUYÊN CƠ SỐ**, tuyệt đối **KHÔNG ĐƯỢC nhân hai cơ số với nhau**!`;
+            mathProofExample = `Ví dụ phản chứng: $2^3 \\cdot 2^2 = 2^{3+2} = 2^5 = 32$.\nNếu em nhân hai cơ số lại thành $(2 \\cdot 2) = 4$ thì sẽ thành $4^5 = 1024$ (sai lệch hoàn toàn gấp 32 lần kết quả đúng!).`;
+          } else if (hasMultiplyExponents) {
+            fatalErrorDesc = `Em phát biểu: *"nhân các số mũ với nhau"*. Đây là **lỗi sai hoàn toàn về bản chất toán học**! Khi nhân hai lũy thừa cùng cơ số, ta phải **CỘNG CÁC SỐ MŨ** lại ($a^{m+n}$), chứ **KHÔNG ĐƯỢC NHÂN SỐ MŨ**! *(Phép nhân các số mũ chỉ dùng khi tính lũy thừa của lũy thừa $(a^m)^n = a^{m \\cdot n}$)*.`;
+            mathProofExample = `Ví dụ phản chứng: $2^3 \\cdot 2^2 = 2^{3+2} = 2^5 = 32$.\nNếu em nhân số mũ $(3 \\cdot 2 = 6)$ thì kết quả thành $2^6 = 64$ (sai kết quả!).`;
+          } else {
+            fatalErrorDesc = `Em thực hiện thao tác cộng hoặc chia cơ số. Trong quy tắc lũy thừa, ta bắt buộc phải **GIỮ NGUYÊN CƠ SỐ**!`;
+            mathProofExample = `Quy tắc đúng: Giữ nguyên cơ số, chỉ thực hiện cộng (khi nhân) hoặc trừ (khi chia) các số mũ.`;
+          }
+
+          const asksBoth = (thmTitle.toLowerCase().includes("nhân và chia") || stdLower.includes("khi chia")) &&
+            !userAnsLower.includes("chia") && !userAnsLower.includes("trừ");
+          let missingDivisionNote = "";
+          if (asksBoth) {
+            missingDivisionNote = `\n- 🔍 **Bỏ sót hoàn toàn 1 vế**: Đề bài yêu cầu nêu quy tắc cả **nhân và chia**, nhưng em hoàn toàn chưa nêu quy tắc chia hai lũy thừa cùng cơ số ($a^m : a^n = a^{m-n}$ với $a \\neq 0, m \\ge n$).`;
+          }
+
+          return `<div class="score-badge-low">⭐ Điểm số: 0 / 10 (Sai hoàn toàn bản chất toán học)</div>
+<div class="ai-verify-stamp">🤖 <em>AI Socratic đã đối chiếu SGK và phân tích ngữ nghĩa lúc ${nowTime}</em></div>
+
+💡 **Nhận xét của Thầy**:
+Thầy chào ${studentName}! Câu trả lời của em bị **sai hoàn toàn bản chất toán học**, Thầy chỉ rõ ngay để em nắm chắc và không bao giờ bị nhầm lẫn khi làm bài thi nhé:
+
+- ❌ **Lỗi sai toán học nghiêm trọng**: ${fatalErrorDesc}
+- 📐 **Chứng minh sai lầm bằng con số thực tế**:
+  ${mathProofExample}${missingDivisionNote}
+
+📖 **Quy tắc chuẩn SGK Kết nối tri thức**:
+*"${std}"*
+
+${context?.formula ? `📐 **Công thức toán học chuẩn mực**:\n$$${context.formula}$$` : ""}
+
+👉 Em hãy bấm nút **"🎤 Em muốn phát biểu lại"** ở ngay bên dưới, nói lại thật chuẩn: *"Khi nhân hai lũy thừa cùng cơ số ta giữ nguyên cơ số và cộng các số mũ; khi chia hai lũy thừa cùng cơ số khác 0 ta giữ nguyên cơ số và trừ các số mũ"* để Thầy chấm điểm 10 tuyệt đối cho em nhé! Thầy tin em sửa lại sẽ xuất sắc ngay! 😊`;
+        }
       }
 
       // Kiểm tra trùng khớp hoàn toàn / y hệt với đáp án chuẩn
@@ -718,29 +921,40 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
       let badgeClass = "score-badge-low";
       let comment = "";
 
+      // Kiểm tra câu hỏi có 2 vế lớn (ví dụ: cả nhân và chia, hoặc cả số hữu tỉ và căn bậc hai)
+      const isMultiPartQuestion = (
+        (thmTitle.toLowerCase().includes("nhân và chia") || stdLower.includes("khi chia")) &&
+        ((userAnsLower.includes("nhân") && !userAnsLower.includes("chia") && !userAnsLower.includes("trừ")) ||
+         (userAnsLower.includes("chia") && !userAnsLower.includes("nhân") && !userAnsLower.includes("cộng")))
+      );
+
       // 1. Xuất sắc: Đầy đủ 100% tất cả các vế và từ khóa trọng tâm
-      if (keywordRatio >= 0.85 && missedList.length <= 1) {
+      if (keywordRatio >= 0.85 && missedList.length <= 1 && !isMultiPartQuestion) {
         score = "10";
         badgeClass = "score-badge-high";
         comment = `🌟 **Xuất sắc (10/10)!** ${studentName} đã phát biểu định lý/quy tắc **${thmTitle}** hoàn toàn chuẩn mực và đầy đủ tất cả các ý trọng tâm!`;
       } 
       // 2. Rất tốt: Nêu đủ các ý chính, chỉ thiếu 1 điều kiện phụ nhỏ
-      else if (keywordRatio >= 0.75 && missedList.length <= 2) {
+      else if (keywordRatio >= 0.75 && missedList.length <= 2 && !isMultiPartQuestion) {
         score = "8.5";
         badgeClass = "score-badge-high";
         comment = `👏 **Rất tốt (8.5/10)!** Câu trả lời của ${studentName} đã nắm được hầu hết các ý cốt lõi của **${thmTitle}**, chỉ thiếu một điều kiện nhỏ để đạt điểm 10.`;
       } 
-      // 3. Khá: Nắm được khoảng 70% nội dung
-      else if (keywordRatio >= 0.6) {
+      // 3. Khá: Nắm được khoảng 70% nội dung (nhưng không được thiếu hẳn 1 vế lớn)
+      else if (keywordRatio >= 0.6 && !isMultiPartQuestion) {
         score = "7.0";
         badgeClass = "score-badge-med";
         comment = `👍 **Khá tốt (7.0/10)!** ${studentName} đã nắm được nội dung cơ bản của định lý, hãy bổ sung thêm các điều kiện còn thiếu để câu trả lời trọn vẹn hơn.`;
       } 
       // 4. Mới trả lời được một nửa câu hỏi (1/2 ý chính)
-      else if (keywordRatio >= 0.35 || (matchedList.length > 0 && missedList.length > 0)) {
-        score = matchedCount >= 2 && missedList.length === 1 ? "5.5" : "5.0";
+      else if (isMultiPartQuestion || keywordRatio >= 0.35 || (matchedList.length > 0 && missedList.length > 0)) {
+        score = isMultiPartQuestion ? "5.0" : (matchedCount >= 2 && missedList.length === 1 ? "5.5" : "5.0");
         badgeClass = "score-badge-med";
-        comment = `⚠️ **Chưa hoàn thiện (${score}/10)!** ${studentName} mới chỉ trả lời được khoảng 1/2 câu hỏi. Em đã nêu được: *${matchedList.join(", ")}*, nhưng còn **bỏ sót**: *${missedList.join(", ")}*. Em hãy bổ sung thêm để đạt điểm tối đa nhé!`;
+        if (isMultiPartQuestion) {
+          comment = `⚠️ **Mới hoàn thành 1/2 câu hỏi (${score}/10)!** ${studentName} đã trả lời đúng quy tắc phép ${userAnsLower.includes("nhân") ? "nhân" : "chia"} (${matchedList.join(", ")}), nhưng **bỏ sót hoàn toàn** quy tắc phép ${userAnsLower.includes("nhân") ? "chia (giữ nguyên cơ số và trừ các số mũ)" : "nhân (giữ nguyên cơ số và cộng các số mũ)"}. Em hãy bổ sung thêm để đạt điểm tối đa nhé!`;
+        } else {
+          comment = `⚠️ **Chưa hoàn thiện (${score}/10)!** ${studentName} mới chỉ trả lời được khoảng 1/2 câu hỏi. Em đã nêu được: *${matchedList.join(", ")}*, nhưng còn **bỏ sót**: *${missedList.join(", ")}*. Em hãy bổ sung thêm để đạt điểm tối đa nhé!`;
+        }
       } 
       // 5. Trả lời rời rạc hoặc dưới 35%
       else {
@@ -790,17 +1004,74 @@ ${context?.formula ? `📐 **Công thức toán học**:\n$$${context.formula}$$
       const isAppealOrDispute = [
         "thầy chấm sai", "thầy sai", "chấm sai", "phản biện", "phúc khảo", "xem lại",
         "nói đúng mà", "em nói đúng", "phát biểu đúng", "chưa chính xác", "oan", "bị trừ điểm", "báo cáo",
-        "phải đúng", "được điểm cao", "sao lại thấp", "điểm thấp", "chấm lại", "không và cho 1 ví dụ"
+        "phải đúng", "được điểm cao", "sao lại thấp", "điểm thấp", "chấm lại", "không và cho 1 ví dụ",
+        "nhân số mũ", "nhân cơ số", "7đ", "7 điểm", "sai hoàn toàn", "tại sao"
       ].some(k => pLower.includes(k));
 
       if (isAppealOrDispute || mode === "oral_appeal") {
+        // Phản ánh về lỗi chấm điểm quy tắc lũy thừa (ví dụ: nhân hai cơ số, nhân số mũ mà lại được 7 điểm)
+        const isPowerThm = thmTitle.toLowerCase().includes("lũy thừa") || std.toLowerCase().includes("lũy thừa");
+        const mentionsPowerError = pLower.includes("nhân số mũ") || pLower.includes("nhân hai cơ số") || pLower.includes("nhân cơ số") || pLower.includes("7đ") || pLower.includes("7 điểm") || pLower.includes("sai hoàn toàn") || pLower.includes("nhân 2 cơ số") || (isPowerThm && (pLower.includes("sai") || pLower.includes("lỗi")));
+        const hadPowerFatalError = (
+          lowerStudentAns.includes("nhân hai cơ số") || lowerStudentAns.includes("nhân cơ số") || lowerStudentAns.includes("nhân các cơ số") ||
+          lowerStudentAns.includes("nhân hai số mũ") || lowerStudentAns.includes("nhân các số mũ") || lowerStudentAns.includes("nhân số mũ")
+        );
+
+        if (isPowerThm && (mentionsPowerError || hadPowerFatalError)) {
+          return `Thầy chào ${studentName}! 💡
+Thầy cảm ơn ${studentName} rất nhiều vì đã phát hiện và phản ánh cực kỳ chính xác!
+
+🔍 **Thầy hoàn toàn đồng ý với phân tích của em**:
+- Trong câu trả lời trước của em: *"${studentAns}"*, việc phát biểu *"nhân hai cơ số với nhau"* (hoặc *"nhân các số mũ"*) là **SAI HOÀN TOÀN BẢN CHẤT TOÁN HỌC**!
+  * Khi nhân hai lũy thừa cùng cơ số, quy tắc SGK Kết nối tri thức bắt buộc là phải **GIỮ NGUYÊN CƠ SỐ**, tuyệt đối **KHÔNG ĐƯỢC NHÂN HAI CƠ SỐ** (ví dụ: $2^3 \\cdot 2^2 = 2^5 = 32$, nếu nhân hai cơ số sẽ thành $4^5 = 1024$, hoàn toàn sai lệch!).
+  * Ngoài ra, câu hỏi yêu cầu cả quy tắc **nhân và chia**, nhưng em hoàn toàn chưa trả lời phần phép chia.
+- Vì vậy, câu trả lời này **BẮT BUỘC BỊ 0 ĐIỂM** chứ không thể được 7.0 điểm!
+- Lần chấm trước do bộ lọc từ khóa bị nhận diện lỏng lẻo (bắt trúng từ "số mũ") nên đã tính điểm nhầm. Thầy đã lập tức chấn chỉnh và cập nhật thuật toán: từ nay bất kỳ câu trả lời nào sai bản chất phép toán lũy thừa sẽ bị chấm 0 điểm ngay lập tức!
+
+👉 Em có tư duy toán học rất sắc bén, trung thực và nắm rất chắc quy tắc! Bây giờ em hãy bấm nút **"🎤 Em muốn phát biểu lại"** ở ngay bên dưới, nói chuẩn chỉnh cả 2 quy tắc: *"Khi nhân hai lũy thừa cùng cơ số ta giữ nguyên cơ số và cộng các số mũ; khi chia hai lũy thừa cùng cơ số khác 0 ta giữ nguyên cơ số và trừ các số mũ"* để nhận điểm 10 tuyệt đối từ Thầy nhé! 😊`;
+        }
+
         // Kiểm tra phản ví dụ hai góc bằng nhau có nhất thiết đối đỉnh không:
         const isAngleDispute = (thmTitle.toLowerCase().includes("đối đỉnh") || std.toLowerCase().includes("không nhất thiết")) &&
-          (lowerStudentAns.includes("không") || lowerStudentAns.includes("ko") || lowerStudentAns.includes("chưa chắc")) &&
-          (lowerStudentAns.includes("tam giác") || lowerStudentAns.includes("đáy") || lowerStudentAns.includes("hai hình") || lowerStudentAns.includes("so le") || lowerStudentAns.includes("ví dụ") || lowerStudentAns.includes("kề bù"));
+          (lowerStudentAns.includes("không") || lowerStudentAns.includes("ko") || lowerStudentAns.includes("chưa chắc"));
 
         if (isAngleDispute) {
-          return `Thầy chào ${studentName}! 🌟
+          // Kiểm tra xem câu trả lời của học sinh có bị lỗi "tam giác bất kỳ" không
+          const hadArbitraryTriangleError = (
+            lowerStudentAns.includes("bất kỳ") || 
+            lowerStudentAns.includes("bat ky") || 
+            lowerStudentAns.includes("bất kì") || 
+            lowerStudentAns.includes("bat ki") || 
+            lowerStudentAns.includes("thường") || 
+            lowerStudentAns.includes("1 tam giác") || 
+            lowerStudentAns.includes("một tam giác") ||
+            (lowerStudentAns.includes("tam giác") && !lowerStudentAns.includes("cân") && !lowerStudentAns.includes("đều"))
+          ) && !lowerStudentAns.includes("cân") && !lowerStudentAns.includes("đều");
+
+          if (hadArbitraryTriangleError) {
+            return `Thầy chào ${studentName}! 💡
+Thầy đã đọc lại rất kỹ câu trả lời và báo cáo phản biện của em:
+👉 Câu trả lời của em: *"${studentAns}"*
+
+🔍 **Thầy giải thích rõ vì sao Thầy chưa thể nâng lên 10 điểm cho câu này**:
+- ✅ **Phần em đã đúng**: Em đã khẳng định chuẩn xác là **"Không"** (hai góc bằng nhau không nhất thiết đối đỉnh).
+- ❌ **Lỗi sai toán học ở ví dụ**: Em lấy ví dụ *"2 góc của 1 tam giác bất kỳ"* là **sai bản chất toán học**! Trong một tam giác bất kỳ (tam giác thường), các góc có số đo khác nhau chứ **không hề bằng nhau** (ví dụ: $40^\\circ, 60^\\circ, 80^\\circ$). Đề bài yêu cầu tìm **hai góc có số đo bằng nhau** nhưng không đối đỉnh!
+- 💡 **Ví dụ chuẩn để đạt 10/10**: Em phải lấy ví dụ là **hai góc ở đáy của tam giác CÂN** (hoặc tam giác đều), hoặc **hai góc ở hai hình riêng biệt cùng bằng $45^\\circ$**.
+
+👉 Em hãy bấm nút **"🎤 Em muốn phát biểu lại"** ở ngay bên dưới, sửa lại ví dụ thành *"hai góc đáy của tam giác cân"* để Thầy chấm điểm 10 tuyệt đối cho em nhé! Thầy luôn sẵn sàng chấm lại cho em! 😊`;
+          }
+
+          const hasValidCounter = (
+            (lowerStudentAns.includes("tam giác") && (lowerStudentAns.includes("cân") || lowerStudentAns.includes("đều") || lowerStudentAns.includes("đáy"))) ||
+            lowerStudentAns.includes("hai hình") ||
+            lowerStudentAns.includes("2 hình") ||
+            lowerStudentAns.includes("so le") ||
+            lowerStudentAns.includes("đồng vị") ||
+            lowerStudentAns.includes("riêng biệt")
+          );
+
+          if (hasValidCounter) {
+            return `Thầy chào ${studentName}! 🌟
 
 Thầy cảm ơn ${studentName} rất nhiều vì đã thẳng thắn phản biện và bảo vệ ý kiến của mình! Thầy vừa đọc lại thật cẩn thận câu trả lời và lập luận phản bác của em:
 👉 Câu trả lời của em: *"${studentAns}"*
@@ -809,13 +1080,14 @@ Thầy cảm ơn ${studentName} rất nhiều vì đã thẳng thắn phản bi�
 🔍 **Thầy rà soát lại và công nhận**:
 Em hoàn toàn chính xác 100%! Trong câu hỏi *"Nếu hai góc bằng nhau thì có nhất thiết đối đỉnh không? Cho ví dụ minh họa?"*, em đã:
 1. Trả lời dứt khoát: **"Không"** (chính là khẳng định không nhất thiết phải đối đỉnh).
-2. Đưa ra phản ví dụ rất xuất sắc: **"2 góc đáy của 1 tam giác cân"**. Hai góc đáy này luôn bằng nhau nhưng cạnh của chúng không phải là hai tia đối nên không thể đối đỉnh! Đây là một phản ví dụ chuẩn mực trong hình học toán 7!
+2. Đưa ra phản ví dụ rất xuất sắc: **"2 góc đáy của 1 tam giác cân"** (hoặc hai góc ở 2 hình riêng biệt). Chúng luôn có số đo bằng nhau nhưng cạnh của chúng không phải là hai tia đối nên không thể đối đỉnh! Đây là một phản ví dụ chuẩn mực trong hình học toán 7!
 
 Lần chấm trước do máy móc đối chiếu cứng nhắc nên đã trừ điểm oan của em. Thầy chân thành nhận lỗi với ${studentName} nhé!
 
 🎉 **Quyết định đính chính & nâng điểm của Thầy**:
 ⭐ **Nâng điểm lên: 10 / 10** [NÂNG_ĐIỂM: 10]
 🏆 Em đã được cộng thêm 30 EXP và 15 Xu! Thầy rất tự hào về tư duy phản biện sắc bén và sự tự tin bảo vệ chân lý của em! 😊`;
+          }
         }
 
         // Đối chiếu lại danh sách từ khóa thực tế
@@ -878,6 +1150,15 @@ Vì câu trả lời của em mới chỉ hoàn thành khoảng 1/2 yêu cầu n
         return `Thầy chào ${studentName}! Thầy đã rà soát lại toàn bộ câu trả lời của em về định lý **${thmTitle}**.
 Chuẩn SGK: *"${std}"*.
 Em hãy đọc lại định lý và bấm nút phát biểu lại để Thầy chấm điểm cao hơn cho em nhé!`;
+      }
+
+      // 0.5. Học sinh hỏi về việc 2 góc của tam giác bất kỳ có bằng nhau không / giải thích về tam giác
+      if (pLower.includes("tam giác bất kỳ") || pLower.includes("tam giác bất kì") || pLower.includes("tam giác thường") || (pLower.includes("tam giác") && (pLower.includes("không bằng") || pLower.includes("ko bằng") || pLower.includes("có bằng nhau không") || pLower.includes("sao lại không bằng")))) {
+        return `Trong toán học, **hai góc của một tam giác bất kỳ KHÔNG BẰNG NHAU** em nhé! ⚠️
+
+- Một tam giác bất kỳ (tam giác thường) có 3 góc với số đo hoàn toàn khác nhau (ví dụ: $40^\\circ, 60^\\circ, 80^\\circ$).
+- Chỉ khi nào là **tam giác CÂN** thì hai góc ở đáy mới bằng nhau, hoặc **tam giác ĐỀU** thì 3 góc mới cùng bằng $60^\\circ$.
+- Vì vậy, nếu lấy ví dụ về hai góc bằng nhau mà không đối đỉnh, em phải lấy ví dụ là **hai góc đáy của tam giác cân** (hoặc hai góc ở 2 hình riêng biệt) thì mới chính xác 100%! Em đã nắm rõ chỗ này chưa nào? 😊`;
       }
 
       // 1. Phản hồi câu hỏi về câu đố / 3 góc nào / góc nào / ở đâu
