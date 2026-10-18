@@ -1,0 +1,226 @@
+/* =================================================================
+   MATHMIND AI - BẢNG ĐIỀU KHIỂN HỌC TẬP, MA TRẬN KIẾN THỨC & HUY HIỆU THÀNH TÍCH
+   File: css/dashboard.css
+   ================================================================= */
+
+/* ========================================================= */
+/* BẢNG ĐIỀU KHIỂN & BẢN ĐỒ TIẾN BỘ (DASHBOARD) */
+/* ========================================================= */
+.stats-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.stat-mastered .stat-icon { background: #d1fae5; }
+.stat-learning .stat-icon { background: #fef3c7; }
+.stat-exams .stat-icon { background: #e0e7ff; }
+.stat-streak .stat-icon { background: #ffedd5; }
+
+.stat-number {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* Knowledge Network Matrix */
+.knowledge-map-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  padding: 28px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+.map-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.map-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  background: var(--secondary-light);
+  color: var(--secondary-hover);
+  border-radius: 12px;
+}
+
+.map-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 6px 0 4px;
+}
+
+.map-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.badge-red { color: #dc2626; font-weight: 700; }
+.badge-yellow { color: #d97706; font-weight: 700; }
+.badge-green { color: #16a34a; font-weight: 700; }
+
+.knowledge-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.knowledge-tile {
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-color);
+  background: #f8fafc;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.knowledge-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.knowledge-tile.box-red {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+
+.knowledge-tile.box-yellow {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.knowledge-tile.box-green {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.tile-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.tile-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+/* Badges Grid */
+.badges-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  padding: 28px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+.badges-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.badges-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.badge-item {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px 16px;
+  text-align: center;
+  opacity: 0.45;
+  filter: grayscale(1);
+  transition: var(--transition-fast);
+}
+
+.badge-item.unlocked {
+  opacity: 1;
+  filter: grayscale(0);
+  background: white;
+  border-color: #fcd34d;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15);
+}
+
+.badge-icon {
+  font-size: 34px;
+  margin-bottom: 10px;
+}
+
+.badge-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.badge-req {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.dashboard-footer {
+  text-align: center;
+  padding: 20px;
+}
+
+.btn-text-danger {
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}

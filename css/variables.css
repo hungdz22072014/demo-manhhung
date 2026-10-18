@@ -1,0 +1,87 @@
+/* =================================================================
+   MATHMIND AI - BIẾN MÀU SẮC TOÀN CỤC, CSS RESET & NỀN CHUNG
+   File: css/variables.css
+   ================================================================= */
+
+/* =================================================================
+   VUI HỌC TOÁN – MATHMIND AI (KẾT NỐI TRI THỨC)
+   Hệ thống thiết kế giao diện hiện đại, rực rỡ, chuẩn UI/UX THCS
+   ================================================================= */
+
+:root {
+  /* Bảng màu chính (Vibrant Primary Colors) */
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-light: #e0e7ff;
+  --primary-glow: rgba(79, 70, 229, 0.25);
+
+  --secondary: #0ea5e9;
+  --secondary-hover: #0284c7;
+  --secondary-light: #e0f2fe;
+
+  --accent: #f59e0b;
+  --accent-light: #fef3c7;
+
+  --success: #10b981;
+  --success-light: #d1fae5;
+
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+
+  --purple: #8b5cf6;
+  --purple-light: #f3e8ff;
+
+  /* Hộp Leitner Colors */
+  --box-red: #ef4444;
+  --box-red-bg: #fef2f2;
+  --box-yellow: #f59e0b;
+  --box-yellow-bg: #fffbeb;
+  --box-green: #10b981;
+  --box-green-bg: #f0fdf4;
+
+  /* Nền và bề mặt (Backgrounds & Surfaces) */
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.95);
+  --border-color: #e2e8f0;
+  --border-card: rgba(226, 232, 240, 0.8);
+
+  /* Văn bản (Typography) */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-white: #ffffff;
+
+  /* Hiệu ứng bóng đổ & Bo góc */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 6px 18px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 14px 34px rgba(15, 23, 42, 0.12);
+  --shadow-glow: 0 8px 24px var(--primary-glow);
+
+  --transition-fast: 0.2s ease;
+  --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reset & Nền chung */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-app);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(245, 158, 11, 0.03) 0px, transparent 50%);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+}

@@ -1,0 +1,301 @@
+/* =================================================================
+   MATHMIND AI - CỬA HÀNG HIỆP SĨ ĐỔI VẬT PHẨM & BẢNG CHỨC DANH TOÁN HỌC
+   File: css/shop.css
+   ================================================================= */
+
+/* =================================================================
+   CỬA HÀNG HIỆP SĨ & BẢNG CHỨC DANH TOÁN HỌC (COIN SHOP & RANKS)
+   ================================================================= */
+.shop-coins-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1.5px solid #f59e0b;
+  padding: 14px 20px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 20px;
+}
+
+.shop-coins-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shop-section-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 18px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shop-category-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.shop-filter-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.shop-filter-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.shop-filter-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+.shop-filter-btn[data-shop-cat="boss"].active {
+  background: #ef4444;
+  border-color: #ef4444;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-open-shop-from-boss {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-open-shop-from-boss:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(239, 68, 68, 0.45);
+}
+
+.shop-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.shop-item-card {
+  background: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.shop-item-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.12);
+}
+
+.shop-item-avatar {
+  font-size: 36px;
+  line-height: 1;
+  background: #f1f5f9;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.shop-item-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.shop-item-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  min-height: 32px;
+}
+
+.btn-buy-shop-item {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: var(--transition-fast);
+}
+
+.btn-buy-shop-item:hover:not(:disabled) {
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+}
+
+.btn-buy-shop-item:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.btn-buy-shop-item.equipped {
+  background: #10b981;
+  cursor: default;
+}
+
+.rank-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.rank-item.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.rank-level-badge {
+  background: var(--primary);
+  color: white;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.rank-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.rank-req {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.stage-feedback-box {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.stage-feedback-box.success {
+  background: #ecfdf5;
+  border: 1px solid #10b981;
+  color: #065f46;
+}
+
+.stage-feedback-box.error {
+  background: #fef2f2;
+  border: 1px solid #ef4444;
+  color: #991b1b;
+}
+
+.stage-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.btn-claim-quest.reward-ready {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  color: white !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.5) !important;
+  animation: reward-pulse 1.5s infinite alternate !important;
+  cursor: pointer !important;
+}
+
+@keyframes reward-pulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.06); }
+}
+
+.shop-item-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid #bfdbfe;
+}
+
+.shop-item-badge.shield-badge {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.btn-buy-shop-item.maxed {
+  background: #94a3b8 !important;
+  color: white !important;
+  cursor: not-allowed !important;
+  opacity: 0.85;
+}
+
+.btn-buy-shop-item.equipped {
+  background: #10b981 !important;
+  color: white !important;
+  cursor: default !important;
+}

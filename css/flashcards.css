@@ -1,0 +1,471 @@
+/* =================================================================
+   MATHMIND AI - TRẠM GHI NHỚ ĐỊNH LÝ, THẺ 3D LEITNER & THỬ THÁCH ĐIỀN TỪ
+   File: css/flashcards.css
+   ================================================================= */
+
+/* Leitner Status Bar */
+.leitner-status-bar {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.leitner-chip {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.leitner-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.chip-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.chip-dot.red { background: var(--box-red); }
+.chip-dot.yellow { background: var(--box-yellow); }
+.chip-dot.green { background: var(--box-green); }
+
+.chip-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.chip-count {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* ========================================================= */
+/* 3D FLASHCARD STYLING */
+/* ========================================================= */
+.subview {
+  display: none;
+}
+
+.subview.active {
+  display: block;
+}
+
+.flashcard-deck-container {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.deck-progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.deck-progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.deck-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  transition: width 0.3s ease;
+}
+
+/* 3D Scene */
+.flashcard-scene {
+  perspective: 1200px;
+  min-height: 480px;
+  margin-bottom: 24px;
+}
+
+.flashcard-3d {
+  width: 100%;
+  min-height: 480px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+.flashcard-3d.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-lg);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  background: #ffffff;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.card-tag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: var(--primary-light);
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+.card-box-indicator {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.card-icon-preview {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 18px;
+}
+
+.card-icon-preview svg {
+  width: 100%;
+  height: 100%;
+}
+
+.card-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.card-summary {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 540px;
+  margin-bottom: 20px;
+}
+
+.card-formula-preview {
+  background: #f8fafc;
+  border: 1px dashed var(--border-color);
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-size: 18px;
+}
+
+.card-footer {
+  margin-top: 24px;
+}
+
+.btn-flip {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: 0 4px 14px var(--primary-glow);
+}
+
+.btn-flip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--primary-glow);
+}
+
+.btn-flip-back {
+  border: none;
+  background: #f1f5f9;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+/* Card Back Contents */
+.card-back .card-body {
+  text-align: left;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.theorem-block {
+  margin-bottom: 18px;
+  width: 100%;
+}
+
+.block-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 6px;
+}
+
+.block-content {
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--primary);
+  white-space: pre-line;
+}
+
+.hypothesis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.hypo-box, .concl-box {
+  background: #f1f5f9;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+}
+
+.hypo-label, .concl-label {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.hypo-label { color: #0284c7; }
+.concl-label { color: #16a34a; }
+
+.formula-full-box {
+  width: 100%;
+  background: #fdf4ff;
+  border: 1px solid #f5d0fe;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+}
+
+.formula-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #a855f7;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Card Feedback Footer (Leitner buttons) */
+.card-feedback-footer {
+  text-align: center;
+}
+
+.feedback-prompt {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.feedback-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-feedback {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-feedback.red {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.btn-feedback.red:hover {
+  background: #fca5a5;
+}
+
+.btn-feedback.yellow {
+  background: #fef3c7;
+  color: #b45309;
+}
+.btn-feedback.yellow:hover {
+  background: #fde68a;
+}
+
+.btn-feedback.green {
+  background: #d1fae5;
+  color: #047857;
+}
+.btn-feedback.green:hover {
+  background: #6ee7b7;
+}
+
+.deck-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+/* ========================================================= */
+/* FILL IN THE BLANKS CHALLENGE */
+/* ========================================================= */
+.challenge-card {
+  max-width: 780px;
+  margin: 0 auto;
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  padding: 32px;
+}
+
+.challenge-badge {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--accent-light);
+  color: #b45309;
+}
+
+.challenge-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 10px 0 6px;
+}
+
+.challenge-instruction {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.challenge-body {
+  font-size: 18px;
+  line-height: 2.2;
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  margin-bottom: 24px;
+}
+
+.fill-input {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 2px solid var(--primary);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  background: white;
+  width: 140px;
+  text-align: center;
+  margin: 0 4px;
+}
+
+.fill-input.correct {
+  border-color: var(--success);
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.fill-input.incorrect {
+  border-color: var(--danger);
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.challenge-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.challenge-result {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  display: none;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.challenge-result.show {
+  display: block;
+}
+
+.challenge-result.success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.challenge-result.error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}

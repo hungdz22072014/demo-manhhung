@@ -1,0 +1,538 @@
+/* =================================================================
+   MATHMIND AI - PHÒNG LUYỆN THI TRẮC NGHIỆM & ĐẤU TRƯỜNG THI ĐẤU (EXAM HUB & ARENA)
+   File: css/exam.css
+   ================================================================= */
+
+/* ========================================================= */
+/* PHÒNG LUYỆN THI & EXAM HUB */
+/* ========================================================= */
+.hub-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 36px;
+}
+
+.hub-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--primary-light);
+  color: var(--primary);
+  letter-spacing: 0.5px;
+}
+
+.hub-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 10px 0 8px;
+}
+
+.hub-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.exam-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.exam-filter-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.exam-filter-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.exam-filter-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+.exam-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 36px;
+}
+
+.exam-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: var(--transition-smooth);
+}
+
+.exam-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.exam-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.exam-grade-badge {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.exam-grade-badge.grade-6 {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.exam-type-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.exam-type-badge.midterm {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.exam-type-badge.final {
+  background: #fce7f3;
+  color: #be185d;
+}
+
+.exam-card-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.exam-card-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+.exam-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 22px;
+}
+
+.exam-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Weakness Drill Banner */
+.weakness-banner {
+  background: linear-gradient(135deg, #312e81 0%, #1e1b4b 100%);
+  color: white;
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  box-shadow: var(--shadow-lg);
+}
+
+.banner-icon {
+  font-size: 48px;
+}
+
+.banner-content {
+  flex: 1;
+}
+
+.banner-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.banner-desc {
+  font-size: 14px;
+  color: #c7d2fe;
+  line-height: 1.5;
+}
+
+/* Exam Arena (Taking Exam) */
+.arena-header {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-back-hub {
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.btn-back-hub:hover {
+  color: var(--primary);
+}
+
+.arena-title {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.arena-mode-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border-radius: 12px;
+  margin-left: 8px;
+}
+
+.arena-timer-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: #b91c1c;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.arena-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+}
+
+.question-main-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  padding: 32px;
+  box-shadow: var(--shadow-md);
+}
+
+.question-card-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.question-number {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.question-points {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.question-text {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-surface);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-align: left;
+}
+
+.option-btn:hover {
+  border-color: var(--primary);
+  background: rgba(79, 70, 229, 0.03);
+}
+
+.option-btn.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.option-letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.option-btn.selected .option-letter {
+  background: var(--primary);
+  color: white;
+}
+
+.instant-explanation-box {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-left: 4px solid var(--success);
+  padding: 18px;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+}
+
+.exp-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #047857;
+  margin-bottom: 6px;
+}
+
+.exp-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #065f46;
+}
+
+.question-footer-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Question Palette Sidebar */
+.question-palette-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  height: fit-content;
+}
+
+.palette-title {
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.palette-item {
+  height: 42px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: #f8fafc;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+}
+
+.palette-item.current {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.palette-item.answered {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.palette-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.answered { background: var(--primary); }
+.legend-dot.current { background: var(--primary-light); border: 1px solid var(--primary); }
+.legend-dot.unread { background: #f8fafc; border: 1px solid var(--border-color); }
+
+/* Exam Result Card */
+.result-card {
+  max-width: 780px;
+  margin: 0 auto;
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  padding: 40px;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.result-hero {
+  margin-bottom: 36px;
+}
+
+.result-score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 24px var(--primary-glow);
+}
+
+.score-val {
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.score-max {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.result-title {
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.result-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.gap-diagnostic-section {
+  background: #f8fafc;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.diag-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #b91c1c;
+  margin-bottom: 4px;
+}
+
+.diag-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.failed-theorems-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.failed-thm-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: white;
+  border-radius: var(--radius-sm);
+  border: 1px solid #fecaca;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.result-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+}
