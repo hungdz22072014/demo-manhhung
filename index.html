@@ -6602,8 +6602,8 @@ body {
             <h3 class="exam-card-title">Đề thi Giữa Kì 2 - Toán 6</h3>
             <p class="exam-card-desc">Trọng tâm: Khái niệm phân số, Tính chất cơ bản phân số, So sánh và Phép tính phân số, Điểm nằm giữa, Trung điểm.</p>
             <div class="exam-meta">
-              <span>⏱️ 45 phút</span>
-              <span>📋 8 câu hỏi</span>
+              <span>⏱️ 90 phút</span>
+              <span>📋 9 câu hỏi</span>
               <span>⭐ 10 điểm</span>
             </div>
             <div class="exam-card-actions">
@@ -9961,7 +9961,7 @@ const EXAMS_DATA = [
     semester: 2,
     type: "midterm",
     title: "Đề thi Giữa Học Kì 2 - Toán 6 (Kết nối tri thức)",
-    timeMinutes: 45,
+    timeMinutes: 90,
     description: "Kiểm tra Khái niệm phân số, Tính chất cơ bản phân số, So sánh và Phép tính phân số, Điểm nằm giữa, Trung điểm đoạn thẳng.",
     questions: [
       {
@@ -10039,6 +10039,15 @@ const EXAMS_DATA = [
         correctIndex: 1,
         explanation: "Qua hai điểm phân biệt cho trước, có một và chỉ một đường thẳng đi qua hai điểm đó.",
         relatedTheoremId: "toan6-hk2-trung-diem-doan-thang",
+        points: 1
+      },
+      {
+        id: "q6-gk2-9",
+        question: "Tìm số nguyên \\(x\\) biết: \\(\\frac{x}{6} = \\frac{-2}{3}\\).",
+        options: ["\\(x = -4\\)", "\\(x = 4\\)", "\\(x = -1\\)", "\\(x = -9\\)"],
+        correctIndex: 0,
+        explanation: "Theo tính chất hai phân số bằng nhau: \\(x \\cdot 3 = 6 \\cdot (-2) = -12 \\implies x = \\frac{-12}{3} = -4\\).",
+        relatedTheoremId: "toan6-hk2-tinh-chat-phan-so",
         points: 1
       }
     ]
