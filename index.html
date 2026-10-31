@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hàn Bối Tháp - Kẻ Lừa Đảo Thần Linh | 20 Bối Cảnh Quái Đàm & Hồ Sơ Nhân Vật</title>
+    <meta name="description" content="Thư viện trưng bày tương tác hồ sơ nhân vật SSS Hàn Bối Tháp và 20 bối cảnh quái đàm đắc giá (Mùa 1 & Mùa 2), phục vụ thiết kế game, visual novel, diorama và tạo prompt AI 8K.">
+    <meta name="keywords" content="Hàn Bối Tháp, Han Beita, Kẻ Lừa Đảo Thần Linh, Quy tắc quái đàm, Bối cảnh game, Concept Art, Prompt AI">
+    <meta name="author" content="hungdz22072014">
+    
+    <!-- Open Graph Meta -->
+    <meta property="og:title" content="Hàn Bối Tháp - Kẻ Lừa Đảo Thần Linh | 20 Bối Cảnh Quái Đàm">
+    <meta property="og:description" content="Khám phá 20 bối cảnh quái đàm rợn ngợp không người và hồ sơ nhân vật SSS Hàn Bối Tháp.">
+    <meta property="og:image" content="assets/images/hero_divine_judgment.jpg">
+    <meta property="og:type" content="website">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;700;900&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Canvas for Atmospheric Particles -->
+    <canvas id="ambient-canvas"></canvas>
+
+    <!-- Header Navigation -->
+    <header class="site-header" id="site-header">
+        <div class="header-container">
+            <a href="#" class="brand-logo" id="brand-logo">
+                <span class="rune-icon">⛧</span>
+                <div class="brand-text">
+                    <span class="brand-title">HÀN BỐI THÁP</span>
+                    <span class="brand-subtitle">KẺ LỪA ĐẢO THẦN LINH</span>
+                </div>
+            </a>
+
+            <nav class="main-nav" id="main-nav">
+                <a href="#hero" class="nav-link active" id="nav-hero">Tổng Quan</a>
+                <a href="#character-dossier" class="nav-link" id="nav-character">Hồ Sơ SSS</a>
+                <a href="#interactive-zone" class="nav-link" id="nav-interactive">Chiêm Tinh & Đặt Cược</a>
+                <a href="#scenes-gallery" class="nav-link" id="nav-scenes">20 Bối Cảnh</a>
+            </nav>
+
+            <div class="header-actions">
+                <button class="btn-audio-toggle" id="btn-audio-toggle" title="Bật/Tắt âm thanh khí quyển ma mị">
+                    <span class="audio-icon" id="audio-icon">🔇</span>
+                    <span class="audio-label" id="audio-label">Âm Khí Quyển</span>
+                </button>
+                <a href="https://github.com/hungdz22072014/demo-manhhung/tree/han-boi-thap" target="_blank" rel="noopener" class="btn-github-link" id="btn-github" title="Xem repository trên GitHub">
+                    <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-section" id="hero">
+            <div class="hero-background-art">
+                <img src="assets/images/hero_divine_judgment.jpg" alt="Cung Điện Phán Xét Của Thần Linh" id="hero-bg-img" class="hero-art-img">
+                <div class="hero-art-overlay"></div>
+            </div>
+
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="pulse-dot"></span>
+                    <span>CONCEPT ART ARCHIVE & VISUAL NOVEL STAGES</span>
+                </div>
+                <h1 class="hero-title">
+                    <span class="gold-gradient">HÀN BỐI THÁP</span>
+                    <span class="hero-subtitle-line">KẺ LỪA ĐẢO THẦN LINH</span>
+                </h1>
+                <p class="hero-desc">
+                    Trích xuất từ 2 mùa phim quy tắc quái đàm kinh điển (<code>Mg9IlgHE7zE</code> Mùa 1 & <code>KIRyZv9jUpc</code> Mùa 2). Tuyển tập <strong>20 bối cảnh trống hoàn toàn không người</strong> với chất lượng điện ảnh, chuẩn bị sẵn bộ Prompt AI 8K phục vụ phát triển game, sân khấu visual novel & diorama.
+                </p>
+
+                <div class="hero-stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-number">20</span>
+                        <span class="stat-label">Bối Cảnh Trống 100%</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">02</span>
+                        <span class="stat-label">Mùa Phim Quái Đàm</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">SSS</span>
+                        <span class="stat-label">Thiên Phú Lừa Gạt Sư</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number">8K</span>
+                        <span class="stat-label">Prompt AI Midjourney</span>
+                    </div>
+                </div>
+
+                <div class="hero-action-buttons">
+                    <a href="#scenes-gallery" class="btn btn-primary" id="btn-explore-scenes">
+                        <span>Khám Phá 20 Bối Cảnh</span>
+                        <span class="btn-arrow">→</span>
+                    </a>
+                    <a href="#interactive-zone" class="btn btn-secondary" id="btn-gamble-fate">
+                        <span>Tung Đồng Xu Định Mệnh</span>
+                        <span class="coin-icon-small">🪙</span>
+                    </a>
+                    <button class="btn btn-outline" id="btn-export-all-prompts" title="Tải xuống toàn bộ 20 prompt AI dạng text file">
+                        <span>📥 Xuất Tất Cả Prompt AI</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Character Dossier Section -->
+        <section class="character-section" id="character-dossier">
+            <div class="section-container">
+                <div class="section-header-centered">
+                    <span class="section-tag">PHẦN I • HỒ SƠ ĐIỀU TRA</span>
+                    <h2 class="section-title">HỒ SƠ NHÂN VẬT: HÀN BỐI THÁP</h2>
+                    <p class="section-desc">Kẻ lừa gạt F-Rank biến thành cơn ác mộng của các vị thần cai quản quy tắc tử thần.</p>
+                </div>
+
+                <div class="dossier-card glass-panel">
+                    <div class="dossier-left">
+                        <div class="tarot-character-frame">
+                            <div class="tarot-card-inner">
+                                <div class="tarot-art">
+                                    <div class="tarot-emblem">🂠</div>
+                                    <div class="tarot-title">THE DECEIVER</div>
+                                    <div class="tarot-roman">XXII</div>
+                                    <div class="tarot-quote">"Khi lời nói dối biến thành quy tắc, thần linh cũng phải cúi đầu."</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="character-quick-badges">
+                            <span class="badge badge-rank">HẠNG ẨN: SSS</span>
+                            <span class="badge badge-alias">HÀN BETA</span>
+                            <span class="badge badge-title">DECEIVER OF GODS</span>
+                        </div>
+                    </div>
+
+                    <div class="dossier-right">
+                        <div class="dossier-info-grid">
+                            <div class="info-block">
+                                <span class="info-label">Tên Nhân Vật</span>
+                                <h3 class="info-value">Hàn Bối Tháp (韩贝塔 - Han Beita)</h3>
+                                <p class="info-sub">Biệt danh: <em>Hàn Beta</em>, <em>Kẻ Bán Bùa Hẻm Cũ</em>, <em>Kẻ Lừa Đảo Thần Linh</em></p>
+                            </div>
+
+                            <div class="info-block">
+                                <span class="info-label">Thiên Phú & Chức Nghiệp</span>
+                                <div class="stat-pill-group">
+                                    <span class="pill pill-danger">Vỏ bọc: F-Rank (Điểm 0)</span>
+                                    <span class="pill pill-gold">Thực tế: SSS Kẻ Lừa Dối Cả Thần Linh</span>
+                                </div>
+                                <p class="info-text">Ban đầu bị mọi người chơi và khán giả coi thường như một kẻ bán bùa chú rởm, nhưng thực chất sở hữu năng lực tối thượng bẻ gãy mọi quy tắc.</p>
+                            </div>
+
+                            <div class="info-block">
+                                <span class="info-label">Phong Cách & Nhận Diện</span>
+                                <p class="info-text">Áo măng-tô sẫm màu kết hợp vest cổ điển, găng tay da đen, áo sơ mi mở cúc cổ, dáng người cao gầy. Phong thái điềm tĩnh đến rợn người, nụ cười nửa miệng đầy mỉa mai có thể nhìn thấu điểm mù của mọi quy tắc quái đàm.</p>
+                            </div>
+
+                            <div class="info-block">
+                                <span class="info-label">Cơ Chế Chiến Đấu / Sinh Tồn</span>
+                                <div class="mechanic-box">
+                                    <strong>"Lấy Giả Làm Thật" (Deception into Reality):</strong> Không phụ thuộc vào cơ bắp, vũ khí tối thượng là Tâm lý chiến, Lừa gạt cấp cao và Đổi trắng thay đen. Khiến cả thần linh cai quản phó bản tin vào lời nói dối của mình, từ đó tái cấu trúc lại luật chơi.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3 Iconic Relics -->
+                        <div class="relics-container">
+                            <h4 class="relics-title">3 ĐẠO CỤ ĐẶC TRƯNG CỦA HÀN BỐI THÁP</h4>
+                            <div class="relics-grid">
+                                <div class="relic-item" id="relic-tarot">
+                                    <div class="relic-icon">🂡</div>
+                                    <div class="relic-content">
+                                        <h5>Bộ Bài Tarot Số Phận</h5>
+                                        <p>Dùng để gài bẫy quái đàm và tráo đổi quy tắc vận mệnh giữa các thực thể.</p>
+                                    </div>
+                                </div>
+
+                                <div class="relic-item" id="relic-coin">
+                                    <div class="relic-icon">🪙</div>
+                                    <div class="relic-content">
+                                        <h5>Đồng Xu Hai Mặt Định Mệnh</h5>
+                                        <p>Dụng cụ tâm lý chiến dùng để đặt cược tính mạng và xoay chuyển niềm tin đối thủ.</p>
+                                    </div>
+                                </div>
+
+                                <div class="relic-item" id="relic-mirror">
+                                    <div class="relic-icon">🪞</div>
+                                    <div class="relic-content">
+                                        <h5>Gương Phản Chiếu Linh Hồn</h5>
+                                        <p>Khắc chế các thực thể quái đàm nhìn trộm và lật ngược ảo cảnh sát thương.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Zone: Fate Coin & Tarot Draw -->
+        <section class="interactive-section" id="interactive-zone">
+            <div class="section-container">
+                <div class="section-header-centered">
+                    <span class="section-tag">TRẢI NGHIỆM TƯƠNG TÁC</span>
+                    <h2 class="section-title">ĐỒNG XU ĐỊNH MỆNH & CHIÊM BÁI TAROT</h2>
+                    <p class="section-desc">Mô phỏng 2 công cụ tâm lý chiến của Hàn Bối Tháp. Thử vận may hoặc lừa gạt quái đàm!</p>
+                </div>
+
+                <div class="interactive-grid">
+                    <!-- Coin Toss Minigame -->
+                    <div class="interactive-card glass-panel" id="card-coin-toss">
+                        <div class="tool-badge">TÂM LÝ CHIẾN</div>
+                        <h3 class="tool-title">Tung Đồng Xu Định Mệnh</h3>
+                        <p class="tool-desc">Hàn Bối Tháp luôn đặt cược mạng sống bằng cách tung đồng xu hai mặt. Hãy xem mặt nào sẽ xuất hiện!</p>
+                        
+                        <div class="coin-stage">
+                            <div class="coin-3d" id="fate-coin">
+                                <div class="coin-face coin-front">
+                                    <span class="coin-glyph">⚖</span>
+                                    <span class="coin-text">SỰ THẬT</span>
+                                </div>
+                                <div class="coin-face coin-back">
+                                    <span class="coin-glyph">👁</span>
+                                    <span class="coin-text">LỪA GẠT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="coin-result" id="coin-result-text">Hãy nhấn nút tung đồng xu để bắt đầu ván cược...</div>
+
+                        <button class="btn btn-primary" id="btn-flip-coin">
+                            <span>🪙 Tung Đồng Xu Tử Thần</span>
+                        </button>
+                    </div>
+
+                    <!-- Tarot Draw Minigame -->
+                    <div class="interactive-card glass-panel" id="card-tarot-draw">
+                        <div class="tool-badge">BẺ GÃY QUY TẮC</div>
+                        <h3 class="tool-title">Rút Bài Tarot Quái Đàm</h3>
+                        <p class="tool-desc">Rút một lá bài để nhận thông điệp quái đàm hoặc gợi ý bối cảnh sinh tồn từ bộ bài của Hàn Beta.</p>
+                        
+                        <div class="tarot-stage">
+                            <div class="interactive-tarot" id="interactive-tarot-card">
+                                <div class="tarot-pattern">
+                                    <div class="tarot-eye">⛧</div>
+                                    <div class="tarot-prompt-hint">Click để lật bài</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tarot-result" id="tarot-result-box">
+                            <div class="tarot-result-title" id="tarot-card-name">Lá Bài Đang Úp</div>
+                            <div class="tarot-result-rule" id="tarot-card-rule">Nhấn nút bên dưới để rút một lá bài số phận ngẫu nhiên.</div>
+                        </div>
+
+                        <button class="btn btn-secondary" id="btn-draw-tarot">
+                            <span>🂠 Rút Lá Bài Số Mệnh</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 20 Sceneries Gallery Section -->
+        <section class="scenes-section" id="scenes-gallery">
+            <div class="section-container">
+                <div class="scenes-header">
+                    <div>
+                        <span class="section-tag">PHẦN II • 20 BỐI CẢNH ĐẮC GIÁ (EMPTY SCENERIES)</span>
+                        <h2 class="section-title">TUYỂN TẬP 20 PHÒNG CẢNH QUÁI ĐÀM</h2>
+                        <p class="section-desc">Toàn bộ 100% không có bất kỳ nhân vật nào, tối ưu tuyệt đối cho visual novel, background game và diorama concept art.</p>
+                    </div>
+
+                    <!-- Controls: Search & Filter Tabs -->
+                    <div class="gallery-controls">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="scene-search-input" placeholder="Tìm kiếm bối cảnh, phòng mổ, casino, thư viện...">
+                            <button id="clear-search" class="btn-clear-search" title="Xóa tìm kiếm">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-tabs-wrapper">
+                    <div class="filter-tabs" id="filter-tabs">
+                        <button class="tab-btn active" data-filter="all" id="tab-all">Tất Cả (20)</button>
+                        <button class="tab-btn" data-filter="season1" id="tab-s1">Mùa 1: Quy Tắc Sơ Trung Cấp (10)</button>
+                        <button class="tab-btn" data-filter="season2" id="tab-s2">Mùa 2: Cấp Thần & Thời Không (10)</button>
+                    </div>
+
+                    <div class="scenes-count-display">
+                        Hiển thị <span id="visible-count">20</span> / 20 bối cảnh
+                    </div>
+                </div>
+
+                <!-- Scene Grid Container -->
+                <div class="scenes-grid" id="scenes-grid">
+                    <!-- Cards are dynamically rendered via app.js -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Diorama / Cinematic Fullscreen Modal -->
+    <div class="modal-overlay" id="diorama-modal" aria-hidden="true">
+        <div class="modal-container glass-panel">
+            <button class="modal-close-btn" id="modal-close-btn" title="Đóng cửa sổ">✕</button>
+            <div class="modal-body" id="modal-body">
+                <!-- Modal content dynamically injected -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast-notification" id="toast-notification">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message" id="toast-message">Đã sao chép prompt AI thành công!</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <div class="brand-text">
+                    <span class="brand-title gold-gradient">HÀN BỐI THÁP</span>
+                    <span class="brand-subtitle">KẺ LỪA ĐẢO THẦN LINH</span>
+                </div>
+                <p class="footer-text">
+                    Ứng dụng trực quan hóa 20 bối cảnh quái đàm trích xuất từ 2 video: <code>Mg9IlgHE7zE</code> (Mùa 1) & <code>KIRyZv9jUpc</code> (Mùa 2 mốc 4365s). Được phát triển dành riêng cho cộng đồng game development và concept artist.
+                </p>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Liên Kết Nhanh</h4>
+                <ul class="footer-links">
+                    <li><a href="#hero">Về Đầu Trang</a></li>
+                    <li><a href="#character-dossier">Hồ Sơ SSS Hàn Beta</a></li>
+                    <li><a href="#interactive-zone">Đồng Xu Định Mệnh</a></li>
+                    <li><a href="#scenes-gallery">20 Bối Cảnh Concept Art</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">Mã Nguồn & GitHub</h4>
+                <p class="footer-text">Dự án được lưu trữ và đồng bộ tự động lên GitHub repository:</p>
+                <a href="https://github.com/hungdz22072014/demo-manhhung/tree/han-boi-thap" target="_blank" rel="noopener" class="footer-repo-link">
+                    <span>hungdz22072014/demo-manhhung (branch: han-boi-thap)</span>
+                    <span>↗</span>
+                </a>
+                <p class="footer-copyright">© 2026 hungdz22072014. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
